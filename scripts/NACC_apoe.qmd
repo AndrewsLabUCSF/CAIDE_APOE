@@ -1,0 +1,834 @@
+---
+title: "Population-specific effects of APOE in NACC"
+format: pdf
+editor: visual
+knitr: 
+  opts_chunk: 
+    code-fold: true
+    warning: false
+    error: false
+    message: false
+    echo: false
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| label: packages
+#| code-summary: Load R Packages
+#| echo: false
+
+library(tidyverse)
+library(glue)
+library(broom)
+library(gtsummary)
+library(gt)
+library(emmeans)
+
+`%nin%` = negate(`%in%`)
+theme_gtsummary_compact()
+
+# Compares b/se using z score method - doi: 10.1038/s41380-019-0596-9
+fzscore <- function(b1, b2, se1, se2){(b1 - b2)/sqrt(se1^2 + se2^2)}
+
+```
+
+```{r}
+#| label: import
+#| code-summary: Import data 
+
+adrc.raw <- read_csv("../Resources/NACC/ADRC_all_9_16_2022.csv")
+adgc.raw <- read_tsv('../Resources/NACC/ADGC_NACCIDs.txt', col_names = F) %>%
+  rename(NACCID = X1) %>%
+  mutate(adgc = T)
+nacc.raw <- read_csv('../Resources/NACC/investigator_nacc58.csv')
+
+adrc <- adrc.raw %>%
+  unite(apoe_geno, APOE1, APOE2, sep = '/') %>%
+  mutate(apoe_geno = ifelse(apoe_geno == "NA/NA", NA, apoe_geno), 
+         gwas = ifelse(is.na(GWAS), FALSE, TRUE), 
+         wgs = ifelse(is.na(WGS), FALSE, TRUE)) %>%
+  dplyr::select(NACCID, apoe_geno, gwas, wgs) %>%
+  distinct() 
+
+nacc <- select(nacc.raw, NACCID, NACCADC, VISITYR, PACKET, NACCVNUM, NACCAVST,
+               BIRTHYR, SEX, EDUC, NACCAGE, NACCAGEB, RACE, HISPANIC, NACCNIHR, 
+               NACCMMSE, CDRSUM, 
+               NACCFADM, NACCFFTD, NACCOM, # Faimly Mutation
+               NACCADMU, NACCFTDM, 
+               NORMCOG, NACCTMCI, DEMENTED, NACCUDSD, # Prevelant
+               NACCNORM, NACCMCII, NACCIDEM, # Incident
+               DECAGE, NACCETPR
+) 
+
+farrer_apoe.raw <- read_csv("../data/Farrer1997apoex.csv")
+
+
+```
+
+## Introduction
+
+In their 1997 study published in JAMA, Farrer and colleagues investigated the association between APOE genotype and Alzheimer's disease (AD), and how age, sex, and ethnicity may influence this association. The study found that the APOE e4 allele was associated with an increased risk of AD in Caucasian subjects, while the e2 allele was associated with a reduced risk. Interestingly, the association between APOE e4 and AD was weaker in African Americans and Hispanics compared to Caucasians, but stronger in Japanese participants (Table 1; Figure 1).
+
+The participants in the study were enrolled from various sources, including community/population-based studies, clinic/hospital-based studies, and autopsy/brain bank-based studies. The case patients were diagnosed with definite or probable AD, while the controls were free of neurodegenerative and neuropsychiatric illnesses. Participants with ADAD mutations or co-morbid pathology were excluded from the study. Logistic regression models were used to assess the influence of APOE, sex, and age on the odds of developing AD. Age at onset of AD among cases and age at last visit among controls were used as the age variable.
+
+While the study reported population differences in the effect of APOE genotype on the risk of AD, no statistical analysis was conducted to formally test this. Here we used Fishzer's Z score method (eq 1; [Zhou et al 2019](https://www.nature.com/articles/s41380-019-0596-9)) to compare the reported beta coefficients and standard errors between each population to determine if they were statistically different from each other (Figure 1). This method allowed for a more rigorous analysis of the population differences in the APOE-AD association reported in the study. Additionaly, we sought to replicate the oringal findings using the National Alzheimer's Disease Co-ordinatings Uniform Dataset.
+
+$$
+z = (β1 - β2)/sqrt(SE1^2 + SE^2)
+$$ {#eq-1}
+
+```{r}
+#| label: Farrer
+#| code-summary: Farrer Results
+
+farrer_apoe <- farrer_apoe.raw %>%
+  mutate(
+    effect = glue("{or} ({lci}, {uci})"),
+    effect = str_replace(effect, " \\(NA, NA\\)", ""),
+    b = log(or),
+    se = (log(uci) - log(lci)) / 3.92, 
+    reference = ifelse(or == 1, TRUE, FALSE),
+    apoe = fct_relevel(apoe, "e2/e2", "e2/e3", "e3/e3", "e2/e4", "e3/e4", "e4/e4"), 
+    apoe = fct_recode(apoe, "ε2/ε2" = "e2/e2", "ε2/ε3"= "e2/e3", "ε3/ε3\n(reference)" = "e3/e3",
+                      "ε2/ε4" = "e2/e4", "ε3/ε4" = "e3/e4", "ε4/ε4" = "e4/e4")
+  )
+
+```
+
+```{r}
+#| label: Farrer_table
+#| code-summary: Farrer Results Table
+#| echo: false
+#| tbl-cap: Affect of APOE genotype on AD risk reported in Farrer et al 1997
+
+farrer_apoe %>% 
+  dplyr::select(race, apoe, case_frq, ctrl_frq, n, effect) %>%
+  pivot_wider(names_from = race, id_cols = apoe, values_from = c(case_frq, ctrl_frq, n, effect)) %>%
+  gt() %>%
+  tab_spanner(
+    label = "White, n = 4858",
+    columns = c(case_frq_white, ctrl_frq_white, n_white, effect_white)
+  )  %>%
+  tab_spanner(
+    label = "Black, n = 474",
+    columns = c(case_frq_black, ctrl_frq_black, n_black, effect_black)
+  )  %>%
+  tab_spanner(
+    label = "Hispanic, n = 528",
+    columns = c(case_frq_hispanic, ctrl_frq_hispanic, n_hispanic, effect_hispanic)
+  )  %>%
+  tab_spanner(
+    label = "Japanese, n = 2313",
+    columns = c(case_frq_japanese, ctrl_frq_japanese, n_japanese, effect_japanese)
+  ) %>% 
+  cols_label(
+    case_frq_white = "Case Frq",
+    ctrl_frq_white = "Ctrl Frq",
+    n_white = "N", 
+    effect_white = "Effect", 
+
+    case_frq_black = "Case Frq",
+    ctrl_frq_black = "Ctrl Frq",
+    n_black = "N", 
+    effect_black = "Effect", 
+
+    case_frq_hispanic = "Case Frq",
+    ctrl_frq_hispanic = "Ctrl Frq",
+    n_hispanic = "N", 
+    effect_hispanic = "Effect", 
+
+    case_frq_japanese = "Case Frq",
+    ctrl_frq_japanese = "Ctrl Frq",
+    n_japanese = "N", 
+    effect_japanese = "Effect", 
+  ) %>% 
+  tab_options(
+    table.font.size = 'small'
+  )
+
+```
+
+```{r}
+#| label: Farrer_fisher
+#| code-summary: Farrer Fishers Z score
+
+farrer_apoe_diff <- farrer_apoe %>%
+  select(race, apoe, b, se) %>%
+  pivot_wider(
+    id_cols = apoe, names_from = race, values_from = c(b, se)
+  ) %>%
+  mutate(
+     # White vs Black
+     diff_nhw_bla = fzscore(b_white, b_black, se_white, se_black), 
+     p_diff_nhw_bla = 2*pnorm(q=abs(diff_nhw_bla), lower.tail=FALSE),
+     # White vs Hispanic
+     diff_nhw_his = fzscore(b_white, b_hispanic, se_white, se_hispanic), 
+     p_diff_nhw_his = 2*pnorm(q=abs(diff_nhw_his), lower.tail=FALSE),
+     # White vs Japanese
+     diff_nhw_jpa = fzscore(b_white, b_japanese, se_white, se_japanese), 
+     p_diff_nhw_jpa = 2*pnorm(q=abs(diff_nhw_jpa), lower.tail=FALSE),
+
+     # Black vs Hispanic
+     diff_bla_his = fzscore(b_black, b_hispanic, se_black, se_hispanic), 
+     p_diff_bla_his = 2*pnorm(q=abs(diff_bla_his), lower.tail=FALSE),
+     # Black vs Japanese
+     diff_bla_jpa = fzscore(b_black, b_japanese, se_black, se_japanese), 
+     p_diff_bla_jpa = 2*pnorm(q=abs(diff_bla_jpa), lower.tail=FALSE),
+     
+     # Hispanic vs Japanese
+     diff_his_jpa = fzscore(b_hispanic, b_japanese, se_hispanic, se_japanese), 
+     p_diff_his_jpa = 2*pnorm(q=abs(diff_his_jpa), lower.tail=FALSE)
+  ) %>%
+  select(apoe, starts_with(c('diff', 'p_diff')))
+
+farrer_apoe_diff_long <- full_join(
+  farrer_apoe_diff %>%
+    select(apoe, starts_with('diff')) %>%
+    pivot_longer(
+      cols = starts_with('diff'),
+      names_to = 'contrast', 
+      values_to = 'z', 
+      names_prefix = "diff_",
+    ),
+  
+  farrer_apoe_diff %>%
+    select(apoe, starts_with('p_')) %>%
+    pivot_longer(
+      cols = starts_with('p_'),
+      names_to = 'contrast', 
+      values_to = 'p', 
+      names_prefix = "p_diff_",
+    )
+) %>%
+  separate(contrast, sep = "_", into = c("race1", "race2")) %>%
+  mutate(
+    stars = case_when(
+      p > 0.05 ~ "", 
+      between(p,  0.01, 0.05) ~ "*",
+      between(p, 0.001, 0.01) ~ "**",
+      p < 0.001 ~ "***"
+    )
+  )
+
+## Data frame for plotting pvalues
+farrer_df_pval <- filter(farrer_apoe_diff_long, p < 0.05) %>%
+  rename(group1 = race1, group2 = race2) %>%
+  mutate(y.position = c(12, 4.5, 4.5, 7.5, 4.5, 12, 4.5, 7.5, 4.5), 
+         group1 = case_when(
+           group1 == "nhw" ~ "white", 
+           group1 == "bla" ~ "black", 
+           group1 == "jpa" ~ "japanese", 
+           group1 == "his" ~ "hispanic"
+         ), 
+         group2 = case_when(
+           group2 == "nhw" ~ "white", 
+           group2 == "bla" ~ "black", 
+           group2 == "jpa" ~ "japanese", 
+           group2 == "his" ~ "hispanic"
+         ),
+         race = NA, 
+         reference = NA,
+         apoe = fct_relevel(apoe, "e2/e2", "e2/e3", "e3/e3", "e2/e4", "e3/e4", "e4/e4"), 
+         apoe = fct_recode(apoe, "ε2/ε2" = "e2/e2", "ε2/ε3"= "e2/e3", "ε3/ε3\n(reference)" = "e3/e3",
+                           "ε2/ε4" = "e2/e4", "ε3/ε4" = "e3/e4", "ε4/ε4" = "e4/e4")
+  )
+
+```
+
+Using the Fisher's z score method, we observed population-based differences in the effect of the e4 homozygous genotype on the risk of developing AD. Specifically, we found that Japansese carriers of the e4/e4 allele had a higher risk of developing AD compared to African Americans, Hispanics, and White populations. In contrast, the e4/e4 allele was associated with a lower risk of developing AD in Hispanic populations compared to White populations.
+
+Moreover, the e3/e4 allele was found to be associated with increased odds of developing AD in Japanese populations compared to White, Black, and Hispanic populations. In contrast, the e3/e4 allele was associated with a lower risk of developing AD in Black populations compared to Hispanic and White populations.
+
+```{r}
+#| label: Farrer_plot
+#| code-summary: Farrer Plot
+
+theme.size = 24
+geom.text.size = (theme.size - 2) * 0.36
+
+farrer_apoe.p <- ggplot(farrer_apoe, aes(y = or, x = race, color = race, shape = reference)) + 
+  facet_grid(cols = vars(apoe)) + 
+  geom_hline(yintercept = 1, linetype = 2, color = 'grey60') + 
+  geom_point(position = position_dodge(width = 0.5), size = 4) + 
+  scale_shape_manual(values = c(19, 15)) + 
+  scale_y_continuous("Odds Ratio", trans = 'log', 
+                     breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 
+                     labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32)
+  ) + 
+  scale_color_manual(values = c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
+  geom_errorbar(aes(x = race, ymin = lci, ymax = uci), position = position_dodge(width = 0.5), width = 0, size = 2) + 
+  # geom_vline(xintercept=seq(0.5, 11.5, 1),color="grey90") +
+  ggtitle("APOE-related risk for AD in APOE consortium") +
+    guides(shape = 'none') + 
+  theme_bw() + 
+  theme(
+    text = element_text(size = theme.size), 
+    legend.text = element_text(size = theme.size),
+    plot.title = element_text(size=theme.size),
+    axis.title.x = element_blank(), 
+    axis.text.x = element_text(angle = 315, vjust = 0.5, hjust = 0, size=20),
+    axis.text.y = element_text(size=20),
+    legend.position = 'bottom', 
+    strip.background = element_blank(), 
+    panel.grid.minor.y = element_blank(), 
+    panel.grid.major.x = element_blank(), 
+    strip.text = element_text(face = 'bold'),
+    legend.title = element_blank(), 
+    # panel.border = element_blank(),
+  ) + 
+  ggprism::add_pvalue(farrer_df_pval, bracket.nudge.y = 3, label = "{stars}", colour = 'black', tip.length = 0.01, bracket.size = 0.2) 
+
+farrer_apoe.p
+
+ggsave("results/figures/farrer_apoe_race_poster.png", plot = farrer_apoe.p, width = 16.8, height = 6.75, units = 'in', dpi = 600)
+
+```
+
+## NACC UDS
+
+```{r}
+#| label: Wrangle
+#| code-summary: Wrangle NACC Data 
+
+dat_wrangle <- nacc %>%
+  left_join(adrc, by = 'NACCID') %>%
+  left_join(adgc.raw, by = 'NACCID') %>%
+  # left_join(nacc_mmse, by = 'NACCID') %>%
+  mutate(
+    ## Missing data 
+    NACCMMSE = ifelse(between(NACCMMSE, 0, 30), NACCMMSE, NA), 
+    DECAGE = ifelse(DECAGE %in% c(888, 999), NA, DECAGE),
+  ) %>%
+  mutate(
+    apoe = case_when(
+      apoe_geno %in% c("E2/E2", "E2/E3", "E3/E2") ~ "e2+",
+      apoe_geno %in% c("E3/E3") ~ "e3/e3",
+      apoe_geno %in% c("E3/E4", "E2/E4", "E4/E2", "E4/E3", "E4/E4") ~ "e4+",
+      TRUE ~ NA_character_
+    ), 
+    apoe = fct_relevel(apoe, "e3/e3"),
+    apoe4 = case_when(
+      apoe_geno %in% c("E2/E2", "E2/E3", "E3/E2", "E3/E3") ~ "e4-",
+      apoe_geno %in% c("E3/E4", "E2/E4", "E4/E2", "E4/E3", "E4/E4") ~ "e4+",
+      TRUE ~ NA_character_
+    ), 
+    apoe4 = fct_relevel(apoe4, "e4-"),
+    apoe_geno = case_when(
+      # apoe_geno %in% c("E2/E2") ~ "e2/e2",
+      # apoe_geno %in% c("E2/E3", "E3/E2") ~ "e2/e3",
+      apoe_geno %in% c("E2/E3", "E3/E2", "E2/E2") ~ "e2+",
+      apoe_geno %in% c("E3/E3") ~ "e3/e3",
+      apoe_geno %in% c("E2/E4", "E4/E2") ~ "e2/e4",
+      apoe_geno %in% c("E3/E4", "E4/E3") ~ "e3/e4",
+      apoe_geno %in% c("E4/E4") ~ "e4/e4",
+      TRUE ~ NA_character_
+    ), 
+    # apoe_geno = fct_relevel(apoe_geno, 'e3/e3', 'e2/e2', 'e2/e3', 'e2/e4', 'e3/e4', 'e4/e4'),
+    apoe_geno = fct_relevel(apoe_geno, 'e3/e3', 'e2+', 'e2/e4', 'e3/e4', 'e4/e4'),    
+    race = case_when(
+      NACCNIHR == 1 & HISPANIC == 0 ~ "NHW",
+      NACCNIHR == 1 & HISPANIC == 1 ~ "Hispanic",
+      NACCNIHR == 2 ~ "Black",
+      NACCNIHR == 5 ~ "Asian",
+      TRUE ~ NA_character_
+    ),
+    race = fct_relevel(race, 'NHW'), 
+  ) %>%
+  ## Retain only information from last visit
+  filter(NACCETPR %nin% c(99)) %>%
+  group_by(NACCID) %>%
+  filter(NACCVNUM == which.max(NACCVNUM)) %>%
+  ungroup() %>%
+  ## Age of Onset, for diagnosis, age at which symptoms began, for controls, age at last examination. 
+  mutate(
+    aoo = case_when(
+      NACCETPR %in% c(1:30) ~ DECAGE, 
+      NACCETPR == 88 ~ NACCAGE, 
+      TRUE ~ NA_real_
+    ), 
+    dx = ifelse(NACCUDSD %in% c(3,4), 1, 0),
+    incident_ci = case_when(
+      NACCIDEM == 1 ~ 'AD',
+      NACCNORM == 1 ~ 'CN', 
+      NACCMCII == 1 ~ 'MCI', 
+      TRUE ~ NA_character_
+    ), 
+    race = fct_drop(race), 
+    two_visits = ifelse(NACCAVST >= 2, TRUE, FALSE)
+    ) 
+
+```
+
+We conducted a replication study of the findings reported in Farrer et al 1997, using data from the National Alzheimer's Coordinating Center's Uniform Dataset (NACC UDS). The dataset included `r nrow(dat_wrangle)` participants at last visit, including participants reported as NLW (n = 32,321), Black (n = 5,470), Latinx (n = 2,308), Asian (n = 1,173), or other (n = 2,508) race/ethnicity.
+
+```{r}
+#| label: exclusion_inclusion
+#| code-summary: Exclusion & Inclusion Criteria
+
+exclude_age <- sum(dat_wrangle$NACCAGE < 55)
+exclude_race <- sum(dat_wrangle$NACCNIHR %nin% c(1,2,5))
+exclude_ADMU <- sum(dat_wrangle$NACCADMU == 1)
+exclude_FTDMU <- sum(dat_wrangle$NACCFTDM == 1)
+exclude_CI_wo_mci <- sum(dat_wrangle$NACCUDSD == 2)
+exclude_dx <- sum(dat_wrangle$NACCETPR %nin% c(1, 2, 6, 7, 8, 88))
+exclude_apoe <- sum(is.na(dat_wrangle$apoe))
+exclude_aoo <- sum(is.na(dat_wrangle$aoo))
+
+dat <- dat_wrangle %>%
+  filter(NACCAGE >= 55) %>%
+  filter(NACCNIHR %in% c(1,2,5)) %>%
+  filter(NACCADMU == 0) %>%
+  filter(NACCFTDM == 0) %>%
+  filter(NACCETPR %in% c(1, 2, 6, 7, 8, 88)) %>%
+  # filter(NACCETPR %in% c(1, 88))  %>%
+  filter(NACCUDSD %nin% c(2)) %>%
+  # filter(NACCUDSD %nin% c(3)) %>%
+  filter(!is.na(race)) %>%
+  filter(!is.na(apoe)) %>%
+  filter(!is.na(aoo))
+
+```
+
+Participants who met any of the following exclusion criteria were not included in the analysis:
+
+-   Age \< 55: `r exclude_age`
+-   American Indian or Alaska Native, Multiracial, uknown: `r exclude_race`
+-   Dominantly inherited AD mutation: `r exclude_ADMU`
+-   Dominantly inherited FTD mutation: `r exclude_FTDMU`
+-   Cognitive impairment not due to MCI: `r exclude_CI_wo_mci`
+-   Primary diagnosis is not ADRD:`r exclude_dx`
+-   Missing APOE genotype:`r exclude_apoe`
+-   Missing age of onset: `r exclude_aoo`
+
+```{r}
+#| label: table 1
+#| code-summary: Table 1
+#| tbl-cap: Table 1 NACC Cohort Characteristics
+
+dat %>% 
+  dplyr::select(race, SEX, NACCAGE, aoo, apoe_geno, EDUC, CDRSUM, NACCUDSD, NACCETPR) %>%
+  mutate(
+    NACCUDSD = fct_recode(as.factor(NACCUDSD), 'CU' = '1', "MCI" = "3", "ADRD" = "4"),
+    NACCETPR = fct_recode(as.factor(NACCETPR), 'CU' = '88', "AD" = "1", "LBD" = "2", "FTLD" = '6', "FTLD" = '7', 'VCID' = '8'),
+    NACCETPR = fct_relevel(NACCETPR),
+    SEX = as.factor(SEX),
+    SEX = fct_recode(SEX,  'Male' = '1', "Female" = "2")
+  ) %>%
+  tbl_summary(by = race,
+              statistic = list(all_continuous() ~ "{mean} ({sd})")) %>%
+  add_n() 
+
+```
+
+### Stratified models
+
+Logistic regression models were used to examine the effect of APOE genotype on ADRD, stratified by reported race/ethnicity and adjusted for age and sex. In addition to examining the association between APOE genotype and ADRD in different racial/ethnic groups, we used Fisher's z score method to formally test whether the effect sizes of APOE on ADRD differed across racial/ethnic groups. We compared the reported beta coefficients and standard errors for APOE in each racial/ethnic group to determine if they were statistically different from each other. Age at onset of ADRD among cases and age at last visit among controls was used as the age variable. The following outcomes were examined:
+
+-   Cognitivly impaired (MCI and dementia) due ADRD vs controls
+-   Dementia due to ADRD vs controls
+-   Cognitivly impaired (MCI and AD) due AD vs controls
+-   Dementia due to AD vs controls
+
+```{r}
+#| label: regression_models
+#| code-summary: Regression Models
+
+mod_fit <- function(data){
+  # glm(dx ~ apoe_geno + SEX + aoo, data = data, family = 'binomial')
+  glm(dx ~ apoe_geno + SEX + aoo + EDUC, data = data, family = 'binomial')
+}
+
+res <- bind_rows(
+  dat %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD + MCI",
+      res = map(data, mod_fit), 
+    ) %>%
+    select(-data), 
+
+  dat %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD",
+      res = map(data, mod_fit), 
+    ) %>%
+    select(-data), 
+  
+  dat %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD + MCI",
+      res = map(data, mod_fit), 
+    ) %>%
+    select(-data), 
+
+  dat %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD",
+      res = map(data, mod_fit), 
+    ) %>%
+    select(-data), 
+) %>%
+  mutate(
+    fit = map(res, glance),
+    df = map(res, tidy), 
+  )
+
+apoe_geno_res <- res %>%
+  select(race, outcome, df) %>%
+  unnest(cols = df) %>%
+  ungroup() %>%
+  filter(str_detect(term, 'apoe')) %>%
+  mutate(
+    lci = estimate - (std.error * 1.96),
+    hci = estimate + (std.error * 1.96), 
+    or = exp(estimate),
+    or_lci = exp(lci),
+    or_hci = exp(hci),
+    term = str_replace(term, "apoe_geno", ""), 
+    term = fct_relevel(term, 'e3/e3', 'e2+', 'e2/e4', 'e3/e4', 'e4/e4'),    
+  )
+
+```
+
+In our analysis of the NACC UDS dataset, we found significant associations between APOE genotype and risk of Alzheimer's disease across different racial and ethnic populations. Specifically, we observed that the e3/e4 allele was consistently associated with increased risk of AD across all four populations studied. The e2/e4 allele, on the other hand, was found to be associated with increased risk in all populations except for Hispanics. Finally, we observed that carriers of the e2+ allele had a lower risk of AD only in non-Hispanic White and Black populations.
+
+```{r}
+#| label: NACC_table
+#| code-summary: NACC Table Results
+#| echo: false
+apoe_geno_res %>%
+  mutate(
+    or = signif(or, 2),
+    or_lci = signif(or_lci, 2),
+    or_hci = signif(or_hci, 2),
+    effect = glue("{or} ({or_lci}, {or_hci})"), 
+    ) %>%
+  select(race, outcome, term, effect, p.value) %>%
+  group_by(outcome) %>%
+  gt(rowname_col = "race") %>%
+  fmt_number(
+    columns = p.value,
+    rows = p.value >= 0.001,
+    decimals = 3,
+  ) %>%
+  fmt_scientific(
+    columns = p.value,
+    rows = p.value < 0.001,
+    decimals = 2
+  )
+
+
+
+```
+
+```{r}
+#| label: Fishers
+#| code-summary: Fishers Z score
+
+apoe_diff <- apoe_geno_res %>%
+  select(race, outcome, term, b = estimate, se = std.error) %>%
+  pivot_wider(names_from = race, values_from = c(b, se)) %>%
+  mutate(.,
+         ## Black vs NHW
+         diff_nhw_bla = fzscore(b_NHW, b_Black, se_NHW, se_Black),
+         p_diff_nhw_bla = 2*pnorm(q=abs(diff_nhw_bla), lower.tail=FALSE),
+         # NHW vs Hispanic
+         diff_nhw_his = fzscore(b_NHW, b_Hispanic, se_NHW, se_Hispanic), 
+         p_diff_nhw_his = 2*pnorm(q=abs(diff_nhw_his), lower.tail=FALSE),
+         # NHW vs Asian
+         diff_nhw_asi = fzscore(b_NHW, b_Asian, se_NHW, se_Asian), 
+         p_diff_nhw_asi = 2*pnorm(q=abs(diff_nhw_asi), lower.tail=FALSE),
+    
+         # Black vs Hispanic
+         diff_bla_his = fzscore(b_Black, b_Hispanic, se_Black, se_Hispanic), 
+         p_diff_bla_his = 2*pnorm(q=abs(diff_bla_his), lower.tail=FALSE),
+         # Black vs Asian
+         diff_bla_asi = fzscore(b_Black, b_Asian, se_Black, se_Asian), 
+         p_diff_bla_asi = 2*pnorm(q=abs(diff_bla_asi), lower.tail=FALSE),
+         
+         # Hispanic vs Asian
+         diff_his_asi = fzscore(b_Hispanic, b_Asian, se_Hispanic, se_Asian), 
+         p_diff_his_asi = 2*pnorm(q=abs(diff_his_asi), lower.tail=FALSE)
+  )
+
+apoe_diff_long <- full_join(
+  apoe_diff %>%
+    select(term, outcome, starts_with('diff')) %>%
+    pivot_longer(
+      cols = starts_with('diff'),
+      names_to = 'contrast', 
+      values_to = 'z', 
+      names_prefix = "diff_",
+    ),
+  
+  apoe_diff %>%
+    select(term, outcome, starts_with('p_')) %>%
+    pivot_longer(
+      cols = starts_with('p_'),
+      names_to = 'contrast', 
+      values_to = 'p', 
+      names_prefix = "p_diff_",
+    )
+) %>%
+  separate(contrast, sep = "_", into = c("race1", "race2")) %>%
+  mutate(
+    stars = case_when(
+      p > 0.05 ~ "", 
+      between(p,  0.01, 0.05) ~ "*",
+      between(p, 0.001, 0.01) ~ "**",
+      p < 0.001 ~ "***"
+    )
+  )
+
+df_pval <- filter(apoe_diff_long, p < 0.05) %>%
+  rename(group1 = race1, group2 = race2) %>%
+  mutate(y.position = c(3, 3, 3, 3), 
+         group1 = case_when(
+           group1 == "nhw" ~ "NHW", 
+           group1 == "bla" ~ "Black", 
+           group1 == "jpa" ~ "Asian", 
+           group1 == "his" ~ "Hispanic"
+         ), 
+         group2 = case_when(
+           group2 == "nhw" ~ "NHW", 
+           group2 == "bla" ~ "Black", 
+           group2 == "jpa" ~ "Asian", 
+           group2 == "his" ~ "Hispanic"
+         ),
+         race = NA, 
+         reference = NA,
+          term = fct_recode(term, "ε2+" = "e2+", "ε2/ε4" = "e2/e4", "ε3/ε4" = "e3/e4", "ε4/ε4" = "e4/e4")
+
+  )
+
+```
+
+There was limited evidence of population-specific effects of APOE geneotype on AD risk was observed in the NACC UDS. The e2+ allele was associated with lower risk in NHW and Black populations in comparison to Hispanics, while the e4/e4 allele was associated with higher risk in Black populations compared to NHW.
+
+```{r}
+#| label: plot_nacc
+#| code-summary: NACC Plot
+theme.size = 8
+
+apoe_geno_res_p <- apoe_geno_res %>%
+    # filter(., outcome == "AD") %>%
+    #   add_row(
+    #   race = c('Black', 'Hispanic', 'Asian',  'NHW'), 
+    #   or = 1, 
+    #   term =  "e3/e3",
+    # ) %>%
+  mutate(race = fct_relevel(race, 'Black', 'Hispanic', 'Asian',  'NHW'), 
+        term = fct_recode(term, "ε2+" = "e2+",  "ε3/ε3 \n(reference)" = "e3/e3",
+                          "ε2/ε4" = "e2/e4", "ε3/ε4" = "e3/e4", "ε4/ε4" = "e4/e4"),
+        term = fct_relevel(term, "ε2+", "ε3/ε3 \n(reference)", "ε2/ε4", "ε3/ε4", "ε4/ε4"),
+        reference = ifelse(or == 1, TRUE, FALSE)
+        ) %>%
+  ggplot(., aes(x = race, y = or, color = race)) + 
+    facet_grid(cols = vars(term), rows = vars(outcome)) + 
+    geom_hline(yintercept = 1, linetype = 2) + 
+    geom_point() + 
+    geom_linerange(aes(ymin = or_lci, ymax = or_hci), linewidth = 0.75) + 
+    scale_y_continuous("Odds Ratio", trans = 'log', 
+                       breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 
+                       labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32)
+    ) + 
+    scale_color_manual(values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
+    theme_bw() + 
+    theme(
+      text = element_text(size = theme.size),
+      axis.text.x = element_text(angle = 315, vjust = 0.5, hjust=0), 
+      axis.title.x = element_blank(),
+      legend.position = "bottom", 
+      strip.background = element_blank(), 
+      strip.text = element_text(face = 'bold')
+      ) + 
+  ggprism::add_pvalue(df_pval #%>% filter(outcome == "AD")
+                      , bracket.nudge.y = 3, label = "{stars}", colour = 'black', tip.length = 0.01, bracket.size = 0.2) 
+
+apoe_geno_res_p
+
+ggsave("../results/figures/nacc_apoe_race_all.png", plot = apoe_geno_res_p, width = 9, height = 5, units = 'in')
+ggsave("../results/figures/nacc_apoe_race_ad.png", plot = apoe_geno_res_p, width = 9, height = 4, units = 'in')
+```
+
+```{r}
+#| label: plot_nacc_poster
+#| code-summary: NACC Plot Poster
+#| echo: false
+
+poster.size = 24
+
+apoe_geno_AD_p <- apoe_geno_res %>%
+  filter(., outcome == "AD") %>%
+  add_row(
+    race = c('Black', 'Hispanic', 'Asian',  'NHW'), 
+    or = 1, 
+    term =  "e3/e3",
+  ) %>%
+  mutate(race = fct_relevel(race, 'Black', 'Hispanic', 'Asian',  'NHW'), 
+        term = fct_recode(term, "ε2+" = "e2+",  "ε3/ε3 \n(reference)" = "e3/e3",
+                          "ε2/ε4" = "e2/e4", "ε3/ε4" = "e3/e4", "ε4/ε4" = "e4/e4"),
+        term = fct_relevel(term, "ε2+", "ε3/ε3 \n(reference)", "ε2/ε4", "ε3/ε4", "ε4/ε4"),
+        reference = ifelse(or == 1, TRUE, FALSE)
+        ) %>%
+  ggplot(., aes(x = race, y = or, color = race, shape = reference)) + 
+    facet_grid(cols = vars(term)) + 
+    geom_hline(yintercept = 1, linetype = 2) + 
+    geom_point(size = 4) + 
+    scale_shape_manual(values = c(19, 15)) + 
+    geom_linerange(aes(ymin = or_lci, ymax = or_hci), linewidth = 2) + 
+    scale_y_continuous("Odds Ratio", trans = 'log', 
+                       breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 
+                       labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32)
+    ) + 
+    scale_color_manual(values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
+   ggtitle("APOE-related risk for AD in NACC") +
+    guides(shape = 'none') + 
+   theme_clasic() + 
+    theme(
+      axis.title.x = element_blank(),
+      legend.text = element_text(size = poster.size),
+      plot.title = element_text(size=poster.size),
+      text = element_text(size = poster.size),
+      axis.text.x = element_text(angle = 315, vjust = 0.5, hjust=0, size = 20), 
+      axis.text.y = element_text(size=20),
+      legend.position = "bottom", 
+      strip.background = element_blank(), 
+      strip.text = element_text(face = 'bold'),
+      panel.grid.minor.y = element_blank(), 
+      panel.grid.major.x = element_blank(), 
+      legend.title = element_blank(), 
+     ) + 
+  ggprism::add_pvalue(filter(df_pval, outcome == "AD"), 
+                      bracket.nudge.y = 3, label = "{stars}", colour = 'black', 
+                      tip.length = 0.01, bracket.size = 0.2) 
+
+apoe_geno_AD_p
+
+ggsave("results/figures/nacc_apoe_race_poster.png", plot = apoe_geno_AD_p, width = 16.8, height = 7.5, units = 'in', dpi = 600)
+
+
+apoe_geno_all_p <- apoe_geno_res %>%
+  mutate(race = fct_relevel(race, 'Black', 'Hispanic', 'Asian',  'NHW'), 
+         term = fct_recode(term, "ε2+" = "e2+", "ε2/ε4" = "e2/e4", "ε3/ε4" = "e3/e4", "ε4/ε4" = "e4/e4")
+         ) %>%
+  ggplot(., aes(x = race, y = or, color = race)) + 
+    facet_grid(cols = vars(term), rows = vars(outcome)) + 
+    geom_hline(yintercept = 1, linetype = 2) + 
+    geom_point() + 
+    geom_linerange(aes(ymin = or_lci, ymax = or_hci), linewidth = 0.75) + 
+    scale_y_continuous("Odds Ratio", trans = 'log', 
+                       breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 
+                       labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32)
+    ) + 
+    scale_color_manual(values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
+   ggtitle("APOE-related risk for ADRD in NACC") +
+   theme_bw() + 
+    theme(
+      axis.title.x = element_blank(),
+      legend.text = element_text(size = poster.size),
+      plot.title = element_text(size=poster.size),
+      text = element_text(size = poster.size),
+      axis.text.x = element_text(angle = 315, vjust = 0.5, hjust=0, size = 10), 
+      axis.text.y = element_text(size=10),
+      legend.position = "bottom", 
+      strip.background = element_blank(), 
+      strip.text = element_text(face = 'bold'),
+      panel.grid.minor.y = element_blank(), 
+      panel.grid.major.x = element_blank(), 
+      legend.title = element_blank(), 
+     ) + 
+  ggprism::add_pvalue(df_pval, 
+                      bracket.nudge.y = 3, label = "{stars}", colour = 'black', 
+                      tip.length = 0.01, bracket.size = 0.2) 
+
+apoe_geno_all_p
+
+ggsave("../results/figures/nacc_apoe_race_all_poster.png", plot = apoe_geno_all_p, width = 6, height = 6, units = 'in')
+```
+
+### Interaction models
+
+```{r}
+#| label: regression_models
+#| code-summary: Regression Models
+
+mod_fit_interac <- function(data){
+  glm(dx ~ apoe_geno*race + SEX + aoo, data = data, family = 'binomial')
+}
+
+dat %>% nest(data = everything())
+
+res_interac <- bind_rows(
+  dat %>% nest(data = everything()) %>%
+    mutate(
+      outcome = "ADRD + MCI",
+      res = map(data, mod_fit_interac), 
+    ) %>%
+    select(-data), 
+
+  dat %>% 
+    filter(NACCUDSD %nin% c(3)) %>%
+    nest(data = everything()) %>%    
+    mutate(
+      outcome = "ADRD",
+      res = map(data, mod_fit_interac), 
+    ) %>%
+    select(-data), 
+  
+  dat %>% 
+    filter(NACCETPR %in% c(1, 88)) %>%
+    nest(data = everything()) %>%    
+    mutate(
+      outcome = "AD + MCI",
+      res = map(data, mod_fit_interac), 
+    ) %>%
+    select(-data), 
+
+  dat %>% 
+    filter(NACCETPR %in% c(1, 88)) %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    nest(data = everything()) %>%    
+    mutate(
+      outcome = "AD",
+      res = map(data, mod_fit_interac), 
+    ) %>%
+    select(-data), 
+) %>%
+  mutate(
+    fit = map(res, glance),
+    df = map(res, tidy), 
+  )
+
+apoe_geno_res_interac <- res_interac %>%
+  select(outcome, df) %>%
+  unnest(cols = df) %>%
+  ungroup() %>%
+  filter(str_detect(term, 'apoe')) %>%
+  mutate(
+    lci = estimate - (std.error * 1.96),
+    hci = estimate + (std.error * 1.96), 
+    or = exp(estimate),
+    or_lci = exp(lci),
+    or_hci = exp(hci),
+    term = str_replace(term, "apoe_geno", ""), 
+    term = fct_relevel(term, 'e3/e3', 'e2+', 'e2/e4', 'e3/e4', 'e4/e4'), 
+    effect = ifelse(str_detect(term, ":"), "interaction", "main")
+  )
+
+apoe_geno_res_interac %>%
+  group_split(outcome)
+
+```

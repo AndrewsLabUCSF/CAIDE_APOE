@@ -1,0 +1,2627 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.335">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Population-specific effects of APOE in NACC</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="NACC_apoe_files/libs/clipboard/clipboard.min.js"></script>
+<script src="NACC_apoe_files/libs/quarto-html/quarto.js"></script>
+<script src="NACC_apoe_files/libs/quarto-html/popper.min.js"></script>
+<script src="NACC_apoe_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="NACC_apoe_files/libs/quarto-html/anchor.min.js"></script>
+<link href="NACC_apoe_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="NACC_apoe_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="NACC_apoe_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="NACC_apoe_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="NACC_apoe_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#nacc-uds" id="toc-nacc-uds" class="nav-link" data-scroll-target="#nacc-uds">NACC UDS</a>
+  <ul class="collapse">
+  <li><a href="#stratified-models" id="toc-stratified-models" class="nav-link" data-scroll-target="#stratified-models">Stratified models</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Population-specific effects of APOE in NACC</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<div class="cell">
+
+</div>
+<div class="cell">
+<details>
+<summary>Import data</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>adrc.raw <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"../Resources/NACC/ADRC_all_9_16_2022.csv"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>adgc.raw <span class="ot">&lt;-</span> <span class="fu">read_tsv</span>(<span class="st">'../Resources/NACC/ADGC_NACCIDs.txt'</span>, <span class="at">col_names =</span> F) <span class="sc">%&gt;%</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">NACCID =</span> X1) <span class="sc">%&gt;%</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">adgc =</span> T)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>nacc.raw <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">'../Resources/NACC/investigator_nacc58.csv'</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>adrc <span class="ot">&lt;-</span> adrc.raw <span class="sc">%&gt;%</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unite</span>(apoe_geno, APOE1, APOE2, <span class="at">sep =</span> <span class="st">'/'</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">apoe_geno =</span> <span class="fu">ifelse</span>(apoe_geno <span class="sc">==</span> <span class="st">"NA/NA"</span>, <span class="cn">NA</span>, apoe_geno), </span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>         <span class="at">gwas =</span> <span class="fu">ifelse</span>(<span class="fu">is.na</span>(GWAS), <span class="cn">FALSE</span>, <span class="cn">TRUE</span>), </span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>         <span class="at">wgs =</span> <span class="fu">ifelse</span>(<span class="fu">is.na</span>(WGS), <span class="cn">FALSE</span>, <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(NACCID, apoe_geno, gwas, wgs) <span class="sc">%&gt;%</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>() </span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>nacc <span class="ot">&lt;-</span> <span class="fu">select</span>(nacc.raw, NACCID, NACCADC, VISITYR, PACKET, NACCVNUM, NACCAVST,</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>               BIRTHYR, SEX, EDUC, NACCAGE, NACCAGEB, RACE, HISPANIC, NACCNIHR, </span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>               NACCMMSE, CDRSUM, </span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>               NACCFADM, NACCFFTD, NACCOM, <span class="co"># Faimly Mutation</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>               NACCADMU, NACCFTDM, </span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>               NORMCOG, NACCTMCI, DEMENTED, NACCUDSD, <span class="co"># Prevelant</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>               NACCNORM, NACCMCII, NACCIDEM, <span class="co"># Incident</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>               DECAGE, NACCETPR</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>) </span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>farrer_apoe.raw <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"../data/Farrer1997apoex.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>In their 1997 study published in JAMA, Farrer and colleagues investigated the association between APOE genotype and Alzheimer’s disease (AD), and how age, sex, and ethnicity may influence this association. The study found that the APOE e4 allele was associated with an increased risk of AD in Caucasian subjects, while the e2 allele was associated with a reduced risk. Interestingly, the association between APOE e4 and AD was weaker in African Americans and Hispanics compared to Caucasians, but stronger in Japanese participants (Table 1; Figure 1).</p>
+<p>The participants in the study were enrolled from various sources, including community/population-based studies, clinic/hospital-based studies, and autopsy/brain bank-based studies. The case patients were diagnosed with definite or probable AD, while the controls were free of neurodegenerative and neuropsychiatric illnesses. Participants with ADAD mutations or co-morbid pathology were excluded from the study. Logistic regression models were used to assess the influence of APOE, sex, and age on the odds of developing AD. Age at onset of AD among cases and age at last visit among controls were used as the age variable.</p>
+<p>While the study reported population differences in the effect of APOE genotype on the risk of AD, no statistical analysis was conducted to formally test this. Here we used Fishzer’s Z score method (eq 1; <a href="https://www.nature.com/articles/s41380-019-0596-9">Zhou et al 2019</a>) to compare the reported beta coefficients and standard errors between each population to determine if they were statistically different from each other (Figure 1). This method allowed for a more rigorous analysis of the population differences in the APOE-AD association reported in the study. Additionaly, we sought to replicate the oringal findings using the National Alzheimer’s Disease Co-ordinatings Uniform Dataset.</p>
+<p><span id="eq-1"><span class="math display">\[
+z = (β1 - β2)/sqrt(SE1^2 + SE^2)
+\tag{1}\]</span></span></p>
+<div class="cell">
+<details>
+<summary>Farrer Results</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>farrer_apoe <span class="ot">&lt;-</span> farrer_apoe.raw <span class="sc">%&gt;%</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">effect =</span> <span class="fu">glue</span>(<span class="st">"{or} ({lci}, {uci})"</span>),</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">effect =</span> <span class="fu">str_replace</span>(effect, <span class="st">" </span><span class="sc">\\</span><span class="st">(NA, NA</span><span class="sc">\\</span><span class="st">)"</span>, <span class="st">""</span>),</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">b =</span> <span class="fu">log</span>(or),</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">se =</span> (<span class="fu">log</span>(uci) <span class="sc">-</span> <span class="fu">log</span>(lci)) <span class="sc">/</span> <span class="fl">3.92</span>, </span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">reference =</span> <span class="fu">ifelse</span>(or <span class="sc">==</span> <span class="dv">1</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>),</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">apoe =</span> <span class="fu">fct_relevel</span>(apoe, <span class="st">"e2/e2"</span>, <span class="st">"e2/e3"</span>, <span class="st">"e3/e3"</span>, <span class="st">"e2/e4"</span>, <span class="st">"e3/e4"</span>, <span class="st">"e4/e4"</span>), </span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">apoe =</span> <span class="fu">fct_recode</span>(apoe, <span class="st">"ε2/ε2"</span> <span class="ot">=</span> <span class="st">"e2/e2"</span>, <span class="st">"ε2/ε3"</span><span class="ot">=</span> <span class="st">"e2/e3"</span>, <span class="st">"ε3/ε3</span><span class="sc">\n</span><span class="st">(reference)"</span> <span class="ot">=</span> <span class="st">"e3/e3"</span>,</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"ε2/ε4"</span> <span class="ot">=</span> <span class="st">"e2/e4"</span>, <span class="st">"ε3/ε4"</span> <span class="ot">=</span> <span class="st">"e3/e4"</span>, <span class="st">"ε4/ε4"</span> <span class="ot">=</span> <span class="st">"e4/e4"</span>)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+
+<div id="vbujbstyce" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+:where(#vbujbstyce) .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: small;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+:where(#vbujbstyce) .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+:where(#vbujbstyce) .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+:where(#vbujbstyce) .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+:where(#vbujbstyce) .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+:where(#vbujbstyce) .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+:where(#vbujbstyce) .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+:where(#vbujbstyce) .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+:where(#vbujbstyce) .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+:where(#vbujbstyce) .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+:where(#vbujbstyce) .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+:where(#vbujbstyce) .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+:where(#vbujbstyce) .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+:where(#vbujbstyce) .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+:where(#vbujbstyce) .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+:where(#vbujbstyce) .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+:where(#vbujbstyce) .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+:where(#vbujbstyce) .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+:where(#vbujbstyce) .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+:where(#vbujbstyce) .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+:where(#vbujbstyce) .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+:where(#vbujbstyce) .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+:where(#vbujbstyce) .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+:where(#vbujbstyce) .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+:where(#vbujbstyce) .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+:where(#vbujbstyce) .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+:where(#vbujbstyce) .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+:where(#vbujbstyce) .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+:where(#vbujbstyce) .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+:where(#vbujbstyce) .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+:where(#vbujbstyce) .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+:where(#vbujbstyce) .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+:where(#vbujbstyce) .gt_left {
+  text-align: left;
+}
+
+:where(#vbujbstyce) .gt_center {
+  text-align: center;
+}
+
+:where(#vbujbstyce) .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+:where(#vbujbstyce) .gt_font_normal {
+  font-weight: normal;
+}
+
+:where(#vbujbstyce) .gt_font_bold {
+  font-weight: bold;
+}
+
+:where(#vbujbstyce) .gt_font_italic {
+  font-style: italic;
+}
+
+:where(#vbujbstyce) .gt_super {
+  font-size: 65%;
+}
+
+:where(#vbujbstyce) .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 75%;
+  vertical-align: 0.4em;
+}
+
+:where(#vbujbstyce) .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+:where(#vbujbstyce) .gt_indent_1 {
+  text-indent: 5px;
+}
+
+:where(#vbujbstyce) .gt_indent_2 {
+  text-indent: 10px;
+}
+
+:where(#vbujbstyce) .gt_indent_3 {
+  text-indent: 15px;
+}
+
+:where(#vbujbstyce) .gt_indent_4 {
+  text-indent: 20px;
+}
+
+:where(#vbujbstyce) .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table"><caption>Affect of APOE genotype on AD risk reported in Farrer et al 1997</caption>
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="2" colspan="1" scope="col" id="apoe">apoe</th>
+      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="4" scope="colgroup" id="White, n = 4858">
+        <span class="gt_column_spanner">White, n = 4858</span>
+      </th>
+      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="4" scope="colgroup" id="Black, n = 474">
+        <span class="gt_column_spanner">Black, n = 474</span>
+      </th>
+      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="4" scope="colgroup" id="Hispanic, n = 528">
+        <span class="gt_column_spanner">Hispanic, n = 528</span>
+      </th>
+      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="4" scope="colgroup" id="Japanese, n = 2313">
+        <span class="gt_column_spanner">Japanese, n = 2313</span>
+      </th>
+    </tr>
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Case Frq">Case Frq</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Ctrl Frq">Ctrl Frq</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="N">N</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Effect">Effect</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Case Frq">Case Frq</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Ctrl Frq">Ctrl Frq</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="N">N</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Effect">Effect</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Case Frq">Case Frq</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Ctrl Frq">Ctrl Frq</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="N">N</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Effect">Effect</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Case Frq">Case Frq</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Ctrl Frq">Ctrl Frq</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="N">N</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Effect">Effect</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="apoe" class="gt_row gt_center">ε3/ε3
+(reference)</td>
+<td headers="case_frq_white" class="gt_row gt_right">36.4</td>
+<td headers="ctrl_frq_white" class="gt_row gt_right">60.9</td>
+<td headers="n_white" class="gt_row gt_right">2683</td>
+<td headers="effect_white" class="gt_row gt_right">1</td>
+<td headers="case_frq_black" class="gt_row gt_right">36.2</td>
+<td headers="ctrl_frq_black" class="gt_row gt_right">50.4</td>
+<td headers="n_black" class="gt_row gt_right">206</td>
+<td headers="effect_black" class="gt_row gt_right">1</td>
+<td headers="case_frq_hispanic" class="gt_row gt_right">54.4</td>
+<td headers="ctrl_frq_hispanic" class="gt_row gt_right">67.4</td>
+<td headers="n_hispanic" class="gt_row gt_right">322</td>
+<td headers="effect_hispanic" class="gt_row gt_right">1</td>
+<td headers="case_frq_japanese" class="gt_row gt_right">49.1</td>
+<td headers="ctrl_frq_japanese" class="gt_row gt_right">75.7</td>
+<td headers="n_japanese" class="gt_row gt_right">1661</td>
+<td headers="effect_japanese" class="gt_row gt_right">1</td></tr>
+    <tr><td headers="apoe" class="gt_row gt_center">ε2/ε2</td>
+<td headers="case_frq_white" class="gt_row gt_right">0.2</td>
+<td headers="ctrl_frq_white" class="gt_row gt_right">0.8</td>
+<td headers="n_white" class="gt_row gt_right">36</td>
+<td headers="effect_white" class="gt_row gt_right">0.9 (0.3, 2.8)</td>
+<td headers="case_frq_black" class="gt_row gt_right">1.7</td>
+<td headers="ctrl_frq_black" class="gt_row gt_right">0.8</td>
+<td headers="n_black" class="gt_row gt_right">6</td>
+<td headers="effect_black" class="gt_row gt_right">2.4 (0.3, 22.7)</td>
+<td headers="case_frq_hispanic" class="gt_row gt_right">0.4</td>
+<td headers="ctrl_frq_hispanic" class="gt_row gt_right">0.4</td>
+<td headers="n_hispanic" class="gt_row gt_right">2</td>
+<td headers="effect_hispanic" class="gt_row gt_right">2.6 (0.2, 33.3)</td>
+<td headers="case_frq_japanese" class="gt_row gt_right">0.3</td>
+<td headers="ctrl_frq_japanese" class="gt_row gt_right">0.4</td>
+<td headers="n_japanese" class="gt_row gt_right">9</td>
+<td headers="effect_japanese" class="gt_row gt_right">1.1 (0.1, 17.2)</td></tr>
+    <tr><td headers="apoe" class="gt_row gt_center">ε2/ε3</td>
+<td headers="case_frq_white" class="gt_row gt_right">4.8</td>
+<td headers="ctrl_frq_white" class="gt_row gt_right">12.7</td>
+<td headers="n_white" class="gt_row gt_right">568</td>
+<td headers="effect_white" class="gt_row gt_right">0.6 (0.5, 0.9)</td>
+<td headers="case_frq_black" class="gt_row gt_right">9.8</td>
+<td headers="ctrl_frq_black" class="gt_row gt_right">12.9</td>
+<td headers="n_black" class="gt_row gt_right">54</td>
+<td headers="effect_black" class="gt_row gt_right">0.6 (0.4, 1.7)</td>
+<td headers="case_frq_hispanic" class="gt_row gt_right">9.6</td>
+<td headers="ctrl_frq_hispanic" class="gt_row gt_right">12.0</td>
+<td headers="n_hispanic" class="gt_row gt_right">57</td>
+<td headers="effect_hispanic" class="gt_row gt_right">0.6 (0.3, 1.3)</td>
+<td headers="case_frq_japanese" class="gt_row gt_right">3.9</td>
+<td headers="ctrl_frq_japanese" class="gt_row gt_right">6.9</td>
+<td headers="n_japanese" class="gt_row gt_right">149</td>
+<td headers="effect_japanese" class="gt_row gt_right">0.9 (0.4, 2.5)</td></tr>
+    <tr><td headers="apoe" class="gt_row gt_center">ε2/ε4</td>
+<td headers="case_frq_white" class="gt_row gt_right">2.6</td>
+<td headers="ctrl_frq_white" class="gt_row gt_right">2.6</td>
+<td headers="n_white" class="gt_row gt_right">152</td>
+<td headers="effect_white" class="gt_row gt_right">1.2 (0.8, 2)</td>
+<td headers="case_frq_black" class="gt_row gt_right">2.1</td>
+<td headers="ctrl_frq_black" class="gt_row gt_right">2.1</td>
+<td headers="n_black" class="gt_row gt_right">10</td>
+<td headers="effect_black" class="gt_row gt_right">1.8 (0.4, 8.1)</td>
+<td headers="case_frq_hispanic" class="gt_row gt_right">2.3</td>
+<td headers="ctrl_frq_hispanic" class="gt_row gt_right">0.8</td>
+<td headers="n_hispanic" class="gt_row gt_right">8</td>
+<td headers="effect_hispanic" class="gt_row gt_right">3.2 (0.9, 11.6)</td>
+<td headers="case_frq_japanese" class="gt_row gt_right">0.9</td>
+<td headers="ctrl_frq_japanese" class="gt_row gt_right">0.8</td>
+<td headers="n_japanese" class="gt_row gt_right">19</td>
+<td headers="effect_japanese" class="gt_row gt_right">2.4 (0.4, 15.4)</td></tr>
+    <tr><td headers="apoe" class="gt_row gt_center">ε3/ε4</td>
+<td headers="case_frq_white" class="gt_row gt_right">41.1</td>
+<td headers="ctrl_frq_white" class="gt_row gt_right">21.3</td>
+<td headers="n_white" class="gt_row gt_right">1226</td>
+<td headers="effect_white" class="gt_row gt_right">2.7 (2.2, 3.2)</td>
+<td headers="case_frq_black" class="gt_row gt_right">37.9</td>
+<td headers="ctrl_frq_black" class="gt_row gt_right">31.8</td>
+<td headers="n_black" class="gt_row gt_right">164</td>
+<td headers="effect_black" class="gt_row gt_right">1.1 (0.7, 1.8)</td>
+<td headers="case_frq_hispanic" class="gt_row gt_right">30.7</td>
+<td headers="ctrl_frq_hispanic" class="gt_row gt_right">17.6</td>
+<td headers="n_hispanic" class="gt_row gt_right">127</td>
+<td headers="effect_hispanic" class="gt_row gt_right">2.2 (1.3, 3.4)</td>
+<td headers="case_frq_japanese" class="gt_row gt_right">36.9</td>
+<td headers="ctrl_frq_japanese" class="gt_row gt_right">15.5</td>
+<td headers="n_japanese" class="gt_row gt_right">430</td>
+<td headers="effect_japanese" class="gt_row gt_right">5.6 (3.9, 8)</td></tr>
+    <tr><td headers="apoe" class="gt_row gt_center">ε4/ε4</td>
+<td headers="case_frq_white" class="gt_row gt_right">14.8</td>
+<td headers="ctrl_frq_white" class="gt_row gt_right">1.8</td>
+<td headers="n_white" class="gt_row gt_right">193</td>
+<td headers="effect_white" class="gt_row gt_right">12.5 (8.8, 17.7)</td>
+<td headers="case_frq_black" class="gt_row gt_right">12.3</td>
+<td headers="ctrl_frq_black" class="gt_row gt_right">2.1</td>
+<td headers="n_black" class="gt_row gt_right">34</td>
+<td headers="effect_black" class="gt_row gt_right">5.7 (2.3, 14.1)</td>
+<td headers="case_frq_hispanic" class="gt_row gt_right">2.7</td>
+<td headers="ctrl_frq_hispanic" class="gt_row gt_right">1.9</td>
+<td headers="n_hispanic" class="gt_row gt_right">12</td>
+<td headers="effect_hispanic" class="gt_row gt_right">2.2 (0.7, 6.7)</td>
+<td headers="case_frq_japanese" class="gt_row gt_right">8.9</td>
+<td headers="ctrl_frq_japanese" class="gt_row gt_right">0.8</td>
+<td headers="n_japanese" class="gt_row gt_right">45</td>
+<td headers="effect_japanese" class="gt_row gt_right">33.1 (13.6, 80.5)</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Farrer Fishers Z score</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>farrer_apoe_diff <span class="ot">&lt;-</span> farrer_apoe <span class="sc">%&gt;%</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(race, apoe, b, se) <span class="sc">%&gt;%</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">id_cols =</span> apoe, <span class="at">names_from =</span> race, <span class="at">values_from =</span> <span class="fu">c</span>(b, se)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>     <span class="co"># White vs Black</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>     <span class="at">diff_nhw_bla =</span> <span class="fu">fzscore</span>(b_white, b_black, se_white, se_black), </span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>     <span class="at">p_diff_nhw_bla =</span> <span class="dv">2</span><span class="sc">*</span><span class="fu">pnorm</span>(<span class="at">q=</span><span class="fu">abs</span>(diff_nhw_bla), <span class="at">lower.tail=</span><span class="cn">FALSE</span>),</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>     <span class="co"># White vs Hispanic</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>     <span class="at">diff_nhw_his =</span> <span class="fu">fzscore</span>(b_white, b_hispanic, se_white, se_hispanic), </span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>     <span class="at">p_diff_nhw_his =</span> <span class="dv">2</span><span class="sc">*</span><span class="fu">pnorm</span>(<span class="at">q=</span><span class="fu">abs</span>(diff_nhw_his), <span class="at">lower.tail=</span><span class="cn">FALSE</span>),</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>     <span class="co"># White vs Japanese</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>     <span class="at">diff_nhw_jpa =</span> <span class="fu">fzscore</span>(b_white, b_japanese, se_white, se_japanese), </span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>     <span class="at">p_diff_nhw_jpa =</span> <span class="dv">2</span><span class="sc">*</span><span class="fu">pnorm</span>(<span class="at">q=</span><span class="fu">abs</span>(diff_nhw_jpa), <span class="at">lower.tail=</span><span class="cn">FALSE</span>),</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>     <span class="co"># Black vs Hispanic</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>     <span class="at">diff_bla_his =</span> <span class="fu">fzscore</span>(b_black, b_hispanic, se_black, se_hispanic), </span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>     <span class="at">p_diff_bla_his =</span> <span class="dv">2</span><span class="sc">*</span><span class="fu">pnorm</span>(<span class="at">q=</span><span class="fu">abs</span>(diff_bla_his), <span class="at">lower.tail=</span><span class="cn">FALSE</span>),</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>     <span class="co"># Black vs Japanese</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>     <span class="at">diff_bla_jpa =</span> <span class="fu">fzscore</span>(b_black, b_japanese, se_black, se_japanese), </span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>     <span class="at">p_diff_bla_jpa =</span> <span class="dv">2</span><span class="sc">*</span><span class="fu">pnorm</span>(<span class="at">q=</span><span class="fu">abs</span>(diff_bla_jpa), <span class="at">lower.tail=</span><span class="cn">FALSE</span>),</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>     </span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>     <span class="co"># Hispanic vs Japanese</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>     <span class="at">diff_his_jpa =</span> <span class="fu">fzscore</span>(b_hispanic, b_japanese, se_hispanic, se_japanese), </span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>     <span class="at">p_diff_his_jpa =</span> <span class="dv">2</span><span class="sc">*</span><span class="fu">pnorm</span>(<span class="at">q=</span><span class="fu">abs</span>(diff_his_jpa), <span class="at">lower.tail=</span><span class="cn">FALSE</span>)</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(apoe, <span class="fu">starts_with</span>(<span class="fu">c</span>(<span class="st">'diff'</span>, <span class="st">'p_diff'</span>)))</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>farrer_apoe_diff_long <span class="ot">&lt;-</span> <span class="fu">full_join</span>(</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>  farrer_apoe_diff <span class="sc">%&gt;%</span></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(apoe, <span class="fu">starts_with</span>(<span class="st">'diff'</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_longer</span>(</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>      <span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">'diff'</span>),</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>      <span class="at">names_to =</span> <span class="st">'contrast'</span>, </span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>      <span class="at">values_to =</span> <span class="st">'z'</span>, </span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>      <span class="at">names_prefix =</span> <span class="st">"diff_"</span>,</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>  farrer_apoe_diff <span class="sc">%&gt;%</span></span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(apoe, <span class="fu">starts_with</span>(<span class="st">'p_'</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_longer</span>(</span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>      <span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">'p_'</span>),</span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>      <span class="at">names_to =</span> <span class="st">'contrast'</span>, </span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>      <span class="at">values_to =</span> <span class="st">'p'</span>, </span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>      <span class="at">names_prefix =</span> <span class="st">"p_diff_"</span>,</span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(contrast, <span class="at">sep =</span> <span class="st">"_"</span>, <span class="at">into =</span> <span class="fu">c</span>(<span class="st">"race1"</span>, <span class="st">"race2"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>    <span class="at">stars =</span> <span class="fu">case_when</span>(</span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>      p <span class="sc">&gt;</span> <span class="fl">0.05</span> <span class="sc">~</span> <span class="st">""</span>, </span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>      <span class="fu">between</span>(p,  <span class="fl">0.01</span>, <span class="fl">0.05</span>) <span class="sc">~</span> <span class="st">"*"</span>,</span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>      <span class="fu">between</span>(p, <span class="fl">0.001</span>, <span class="fl">0.01</span>) <span class="sc">~</span> <span class="st">"**"</span>,</span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>      p <span class="sc">&lt;</span> <span class="fl">0.001</span> <span class="sc">~</span> <span class="st">"***"</span></span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a><span class="do">## Data frame for plotting pvalues</span></span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>farrer_df_pval <span class="ot">&lt;-</span> <span class="fu">filter</span>(farrer_apoe_diff_long, p <span class="sc">&lt;</span> <span class="fl">0.05</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">group1 =</span> race1, <span class="at">group2 =</span> race2) <span class="sc">%&gt;%</span></span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">y.position =</span> <span class="fu">c</span>(<span class="dv">12</span>, <span class="fl">4.5</span>, <span class="fl">4.5</span>, <span class="fl">7.5</span>, <span class="fl">4.5</span>, <span class="dv">12</span>, <span class="fl">4.5</span>, <span class="fl">7.5</span>, <span class="fl">4.5</span>), </span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a>         <span class="at">group1 =</span> <span class="fu">case_when</span>(</span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a>           group1 <span class="sc">==</span> <span class="st">"nhw"</span> <span class="sc">~</span> <span class="st">"white"</span>, </span>
+<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a>           group1 <span class="sc">==</span> <span class="st">"bla"</span> <span class="sc">~</span> <span class="st">"black"</span>, </span>
+<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>           group1 <span class="sc">==</span> <span class="st">"jpa"</span> <span class="sc">~</span> <span class="st">"japanese"</span>, </span>
+<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a>           group1 <span class="sc">==</span> <span class="st">"his"</span> <span class="sc">~</span> <span class="st">"hispanic"</span></span>
+<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a>         ), </span>
+<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a>         <span class="at">group2 =</span> <span class="fu">case_when</span>(</span>
+<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a>           group2 <span class="sc">==</span> <span class="st">"nhw"</span> <span class="sc">~</span> <span class="st">"white"</span>, </span>
+<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a>           group2 <span class="sc">==</span> <span class="st">"bla"</span> <span class="sc">~</span> <span class="st">"black"</span>, </span>
+<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a>           group2 <span class="sc">==</span> <span class="st">"jpa"</span> <span class="sc">~</span> <span class="st">"japanese"</span>, </span>
+<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a>           group2 <span class="sc">==</span> <span class="st">"his"</span> <span class="sc">~</span> <span class="st">"hispanic"</span></span>
+<span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a>         ),</span>
+<span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a>         <span class="at">race =</span> <span class="cn">NA</span>, </span>
+<span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a>         <span class="at">apoe =</span> <span class="fu">fct_relevel</span>(apoe, <span class="st">"e2/e2"</span>, <span class="st">"e2/e3"</span>, <span class="st">"e3/e3"</span>, <span class="st">"e2/e4"</span>, <span class="st">"e3/e4"</span>, <span class="st">"e4/e4"</span>), </span>
+<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a>         <span class="at">apoe =</span> <span class="fu">fct_recode</span>(apoe, <span class="st">"ε2/ε2"</span> <span class="ot">=</span> <span class="st">"e2/e2"</span>, <span class="st">"ε2/ε3"</span><span class="ot">=</span> <span class="st">"e2/e3"</span>, <span class="st">"ε3/ε3</span><span class="sc">\n</span><span class="st">(reference)"</span> <span class="ot">=</span> <span class="st">"e3/e3"</span>,</span>
+<span id="cb3-78"><a href="#cb3-78" aria-hidden="true" tabindex="-1"></a>                           <span class="st">"ε2/ε4"</span> <span class="ot">=</span> <span class="st">"e2/e4"</span>, <span class="st">"ε3/ε4"</span> <span class="ot">=</span> <span class="st">"e3/e4"</span>, <span class="st">"ε4/ε4"</span> <span class="ot">=</span> <span class="st">"e4/e4"</span>)</span>
+<span id="cb3-79"><a href="#cb3-79" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Using the Fisher’s z score method, we observed population-based differences in the effect of the e4 homozygous genotype on the risk of developing AD. Specifically, we found that Japansese carriers of the e4/e4 allele had a higher risk of developing AD compared to African Americans, Hispanics, and White populations. In contrast, the e4/e4 allele was associated with a lower risk of developing AD in Hispanic populations compared to White populations.</p>
+<p>Moreover, the e3/e4 allele was found to be associated with increased odds of developing AD in Japanese populations compared to White, Black, and Hispanic populations. In contrast, the e3/e4 allele was associated with a lower risk of developing AD in Black populations compared to Hispanic and White populations.</p>
+<div class="cell">
+<details>
+<summary>Farrer Plot</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>theme.size <span class="ot">=</span> <span class="dv">8</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>geom.text.size <span class="ot">=</span> (theme.size <span class="sc">-</span> <span class="dv">2</span>) <span class="sc">*</span> <span class="fl">0.36</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>farrer_apoe.p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(farrer_apoe, <span class="fu">aes</span>(<span class="at">y =</span> or, <span class="at">x =</span> race, <span class="at">color =</span> race)) <span class="sc">+</span> </span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="at">cols =</span> <span class="fu">vars</span>(apoe)) <span class="sc">+</span> </span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">1</span>, <span class="at">linetype =</span> <span class="dv">2</span>, <span class="at">color =</span> <span class="st">'grey60'</span>) <span class="sc">+</span> </span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.5</span>)) <span class="sc">+</span> </span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="st">"Odds Ratio"</span>, <span class="at">trans =</span> <span class="st">'log'</span>, </span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>                     <span class="at">breaks =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">8</span>, <span class="dv">16</span>, <span class="dv">32</span>), </span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>                     <span class="at">labels =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">8</span>, <span class="dv">16</span>, <span class="dv">32</span>)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span> </span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"#E41A1C"</span>, <span class="st">"#377EB8"</span>, <span class="st">"#4DAF4A"</span>, <span class="st">"#984EA3"</span>)) <span class="sc">+</span> </span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">x =</span> race, <span class="at">ymin =</span> lci, <span class="at">ymax =</span> uci), <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.5</span>), <span class="at">width =</span> <span class="dv">0</span>) <span class="sc">+</span> </span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># geom_vline(xintercept=seq(0.5, 11.5, 1),color="grey90") +</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"APOE-related risk for AD"</span>) <span class="sc">+</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> theme.size), </span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> theme.size),</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size=</span>theme.size),</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title.x =</span> <span class="fu">element_blank</span>(), </span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">315</span>, <span class="at">vjust =</span> <span class="fl">0.5</span>, <span class="at">hjust =</span> <span class="dv">0</span>, <span class="at">size=</span><span class="dv">8</span>),</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.y =</span> <span class="fu">element_text</span>(<span class="at">size=</span><span class="dv">10</span>),</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">'bottom'</span>, </span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">strip.background =</span> <span class="fu">element_blank</span>(), </span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid.minor.y =</span> <span class="fu">element_blank</span>(), </span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid.major.x =</span> <span class="fu">element_blank</span>(), </span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.title =</span> <span class="fu">element_blank</span>(), </span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    <span class="co"># panel.border = element_blank(),</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span> </span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>  ggprism<span class="sc">::</span><span class="fu">add_pvalue</span>(farrer_df_pval, <span class="at">bracket.nudge.y =</span> <span class="dv">3</span>, <span class="at">label =</span> <span class="st">"{stars}"</span>, <span class="at">colour =</span> <span class="st">'black'</span>, <span class="at">tip.length =</span> <span class="fl">0.01</span>, <span class="at">bracket.size =</span> <span class="fl">0.2</span>) </span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>farrer_apoe.p</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="NACC_apoe_files/figure-html/Farrer_plot-1.png" class="img-fluid" width="672"></p>
+</div>
+<details>
+<summary>Farrer Plot</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"../results/figures/farrer_apoe_race.png"</span>, <span class="at">plot =</span> farrer_apoe.p, <span class="at">width =</span> <span class="dv">5</span>, <span class="at">height =</span> <span class="dv">4</span>, <span class="at">units =</span> <span class="st">'in'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="nacc-uds" class="level2">
+<h2 class="anchored" data-anchor-id="nacc-uds">NACC UDS</h2>
+<div class="cell">
+<details>
+<summary>Wrangle NACC Data</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>dat_wrangle <span class="ot">&lt;-</span> nacc <span class="sc">%&gt;%</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(adrc, <span class="at">by =</span> <span class="st">'NACCID'</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(adgc.raw, <span class="at">by =</span> <span class="st">'NACCID'</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># left_join(nacc_mmse, by = 'NACCID') %&gt;%</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="do">## Missing data </span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">NACCMMSE =</span> <span class="fu">ifelse</span>(<span class="fu">between</span>(NACCMMSE, <span class="dv">0</span>, <span class="dv">30</span>), NACCMMSE, <span class="cn">NA</span>), </span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">DECAGE =</span> <span class="fu">ifelse</span>(DECAGE <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">888</span>, <span class="dv">999</span>), <span class="cn">NA</span>, DECAGE),</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">apoe =</span> <span class="fu">case_when</span>(</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>      apoe_geno <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"E2/E2"</span>, <span class="st">"E2/E3"</span>, <span class="st">"E3/E2"</span>) <span class="sc">~</span> <span class="st">"e2+"</span>,</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>      apoe_geno <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"E3/E3"</span>) <span class="sc">~</span> <span class="st">"e3/e3"</span>,</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>      apoe_geno <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"E3/E4"</span>, <span class="st">"E2/E4"</span>, <span class="st">"E4/E2"</span>, <span class="st">"E4/E3"</span>, <span class="st">"E4/E4"</span>) <span class="sc">~</span> <span class="st">"e4+"</span>,</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="cn">NA_character_</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    ), </span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">apoe =</span> <span class="fu">fct_relevel</span>(apoe, <span class="st">"e3/e3"</span>),</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">apoe4 =</span> <span class="fu">case_when</span>(</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>      apoe_geno <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"E2/E2"</span>, <span class="st">"E2/E3"</span>, <span class="st">"E3/E2"</span>, <span class="st">"E3/E3"</span>) <span class="sc">~</span> <span class="st">"e4-"</span>,</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>      apoe_geno <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"E3/E4"</span>, <span class="st">"E2/E4"</span>, <span class="st">"E4/E2"</span>, <span class="st">"E4/E3"</span>, <span class="st">"E4/E4"</span>) <span class="sc">~</span> <span class="st">"e4+"</span>,</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="cn">NA_character_</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    ), </span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">apoe4 =</span> <span class="fu">fct_relevel</span>(apoe4, <span class="st">"e4-"</span>),</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">apoe_geno =</span> <span class="fu">case_when</span>(</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>      <span class="co"># apoe_geno %in% c("E2/E2") ~ "e2/e2",</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>      <span class="co"># apoe_geno %in% c("E2/E3", "E3/E2") ~ "e2/e3",</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>      apoe_geno <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"E2/E3"</span>, <span class="st">"E3/E2"</span>, <span class="st">"E2/E2"</span>) <span class="sc">~</span> <span class="st">"e2+"</span>,</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>      apoe_geno <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"E3/E3"</span>) <span class="sc">~</span> <span class="st">"e3/e3"</span>,</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>      apoe_geno <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"E2/E4"</span>, <span class="st">"E4/E2"</span>) <span class="sc">~</span> <span class="st">"e2/e4"</span>,</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>      apoe_geno <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"E3/E4"</span>, <span class="st">"E4/E3"</span>) <span class="sc">~</span> <span class="st">"e3/e4"</span>,</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>      apoe_geno <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"E4/E4"</span>) <span class="sc">~</span> <span class="st">"e4/e4"</span>,</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="cn">NA_character_</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>    ), </span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>    <span class="co"># apoe_geno = fct_relevel(apoe_geno, 'e3/e3', 'e2/e2', 'e2/e3', 'e2/e4', 'e3/e4', 'e4/e4'),</span></span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>    <span class="at">apoe_geno =</span> <span class="fu">fct_relevel</span>(apoe_geno, <span class="st">'e3/e3'</span>, <span class="st">'e2+'</span>, <span class="st">'e2/e4'</span>, <span class="st">'e3/e4'</span>, <span class="st">'e4/e4'</span>),    </span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>    <span class="at">race =</span> <span class="fu">case_when</span>(</span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>      NACCNIHR <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> HISPANIC <span class="sc">==</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"NHW"</span>,</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>      NACCNIHR <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> HISPANIC <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"Hispanic"</span>,</span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>      NACCNIHR <span class="sc">==</span> <span class="dv">2</span> <span class="sc">~</span> <span class="st">"Black"</span>,</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>      NACCNIHR <span class="sc">==</span> <span class="dv">5</span> <span class="sc">~</span> <span class="st">"Asian"</span>,</span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="cn">NA_character_</span></span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>    <span class="at">race =</span> <span class="fu">fct_relevel</span>(race, <span class="st">'NHW'</span>), </span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>  <span class="co"># filter(NACCVNUM == 1) %&gt;%</span></span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>  <span class="do">## Retain only information from last visit</span></span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(NACCETPR <span class="sc">%nin%</span> <span class="fu">c</span>(<span class="dv">99</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(NACCID) <span class="sc">%&gt;%</span></span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(NACCVNUM <span class="sc">==</span> <span class="fu">which.max</span>(NACCVNUM)) <span class="sc">%&gt;%</span></span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>  <span class="do">## Age of Onset, for diagnosis, age at which symptoms began, for controls, age at last examination. </span></span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>    <span class="at">aoo =</span> <span class="fu">case_when</span>(</span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a>      NACCETPR <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">30</span>) <span class="sc">~</span> DECAGE, </span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a>      NACCETPR <span class="sc">==</span> <span class="dv">88</span> <span class="sc">~</span> NACCAGE, </span>
+<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="cn">NA_real_</span></span>
+<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a>    ), </span>
+<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a>    <span class="at">dx =</span> <span class="fu">ifelse</span>(NACCUDSD <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">4</span>), <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a>    <span class="at">incident_ci =</span> <span class="fu">case_when</span>(</span>
+<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a>      NACCIDEM <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">'AD'</span>,</span>
+<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a>      NACCNORM <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">'CN'</span>, </span>
+<span id="cb6-62"><a href="#cb6-62" aria-hidden="true" tabindex="-1"></a>      NACCMCII <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">'MCI'</span>, </span>
+<span id="cb6-63"><a href="#cb6-63" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="cn">NA_character_</span></span>
+<span id="cb6-64"><a href="#cb6-64" aria-hidden="true" tabindex="-1"></a>    ), </span>
+<span id="cb6-65"><a href="#cb6-65" aria-hidden="true" tabindex="-1"></a>    <span class="at">race =</span> <span class="fu">fct_drop</span>(race), </span>
+<span id="cb6-66"><a href="#cb6-66" aria-hidden="true" tabindex="-1"></a>    <span class="at">two_visits =</span> <span class="fu">ifelse</span>(NACCAVST <span class="sc">&gt;=</span> <span class="dv">2</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>)</span>
+<span id="cb6-67"><a href="#cb6-67" aria-hidden="true" tabindex="-1"></a>    ) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>We conducted a replication study of the findings reported in Farrer et al 1997, using data from the National Alzheimer’s Coordinating Center’s Uniform Dataset (NACC UDS). The dataset included 43780 participants at last visit, including participants reported as NLW (n = 32,321), Black (n = 5,470), Latinx (n = 2,308), Asian (n = 1,173), or other (n = 2,508) race/ethnicity.</p>
+<div class="cell">
+<details>
+<summary>Exclusion &amp; Inclusion Criteria</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>exclude_age <span class="ot">&lt;-</span> <span class="fu">sum</span>(dat_wrangle<span class="sc">$</span>NACCAGE <span class="sc">&lt;</span> <span class="dv">55</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>exclude_race <span class="ot">&lt;-</span> <span class="fu">sum</span>(dat_wrangle<span class="sc">$</span>NACCNIHR <span class="sc">%nin%</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">5</span>))</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>exclude_ADMU <span class="ot">&lt;-</span> <span class="fu">sum</span>(dat_wrangle<span class="sc">$</span>NACCADMU <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>exclude_FTDMU <span class="ot">&lt;-</span> <span class="fu">sum</span>(dat_wrangle<span class="sc">$</span>NACCFTDM <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>exclude_CI_wo_mci <span class="ot">&lt;-</span> <span class="fu">sum</span>(dat_wrangle<span class="sc">$</span>NACCUDSD <span class="sc">==</span> <span class="dv">2</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>exclude_dx <span class="ot">&lt;-</span> <span class="fu">sum</span>(dat_wrangle<span class="sc">$</span>NACCETPR <span class="sc">%nin%</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">6</span>, <span class="dv">7</span>, <span class="dv">8</span>, <span class="dv">88</span>))</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>exclude_apoe <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(dat_wrangle<span class="sc">$</span>apoe))</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>exclude_aoo <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(dat_wrangle<span class="sc">$</span>aoo))</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> dat_wrangle <span class="sc">%&gt;%</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(NACCAGE <span class="sc">&gt;=</span> <span class="dv">55</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(NACCNIHR <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">5</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(NACCADMU <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(NACCFTDM <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(NACCETPR <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">6</span>, <span class="dv">7</span>, <span class="dv">8</span>, <span class="dv">88</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># filter(NACCETPR %in% c(1, 88))  %&gt;%</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(NACCUDSD <span class="sc">%nin%</span> <span class="fu">c</span>(<span class="dv">2</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># filter(NACCUDSD %nin% c(3)) %&gt;%</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(race)) <span class="sc">%&gt;%</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(apoe)) <span class="sc">%&gt;%</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(aoo))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Participants who met any of the following exclusion criteria were not included in the analysis:</p>
+<ul>
+<li>Age &lt; 55: 1739</li>
+<li>American Indian or Alaska Native, Multiracial, uknown: 2382</li>
+<li>Dominantly inherited AD mutation: 112</li>
+<li>Dominantly inherited FTD mutation: 179</li>
+<li>Cognitive impairment not due to MCI: 1584</li>
+<li>Primary diagnosis is not ADRD:3694</li>
+<li>Missing APOE genotype:19719</li>
+<li>Missing age of onset: 1241</li>
+</ul>
+<div class="cell">
+<details>
+<summary>Table 1</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>dat <span class="sc">%&gt;%</span> </span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(race, SEX, NACCAGE, aoo, apoe_geno, EDUC, CDRSUM, NACCUDSD, NACCETPR) <span class="sc">%&gt;%</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">NACCUDSD =</span> <span class="fu">fct_recode</span>(<span class="fu">as.factor</span>(NACCUDSD), <span class="st">'CU'</span> <span class="ot">=</span> <span class="st">'1'</span>, <span class="st">"MCI"</span> <span class="ot">=</span> <span class="st">"3"</span>, <span class="st">"ADRD"</span> <span class="ot">=</span> <span class="st">"4"</span>),</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">NACCETPR =</span> <span class="fu">fct_recode</span>(<span class="fu">as.factor</span>(NACCETPR), <span class="st">'CU'</span> <span class="ot">=</span> <span class="st">'88'</span>, <span class="st">"AD"</span> <span class="ot">=</span> <span class="st">"1"</span>, <span class="st">"LBD"</span> <span class="ot">=</span> <span class="st">"2"</span>, <span class="st">"FTLD"</span> <span class="ot">=</span> <span class="st">'6'</span>, <span class="st">"FTLD"</span> <span class="ot">=</span> <span class="st">'7'</span>, <span class="st">'VCID'</span> <span class="ot">=</span> <span class="st">'8'</span>),</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">NACCETPR =</span> <span class="fu">fct_relevel</span>(NACCETPR),</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">SEX =</span> <span class="fu">as.factor</span>(SEX),</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">SEX =</span> <span class="fu">fct_recode</span>(SEX,  <span class="st">'Male'</span> <span class="ot">=</span> <span class="st">'1'</span>, <span class="st">"Female"</span> <span class="ot">=</span> <span class="st">"2"</span>)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl_summary</span>(<span class="at">by =</span> race,</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>              <span class="at">statistic =</span> <span class="fu">list</span>(<span class="fu">all_continuous</span>() <span class="sc">~</span> <span class="st">"{mean} ({sd})"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_n</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+
+<div id="jzpdcxizry" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+:where(#jzpdcxizry) .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 13px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+:where(#jzpdcxizry) .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+:where(#jzpdcxizry) .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+:where(#jzpdcxizry) .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+:where(#jzpdcxizry) .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+:where(#jzpdcxizry) .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+:where(#jzpdcxizry) .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+:where(#jzpdcxizry) .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+:where(#jzpdcxizry) .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+:where(#jzpdcxizry) .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+:where(#jzpdcxizry) .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+:where(#jzpdcxizry) .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+:where(#jzpdcxizry) .gt_group_heading {
+  padding-top: 1px;
+  padding-bottom: 1px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+:where(#jzpdcxizry) .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+:where(#jzpdcxizry) .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+:where(#jzpdcxizry) .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+:where(#jzpdcxizry) .gt_row {
+  padding-top: 1px;
+  padding-bottom: 1px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+:where(#jzpdcxizry) .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+:where(#jzpdcxizry) .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+:where(#jzpdcxizry) .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+:where(#jzpdcxizry) .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+:where(#jzpdcxizry) .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+:where(#jzpdcxizry) .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+:where(#jzpdcxizry) .gt_last_summary_row {
+  padding-top: 1px;
+  padding-bottom: 1px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+:where(#jzpdcxizry) .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+:where(#jzpdcxizry) .gt_first_grand_summary_row {
+  padding-top: 1px;
+  padding-bottom: 1px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+:where(#jzpdcxizry) .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+:where(#jzpdcxizry) .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+:where(#jzpdcxizry) .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+:where(#jzpdcxizry) .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-left: 1px;
+  padding-right: 1px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+:where(#jzpdcxizry) .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+:where(#jzpdcxizry) .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+:where(#jzpdcxizry) .gt_left {
+  text-align: left;
+}
+
+:where(#jzpdcxizry) .gt_center {
+  text-align: center;
+}
+
+:where(#jzpdcxizry) .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+:where(#jzpdcxizry) .gt_font_normal {
+  font-weight: normal;
+}
+
+:where(#jzpdcxizry) .gt_font_bold {
+  font-weight: bold;
+}
+
+:where(#jzpdcxizry) .gt_font_italic {
+  font-style: italic;
+}
+
+:where(#jzpdcxizry) .gt_super {
+  font-size: 65%;
+}
+
+:where(#jzpdcxizry) .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 75%;
+  vertical-align: 0.4em;
+}
+
+:where(#jzpdcxizry) .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+:where(#jzpdcxizry) .gt_indent_1 {
+  text-indent: 5px;
+}
+
+:where(#jzpdcxizry) .gt_indent_2 {
+  text-indent: 10px;
+}
+
+:where(#jzpdcxizry) .gt_indent_3 {
+  text-indent: 15px;
+}
+
+:where(#jzpdcxizry) .gt_indent_4 {
+  text-indent: 20px;
+}
+
+:where(#jzpdcxizry) .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table"><caption>Table 1 NACC Cohort Characteristics</caption>
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="<strong>Characteristic</strong>"><strong>Characteristic</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="<strong>N</strong>"><strong>N</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="<strong>NHW</strong>, N = 15,950<sup class=&quot;gt_footnote_marks&quot;>1</sup>"><strong>NHW</strong>, N = 15,950<sup class="gt_footnote_marks">1</sup></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="<strong>Asian</strong>, N = 571<sup class=&quot;gt_footnote_marks&quot;>1</sup>"><strong>Asian</strong>, N = 571<sup class="gt_footnote_marks">1</sup></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="<strong>Black</strong>, N = 2,197<sup class=&quot;gt_footnote_marks&quot;>1</sup>"><strong>Black</strong>, N = 2,197<sup class="gt_footnote_marks">1</sup></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="<strong>Hispanic</strong>, N = 923<sup class=&quot;gt_footnote_marks&quot;>1</sup>"><strong>Hispanic</strong>, N = 923<sup class="gt_footnote_marks">1</sup></th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="label" class="gt_row gt_left">SEX</td>
+<td headers="n" class="gt_row gt_center">19,641</td>
+<td headers="stat_1" class="gt_row gt_center"></td>
+<td headers="stat_2" class="gt_row gt_center"></td>
+<td headers="stat_3" class="gt_row gt_center"></td>
+<td headers="stat_4" class="gt_row gt_center"></td></tr>
+    <tr><td headers="label" class="gt_row gt_left">&nbsp;&nbsp;&nbsp;&nbsp;Male</td>
+<td headers="n" class="gt_row gt_center"></td>
+<td headers="stat_1" class="gt_row gt_center">7,298 (46%)</td>
+<td headers="stat_2" class="gt_row gt_center">231 (40%)</td>
+<td headers="stat_3" class="gt_row gt_center">581 (26%)</td>
+<td headers="stat_4" class="gt_row gt_center">313 (34%)</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">&nbsp;&nbsp;&nbsp;&nbsp;Female</td>
+<td headers="n" class="gt_row gt_center"></td>
+<td headers="stat_1" class="gt_row gt_center">8,652 (54%)</td>
+<td headers="stat_2" class="gt_row gt_center">340 (60%)</td>
+<td headers="stat_3" class="gt_row gt_center">1,616 (74%)</td>
+<td headers="stat_4" class="gt_row gt_center">610 (66%)</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">NACCAGE</td>
+<td headers="n" class="gt_row gt_center">19,641</td>
+<td headers="stat_1" class="gt_row gt_center">77 (10)</td>
+<td headers="stat_2" class="gt_row gt_center">75 (10)</td>
+<td headers="stat_3" class="gt_row gt_center">76 (9)</td>
+<td headers="stat_4" class="gt_row gt_center">76 (9)</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">aoo</td>
+<td headers="n" class="gt_row gt_center">19,641</td>
+<td headers="stat_1" class="gt_row gt_center">73 (10)</td>
+<td headers="stat_2" class="gt_row gt_center">71 (9)</td>
+<td headers="stat_3" class="gt_row gt_center">74 (9)</td>
+<td headers="stat_4" class="gt_row gt_center">72 (9)</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">apoe_geno</td>
+<td headers="n" class="gt_row gt_center">19,641</td>
+<td headers="stat_1" class="gt_row gt_center"></td>
+<td headers="stat_2" class="gt_row gt_center"></td>
+<td headers="stat_3" class="gt_row gt_center"></td>
+<td headers="stat_4" class="gt_row gt_center"></td></tr>
+    <tr><td headers="label" class="gt_row gt_left">&nbsp;&nbsp;&nbsp;&nbsp;e3/e3</td>
+<td headers="n" class="gt_row gt_center"></td>
+<td headers="stat_1" class="gt_row gt_center">7,894 (49%)</td>
+<td headers="stat_2" class="gt_row gt_center">346 (61%)</td>
+<td headers="stat_3" class="gt_row gt_center">892 (41%)</td>
+<td headers="stat_4" class="gt_row gt_center">550 (60%)</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">&nbsp;&nbsp;&nbsp;&nbsp;e2+</td>
+<td headers="n" class="gt_row gt_center"></td>
+<td headers="stat_1" class="gt_row gt_center">1,371 (8.6%)</td>
+<td headers="stat_2" class="gt_row gt_center">64 (11%)</td>
+<td headers="stat_3" class="gt_row gt_center">272 (12%)</td>
+<td headers="stat_4" class="gt_row gt_center">47 (5.1%)</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">&nbsp;&nbsp;&nbsp;&nbsp;e2/e4</td>
+<td headers="n" class="gt_row gt_center"></td>
+<td headers="stat_1" class="gt_row gt_center">376 (2.4%)</td>
+<td headers="stat_2" class="gt_row gt_center">8 (1.4%)</td>
+<td headers="stat_3" class="gt_row gt_center">109 (5.0%)</td>
+<td headers="stat_4" class="gt_row gt_center">6 (0.7%)</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">&nbsp;&nbsp;&nbsp;&nbsp;e3/e4</td>
+<td headers="n" class="gt_row gt_center"></td>
+<td headers="stat_1" class="gt_row gt_center">5,135 (32%)</td>
+<td headers="stat_2" class="gt_row gt_center">130 (23%)</td>
+<td headers="stat_3" class="gt_row gt_center">755 (34%)</td>
+<td headers="stat_4" class="gt_row gt_center">283 (31%)</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">&nbsp;&nbsp;&nbsp;&nbsp;e4/e4</td>
+<td headers="n" class="gt_row gt_center"></td>
+<td headers="stat_1" class="gt_row gt_center">1,174 (7.4%)</td>
+<td headers="stat_2" class="gt_row gt_center">23 (4.0%)</td>
+<td headers="stat_3" class="gt_row gt_center">169 (7.7%)</td>
+<td headers="stat_4" class="gt_row gt_center">37 (4.0%)</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">EDUC</td>
+<td headers="n" class="gt_row gt_center">19,641</td>
+<td headers="stat_1" class="gt_row gt_center">16.48 (7.26)</td>
+<td headers="stat_2" class="gt_row gt_center">17.77 (12.92)</td>
+<td headers="stat_3" class="gt_row gt_center">14.62 (6.06)</td>
+<td headers="stat_4" class="gt_row gt_center">13.07 (8.54)</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">CDRSUM</td>
+<td headers="n" class="gt_row gt_center">19,641</td>
+<td headers="stat_1" class="gt_row gt_center">4.7 (5.9)</td>
+<td headers="stat_2" class="gt_row gt_center">3.6 (4.9)</td>
+<td headers="stat_3" class="gt_row gt_center">3.3 (5.2)</td>
+<td headers="stat_4" class="gt_row gt_center">4.6 (5.9)</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">NACCUDSD</td>
+<td headers="n" class="gt_row gt_center">19,641</td>
+<td headers="stat_1" class="gt_row gt_center"></td>
+<td headers="stat_2" class="gt_row gt_center"></td>
+<td headers="stat_3" class="gt_row gt_center"></td>
+<td headers="stat_4" class="gt_row gt_center"></td></tr>
+    <tr><td headers="label" class="gt_row gt_left">&nbsp;&nbsp;&nbsp;&nbsp;CU</td>
+<td headers="n" class="gt_row gt_center"></td>
+<td headers="stat_1" class="gt_row gt_center">6,604 (41%)</td>
+<td headers="stat_2" class="gt_row gt_center">263 (46%)</td>
+<td headers="stat_3" class="gt_row gt_center">1,208 (55%)</td>
+<td headers="stat_4" class="gt_row gt_center">384 (42%)</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">&nbsp;&nbsp;&nbsp;&nbsp;MCI</td>
+<td headers="n" class="gt_row gt_center"></td>
+<td headers="stat_1" class="gt_row gt_center">2,009 (13%)</td>
+<td headers="stat_2" class="gt_row gt_center">92 (16%)</td>
+<td headers="stat_3" class="gt_row gt_center">292 (13%)</td>
+<td headers="stat_4" class="gt_row gt_center">155 (17%)</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">&nbsp;&nbsp;&nbsp;&nbsp;ADRD</td>
+<td headers="n" class="gt_row gt_center"></td>
+<td headers="stat_1" class="gt_row gt_center">7,337 (46%)</td>
+<td headers="stat_2" class="gt_row gt_center">216 (38%)</td>
+<td headers="stat_3" class="gt_row gt_center">697 (32%)</td>
+<td headers="stat_4" class="gt_row gt_center">384 (42%)</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">NACCETPR</td>
+<td headers="n" class="gt_row gt_center">19,641</td>
+<td headers="stat_1" class="gt_row gt_center"></td>
+<td headers="stat_2" class="gt_row gt_center"></td>
+<td headers="stat_3" class="gt_row gt_center"></td>
+<td headers="stat_4" class="gt_row gt_center"></td></tr>
+    <tr><td headers="label" class="gt_row gt_left">&nbsp;&nbsp;&nbsp;&nbsp;AD</td>
+<td headers="n" class="gt_row gt_center"></td>
+<td headers="stat_1" class="gt_row gt_center">7,271 (46%)</td>
+<td headers="stat_2" class="gt_row gt_center">238 (42%)</td>
+<td headers="stat_3" class="gt_row gt_center">835 (38%)</td>
+<td headers="stat_4" class="gt_row gt_center">458 (50%)</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">&nbsp;&nbsp;&nbsp;&nbsp;LBD</td>
+<td headers="n" class="gt_row gt_center"></td>
+<td headers="stat_1" class="gt_row gt_center">692 (4.3%)</td>
+<td headers="stat_2" class="gt_row gt_center">14 (2.5%)</td>
+<td headers="stat_3" class="gt_row gt_center">31 (1.4%)</td>
+<td headers="stat_4" class="gt_row gt_center">22 (2.4%)</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">&nbsp;&nbsp;&nbsp;&nbsp;FTLD</td>
+<td headers="n" class="gt_row gt_center"></td>
+<td headers="stat_1" class="gt_row gt_center">1,014 (6.4%)</td>
+<td headers="stat_2" class="gt_row gt_center">24 (4.2%)</td>
+<td headers="stat_3" class="gt_row gt_center">14 (0.6%)</td>
+<td headers="stat_4" class="gt_row gt_center">20 (2.2%)</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">&nbsp;&nbsp;&nbsp;&nbsp;VCID</td>
+<td headers="n" class="gt_row gt_center"></td>
+<td headers="stat_1" class="gt_row gt_center">369 (2.3%)</td>
+<td headers="stat_2" class="gt_row gt_center">32 (5.6%)</td>
+<td headers="stat_3" class="gt_row gt_center">109 (5.0%)</td>
+<td headers="stat_4" class="gt_row gt_center">39 (4.2%)</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">&nbsp;&nbsp;&nbsp;&nbsp;CU</td>
+<td headers="n" class="gt_row gt_center"></td>
+<td headers="stat_1" class="gt_row gt_center">6,604 (41%)</td>
+<td headers="stat_2" class="gt_row gt_center">263 (46%)</td>
+<td headers="stat_3" class="gt_row gt_center">1,208 (55%)</td>
+<td headers="stat_4" class="gt_row gt_center">384 (42%)</td></tr>
+  </tbody>
+  
+  <tfoot class="gt_footnotes">
+    <tr>
+      <td class="gt_footnote" colspan="6"><sup class="gt_footnote_marks">1</sup> n (%); Mean (SD)</td>
+    </tr>
+  </tfoot>
+</table>
+</div>
+</div>
+</div>
+<section id="stratified-models" class="level3">
+<h3 class="anchored" data-anchor-id="stratified-models">Stratified models</h3>
+<p>Logistic regression models were used to examine the effect of APOE genotype on ADRD, stratified by reported race/ethnicity and adjusted for age and sex. In addition to examining the association between APOE genotype and ADRD in different racial/ethnic groups, we used Fisher’s z score method to formally test whether the effect sizes of APOE on ADRD differed across racial/ethnic groups. We compared the reported beta coefficients and standard errors for APOE in each racial/ethnic group to determine if they were statistically different from each other. Age at onset of ADRD among cases and age at last visit among controls was used as the age variable. The following outcomes were examined:</p>
+<ul>
+<li>Cognitivly impaired (MCI and dementia) due ADRD vs controls</li>
+<li>Dementia due to ADRD vs controls</li>
+<li>Cognitivly impaired (MCI and AD) due AD vs controls</li>
+<li>Dementia due to AD vs controls</li>
+</ul>
+<div class="cell">
+<details>
+<summary>Regression Models</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>mod_fit <span class="ot">&lt;-</span> <span class="cf">function</span>(data){</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">glm</span>(dx <span class="sc">~</span> apoe_geno <span class="sc">+</span> SEX <span class="sc">+</span> aoo, <span class="at">data =</span> data, <span class="at">family =</span> <span class="st">'binomial'</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  dat <span class="sc">%&gt;%</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(race) <span class="sc">%&gt;%</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">nest</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>      <span class="at">outcome =</span> <span class="st">"ADRD + MCI"</span>,</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>      <span class="at">res =</span> <span class="fu">map</span>(data, mod_fit), </span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span>data), </span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>  dat <span class="sc">%&gt;%</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(NACCUDSD <span class="sc">%nin%</span> <span class="fu">c</span>(<span class="dv">3</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(race) <span class="sc">%&gt;%</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">nest</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>      <span class="at">outcome =</span> <span class="st">"ADRD"</span>,</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>      <span class="at">res =</span> <span class="fu">map</span>(data, mod_fit), </span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span>data), </span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>  dat <span class="sc">%&gt;%</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(NACCETPR <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">88</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(race) <span class="sc">%&gt;%</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">nest</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>      <span class="at">outcome =</span> <span class="st">"AD + MCI"</span>,</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>      <span class="at">res =</span> <span class="fu">map</span>(data, mod_fit), </span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span>data), </span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>  dat <span class="sc">%&gt;%</span></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(NACCETPR <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">88</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(NACCUDSD <span class="sc">%nin%</span> <span class="fu">c</span>(<span class="dv">3</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(race) <span class="sc">%&gt;%</span></span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>    <span class="fu">nest</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>      <span class="at">outcome =</span> <span class="st">"AD"</span>,</span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>      <span class="at">res =</span> <span class="fu">map</span>(data, mod_fit), </span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span>data), </span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>    <span class="at">fit =</span> <span class="fu">map</span>(res, glance),</span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a>    <span class="at">df =</span> <span class="fu">map</span>(res, tidy), </span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a>apoe_geno_res <span class="ot">&lt;-</span> res <span class="sc">%&gt;%</span></span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(race, outcome, df) <span class="sc">%&gt;%</span></span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest</span>(<span class="at">cols =</span> df) <span class="sc">%&gt;%</span></span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">str_detect</span>(term, <span class="st">'apoe'</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a>    <span class="at">lci =</span> estimate <span class="sc">-</span> (std.error <span class="sc">*</span> <span class="fl">1.96</span>),</span>
+<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a>    <span class="at">hci =</span> estimate <span class="sc">+</span> (std.error <span class="sc">*</span> <span class="fl">1.96</span>), </span>
+<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a>    <span class="at">or =</span> <span class="fu">exp</span>(estimate),</span>
+<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a>    <span class="at">or_lci =</span> <span class="fu">exp</span>(lci),</span>
+<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a>    <span class="at">or_hci =</span> <span class="fu">exp</span>(hci),</span>
+<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a>    <span class="at">term =</span> <span class="fu">str_replace</span>(term, <span class="st">"apoe_geno"</span>, <span class="st">""</span>), </span>
+<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a>    <span class="at">term =</span> <span class="fu">fct_relevel</span>(term, <span class="st">'e3/e3'</span>, <span class="st">'e2+'</span>, <span class="st">'e2/e4'</span>, <span class="st">'e3/e4'</span>, <span class="st">'e4/e4'</span>),    </span>
+<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>In our analysis of the NACC UDS dataset, we found significant associations between APOE genotype and risk of Alzheimer’s disease across different racial and ethnic populations. Specifically, we observed that the e3/e4 allele was consistently associated with increased risk of AD across all four populations studied. The e2/e4 allele, on the other hand, was found to be associated with increased risk in all populations except for Hispanics. Finally, we observed that carriers of the e2+ allele had a lower risk of AD only in non-Hispanic White and Black populations.</p>
+<div class="cell">
+<div class="cell-output-display">
+
+<div id="exvyoyutyu" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+:where(#exvyoyutyu) .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+:where(#exvyoyutyu) .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+:where(#exvyoyutyu) .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+:where(#exvyoyutyu) .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+:where(#exvyoyutyu) .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+:where(#exvyoyutyu) .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+:where(#exvyoyutyu) .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+:where(#exvyoyutyu) .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+:where(#exvyoyutyu) .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+:where(#exvyoyutyu) .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+:where(#exvyoyutyu) .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+:where(#exvyoyutyu) .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+:where(#exvyoyutyu) .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+:where(#exvyoyutyu) .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+:where(#exvyoyutyu) .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+:where(#exvyoyutyu) .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+:where(#exvyoyutyu) .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+:where(#exvyoyutyu) .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+:where(#exvyoyutyu) .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+:where(#exvyoyutyu) .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+:where(#exvyoyutyu) .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+:where(#exvyoyutyu) .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+:where(#exvyoyutyu) .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+:where(#exvyoyutyu) .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+:where(#exvyoyutyu) .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+:where(#exvyoyutyu) .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+:where(#exvyoyutyu) .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+:where(#exvyoyutyu) .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+:where(#exvyoyutyu) .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+:where(#exvyoyutyu) .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+:where(#exvyoyutyu) .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+:where(#exvyoyutyu) .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+:where(#exvyoyutyu) .gt_left {
+  text-align: left;
+}
+
+:where(#exvyoyutyu) .gt_center {
+  text-align: center;
+}
+
+:where(#exvyoyutyu) .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+:where(#exvyoyutyu) .gt_font_normal {
+  font-weight: normal;
+}
+
+:where(#exvyoyutyu) .gt_font_bold {
+  font-weight: bold;
+}
+
+:where(#exvyoyutyu) .gt_font_italic {
+  font-style: italic;
+}
+
+:where(#exvyoyutyu) .gt_super {
+  font-size: 65%;
+}
+
+:where(#exvyoyutyu) .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 75%;
+  vertical-align: 0.4em;
+}
+
+:where(#exvyoyutyu) .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+:where(#exvyoyutyu) .gt_indent_1 {
+  text-indent: 5px;
+}
+
+:where(#exvyoyutyu) .gt_indent_2 {
+  text-indent: 10px;
+}
+
+:where(#exvyoyutyu) .gt_indent_3 {
+  text-indent: 15px;
+}
+
+:where(#exvyoyutyu) .gt_indent_4 {
+  text-indent: 20px;
+}
+
+:where(#exvyoyutyu) .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id=""></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="term">term</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="effect">effect</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="p.value">p.value</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr class="gt_group_heading_row">
+      <th colspan="4" class="gt_group_heading" scope="colgroup" id="ADRD + MCI">ADRD + MCI</th>
+    </tr>
+    <tr class="gt_row_group_first"><th id="stub_1_1" scope="row" class="gt_row gt_center gt_stub">NHW</th>
+<td headers="ADRD + MCI stub_1_1 term" class="gt_row gt_center">e2+</td>
+<td headers="ADRD + MCI stub_1_1 effect" class="gt_row gt_center">0.77 (0.68, 0.86)</td>
+<td headers="ADRD + MCI stub_1_1 p.value" class="gt_row gt_right">1.53 × 10<sup style="font-size: 65%;">−5</sup></td></tr>
+    <tr><th id="stub_1_2" scope="row" class="gt_row gt_center gt_stub">NHW</th>
+<td headers="ADRD + MCI stub_1_2 term" class="gt_row gt_center">e2/e4</td>
+<td headers="ADRD + MCI stub_1_2 effect" class="gt_row gt_center">1.6 (1.3, 2)</td>
+<td headers="ADRD + MCI stub_1_2 p.value" class="gt_row gt_right">3.50 × 10<sup style="font-size: 65%;">−5</sup></td></tr>
+    <tr><th id="stub_1_3" scope="row" class="gt_row gt_center gt_stub">NHW</th>
+<td headers="ADRD + MCI stub_1_3 term" class="gt_row gt_center">e3/e4</td>
+<td headers="ADRD + MCI stub_1_3 effect" class="gt_row gt_center">1.9 (1.8, 2.1)</td>
+<td headers="ADRD + MCI stub_1_3 p.value" class="gt_row gt_right">6.12 × 10<sup style="font-size: 65%;">−65</sup></td></tr>
+    <tr><th id="stub_1_4" scope="row" class="gt_row gt_center gt_stub">NHW</th>
+<td headers="ADRD + MCI stub_1_4 term" class="gt_row gt_center">e4/e4</td>
+<td headers="ADRD + MCI stub_1_4 effect" class="gt_row gt_center">3.9 (3.3, 4.7)</td>
+<td headers="ADRD + MCI stub_1_4 p.value" class="gt_row gt_right">2.02 × 10<sup style="font-size: 65%;">−57</sup></td></tr>
+    <tr><th id="stub_1_5" scope="row" class="gt_row gt_center gt_stub">Asian</th>
+<td headers="ADRD + MCI stub_1_5 term" class="gt_row gt_center">e2+</td>
+<td headers="ADRD + MCI stub_1_5 effect" class="gt_row gt_center">0.72 (0.42, 1.2)</td>
+<td headers="ADRD + MCI stub_1_5 p.value" class="gt_row gt_right">0.246</td></tr>
+    <tr><th id="stub_1_6" scope="row" class="gt_row gt_center gt_stub">Asian</th>
+<td headers="ADRD + MCI stub_1_6 term" class="gt_row gt_center">e2/e4</td>
+<td headers="ADRD + MCI stub_1_6 effect" class="gt_row gt_center">6.6 (0.8, 55)</td>
+<td headers="ADRD + MCI stub_1_6 p.value" class="gt_row gt_right">0.079</td></tr>
+    <tr><th id="stub_1_7" scope="row" class="gt_row gt_center gt_stub">Asian</th>
+<td headers="ADRD + MCI stub_1_7 term" class="gt_row gt_center">e3/e4</td>
+<td headers="ADRD + MCI stub_1_7 effect" class="gt_row gt_center">2 (1.3, 3)</td>
+<td headers="ADRD + MCI stub_1_7 p.value" class="gt_row gt_right">0.002</td></tr>
+    <tr><th id="stub_1_8" scope="row" class="gt_row gt_center gt_stub">Asian</th>
+<td headers="ADRD + MCI stub_1_8 term" class="gt_row gt_center">e4/e4</td>
+<td headers="ADRD + MCI stub_1_8 effect" class="gt_row gt_center">6.9 (2, 24)</td>
+<td headers="ADRD + MCI stub_1_8 p.value" class="gt_row gt_right">0.002</td></tr>
+    <tr><th id="stub_1_9" scope="row" class="gt_row gt_center gt_stub">Black</th>
+<td headers="ADRD + MCI stub_1_9 term" class="gt_row gt_center">e2+</td>
+<td headers="ADRD + MCI stub_1_9 effect" class="gt_row gt_center">0.72 (0.54, 0.97)</td>
+<td headers="ADRD + MCI stub_1_9 p.value" class="gt_row gt_right">0.029</td></tr>
+    <tr><th id="stub_1_10" scope="row" class="gt_row gt_center gt_stub">Black</th>
+<td headers="ADRD + MCI stub_1_10 term" class="gt_row gt_center">e2/e4</td>
+<td headers="ADRD + MCI stub_1_10 effect" class="gt_row gt_center">1.5 (1, 2.3)</td>
+<td headers="ADRD + MCI stub_1_10 p.value" class="gt_row gt_right">0.045</td></tr>
+    <tr><th id="stub_1_11" scope="row" class="gt_row gt_center gt_stub">Black</th>
+<td headers="ADRD + MCI stub_1_11 term" class="gt_row gt_center">e3/e4</td>
+<td headers="ADRD + MCI stub_1_11 effect" class="gt_row gt_center">1.8 (1.4, 2.1)</td>
+<td headers="ADRD + MCI stub_1_11 p.value" class="gt_row gt_right">2.32 × 10<sup style="font-size: 65%;">−8</sup></td></tr>
+    <tr><th id="stub_1_12" scope="row" class="gt_row gt_center gt_stub">Black</th>
+<td headers="ADRD + MCI stub_1_12 term" class="gt_row gt_center">e4/e4</td>
+<td headers="ADRD + MCI stub_1_12 effect" class="gt_row gt_center">5.7 (3.8, 8.5)</td>
+<td headers="ADRD + MCI stub_1_12 p.value" class="gt_row gt_right">1.08 × 10<sup style="font-size: 65%;">−17</sup></td></tr>
+    <tr><th id="stub_1_13" scope="row" class="gt_row gt_center gt_stub">Hispanic</th>
+<td headers="ADRD + MCI stub_1_13 term" class="gt_row gt_center">e2+</td>
+<td headers="ADRD + MCI stub_1_13 effect" class="gt_row gt_center">1.4 (0.75, 2.6)</td>
+<td headers="ADRD + MCI stub_1_13 p.value" class="gt_row gt_right">0.304</td></tr>
+    <tr><th id="stub_1_14" scope="row" class="gt_row gt_center gt_stub">Hispanic</th>
+<td headers="ADRD + MCI stub_1_14 term" class="gt_row gt_center">e2/e4</td>
+<td headers="ADRD + MCI stub_1_14 effect" class="gt_row gt_center">0.48 (0.085, 2.7)</td>
+<td headers="ADRD + MCI stub_1_14 p.value" class="gt_row gt_right">0.404</td></tr>
+    <tr><th id="stub_1_15" scope="row" class="gt_row gt_center gt_stub">Hispanic</th>
+<td headers="ADRD + MCI stub_1_15 term" class="gt_row gt_center">e3/e4</td>
+<td headers="ADRD + MCI stub_1_15 effect" class="gt_row gt_center">1.9 (1.4, 2.6)</td>
+<td headers="ADRD + MCI stub_1_15 p.value" class="gt_row gt_right">3.49 × 10<sup style="font-size: 65%;">−5</sup></td></tr>
+    <tr><th id="stub_1_16" scope="row" class="gt_row gt_center gt_stub">Hispanic</th>
+<td headers="ADRD + MCI stub_1_16 term" class="gt_row gt_center">e4/e4</td>
+<td headers="ADRD + MCI stub_1_16 effect" class="gt_row gt_center">6.8 (2.4, 20)</td>
+<td headers="ADRD + MCI stub_1_16 p.value" class="gt_row gt_right">3.89 × 10<sup style="font-size: 65%;">−4</sup></td></tr>
+    <tr class="gt_group_heading_row">
+      <th colspan="4" class="gt_group_heading" scope="colgroup" id="ADRD">ADRD</th>
+    </tr>
+    <tr class="gt_row_group_first"><th id="stub_1_17" scope="row" class="gt_row gt_center gt_stub">NHW</th>
+<td headers="ADRD stub_1_17 term" class="gt_row gt_center">e2+</td>
+<td headers="ADRD stub_1_17 effect" class="gt_row gt_center">0.72 (0.63, 0.82)</td>
+<td headers="ADRD stub_1_17 p.value" class="gt_row gt_right">1.55 × 10<sup style="font-size: 65%;">−6</sup></td></tr>
+    <tr><th id="stub_1_18" scope="row" class="gt_row gt_center gt_stub">NHW</th>
+<td headers="ADRD stub_1_18 term" class="gt_row gt_center">e2/e4</td>
+<td headers="ADRD stub_1_18 effect" class="gt_row gt_center">1.8 (1.4, 2.2)</td>
+<td headers="ADRD stub_1_18 p.value" class="gt_row gt_right">1.43 × 10<sup style="font-size: 65%;">−6</sup></td></tr>
+    <tr><th id="stub_1_19" scope="row" class="gt_row gt_center gt_stub">NHW</th>
+<td headers="ADRD stub_1_19 term" class="gt_row gt_center">e3/e4</td>
+<td headers="ADRD stub_1_19 effect" class="gt_row gt_center">2.2 (2, 2.3)</td>
+<td headers="ADRD stub_1_19 p.value" class="gt_row gt_right">4.35 × 10<sup style="font-size: 65%;">−77</sup></td></tr>
+    <tr><th id="stub_1_20" scope="row" class="gt_row gt_center gt_stub">NHW</th>
+<td headers="ADRD stub_1_20 term" class="gt_row gt_center">e4/e4</td>
+<td headers="ADRD stub_1_20 effect" class="gt_row gt_center">4.4 (3.7, 5.3)</td>
+<td headers="ADRD stub_1_20 p.value" class="gt_row gt_right">3.23 × 10<sup style="font-size: 65%;">−64</sup></td></tr>
+    <tr><th id="stub_1_21" scope="row" class="gt_row gt_center gt_stub">Asian</th>
+<td headers="ADRD stub_1_21 term" class="gt_row gt_center">e2+</td>
+<td headers="ADRD stub_1_21 effect" class="gt_row gt_center">0.66 (0.35, 1.2)</td>
+<td headers="ADRD stub_1_21 p.value" class="gt_row gt_right">0.203</td></tr>
+    <tr><th id="stub_1_22" scope="row" class="gt_row gt_center gt_stub">Asian</th>
+<td headers="ADRD stub_1_22 term" class="gt_row gt_center">e2/e4</td>
+<td headers="ADRD stub_1_22 effect" class="gt_row gt_center">7.6 (0.88, 67)</td>
+<td headers="ADRD stub_1_22 p.value" class="gt_row gt_right">0.066</td></tr>
+    <tr><th id="stub_1_23" scope="row" class="gt_row gt_center gt_stub">Asian</th>
+<td headers="ADRD stub_1_23 term" class="gt_row gt_center">e3/e4</td>
+<td headers="ADRD stub_1_23 effect" class="gt_row gt_center">2.3 (1.4, 3.5)</td>
+<td headers="ADRD stub_1_23 p.value" class="gt_row gt_right">4.64 × 10<sup style="font-size: 65%;">−4</sup></td></tr>
+    <tr><th id="stub_1_24" scope="row" class="gt_row gt_center gt_stub">Asian</th>
+<td headers="ADRD stub_1_24 term" class="gt_row gt_center">e4/e4</td>
+<td headers="ADRD stub_1_24 effect" class="gt_row gt_center">8.3 (2.4, 29)</td>
+<td headers="ADRD stub_1_24 p.value" class="gt_row gt_right">9.76 × 10<sup style="font-size: 65%;">−4</sup></td></tr>
+    <tr><th id="stub_1_25" scope="row" class="gt_row gt_center gt_stub">Black</th>
+<td headers="ADRD stub_1_25 term" class="gt_row gt_center">e2+</td>
+<td headers="ADRD stub_1_25 effect" class="gt_row gt_center">0.77 (0.54, 1.1)</td>
+<td headers="ADRD stub_1_25 p.value" class="gt_row gt_right">0.134</td></tr>
+    <tr><th id="stub_1_26" scope="row" class="gt_row gt_center gt_stub">Black</th>
+<td headers="ADRD stub_1_26 term" class="gt_row gt_center">e2/e4</td>
+<td headers="ADRD stub_1_26 effect" class="gt_row gt_center">1.6 (1, 2.6)</td>
+<td headers="ADRD stub_1_26 p.value" class="gt_row gt_right">0.032</td></tr>
+    <tr><th id="stub_1_27" scope="row" class="gt_row gt_center gt_stub">Black</th>
+<td headers="ADRD stub_1_27 term" class="gt_row gt_center">e3/e4</td>
+<td headers="ADRD stub_1_27 effect" class="gt_row gt_center">2.1 (1.7, 2.7)</td>
+<td headers="ADRD stub_1_27 p.value" class="gt_row gt_right">5.30 × 10<sup style="font-size: 65%;">−11</sup></td></tr>
+    <tr><th id="stub_1_28" scope="row" class="gt_row gt_center gt_stub">Black</th>
+<td headers="ADRD stub_1_28 term" class="gt_row gt_center">e4/e4</td>
+<td headers="ADRD stub_1_28 effect" class="gt_row gt_center">7.9 (5.2, 12)</td>
+<td headers="ADRD stub_1_28 p.value" class="gt_row gt_right">2.27 × 10<sup style="font-size: 65%;">−22</sup></td></tr>
+    <tr><th id="stub_1_29" scope="row" class="gt_row gt_center gt_stub">Hispanic</th>
+<td headers="ADRD stub_1_29 term" class="gt_row gt_center">e2+</td>
+<td headers="ADRD stub_1_29 effect" class="gt_row gt_center">1.2 (0.62, 2.5)</td>
+<td headers="ADRD stub_1_29 p.value" class="gt_row gt_right">0.539</td></tr>
+    <tr><th id="stub_1_30" scope="row" class="gt_row gt_center gt_stub">Hispanic</th>
+<td headers="ADRD stub_1_30 term" class="gt_row gt_center">e2/e4</td>
+<td headers="ADRD stub_1_30 effect" class="gt_row gt_center">0.71 (0.13, 4)</td>
+<td headers="ADRD stub_1_30 p.value" class="gt_row gt_right">0.697</td></tr>
+    <tr><th id="stub_1_31" scope="row" class="gt_row gt_center gt_stub">Hispanic</th>
+<td headers="ADRD stub_1_31 term" class="gt_row gt_center">e3/e4</td>
+<td headers="ADRD stub_1_31 effect" class="gt_row gt_center">2.2 (1.6, 3)</td>
+<td headers="ADRD stub_1_31 p.value" class="gt_row gt_right">2.40 × 10<sup style="font-size: 65%;">−6</sup></td></tr>
+    <tr><th id="stub_1_32" scope="row" class="gt_row gt_center gt_stub">Hispanic</th>
+<td headers="ADRD stub_1_32 term" class="gt_row gt_center">e4/e4</td>
+<td headers="ADRD stub_1_32 effect" class="gt_row gt_center">8 (2.7, 24)</td>
+<td headers="ADRD stub_1_32 p.value" class="gt_row gt_right">1.72 × 10<sup style="font-size: 65%;">−4</sup></td></tr>
+    <tr class="gt_group_heading_row">
+      <th colspan="4" class="gt_group_heading" scope="colgroup" id="AD + MCI">AD + MCI</th>
+    </tr>
+    <tr class="gt_row_group_first"><th id="stub_1_33" scope="row" class="gt_row gt_center gt_stub">NHW</th>
+<td headers="AD + MCI stub_1_33 term" class="gt_row gt_center">e2+</td>
+<td headers="AD + MCI stub_1_33 effect" class="gt_row gt_center">0.71 (0.62, 0.81)</td>
+<td headers="AD + MCI stub_1_33 p.value" class="gt_row gt_right">3.83 × 10<sup style="font-size: 65%;">−7</sup></td></tr>
+    <tr><th id="stub_1_34" scope="row" class="gt_row gt_center gt_stub">NHW</th>
+<td headers="AD + MCI stub_1_34 term" class="gt_row gt_center">e2/e4</td>
+<td headers="AD + MCI stub_1_34 effect" class="gt_row gt_center">1.8 (1.5, 2.3)</td>
+<td headers="AD + MCI stub_1_34 p.value" class="gt_row gt_right">2.04 × 10<sup style="font-size: 65%;">−7</sup></td></tr>
+    <tr><th id="stub_1_35" scope="row" class="gt_row gt_center gt_stub">NHW</th>
+<td headers="AD + MCI stub_1_35 term" class="gt_row gt_center">e3/e4</td>
+<td headers="AD + MCI stub_1_35 effect" class="gt_row gt_center">2.3 (2.1, 2.5)</td>
+<td headers="AD + MCI stub_1_35 p.value" class="gt_row gt_right">1.71 × 10<sup style="font-size: 65%;">−93</sup></td></tr>
+    <tr><th id="stub_1_36" scope="row" class="gt_row gt_center gt_stub">NHW</th>
+<td headers="AD + MCI stub_1_36 term" class="gt_row gt_center">e4/e4</td>
+<td headers="AD + MCI stub_1_36 effect" class="gt_row gt_center">5.3 (4.5, 6.3)</td>
+<td headers="AD + MCI stub_1_36 p.value" class="gt_row gt_right">1.38 × 10<sup style="font-size: 65%;">−82</sup></td></tr>
+    <tr><th id="stub_1_37" scope="row" class="gt_row gt_center gt_stub">Asian</th>
+<td headers="AD + MCI stub_1_37 term" class="gt_row gt_center">e2+</td>
+<td headers="AD + MCI stub_1_37 effect" class="gt_row gt_center">0.6 (0.32, 1.1)</td>
+<td headers="AD + MCI stub_1_37 p.value" class="gt_row gt_right">0.116</td></tr>
+    <tr><th id="stub_1_38" scope="row" class="gt_row gt_center gt_stub">Asian</th>
+<td headers="AD + MCI stub_1_38 term" class="gt_row gt_center">e2/e4</td>
+<td headers="AD + MCI stub_1_38 effect" class="gt_row gt_center">7.9 (0.93, 66)</td>
+<td headers="AD + MCI stub_1_38 p.value" class="gt_row gt_right">0.058</td></tr>
+    <tr><th id="stub_1_39" scope="row" class="gt_row gt_center gt_stub">Asian</th>
+<td headers="AD + MCI stub_1_39 term" class="gt_row gt_center">e3/e4</td>
+<td headers="AD + MCI stub_1_39 effect" class="gt_row gt_center">2.4 (1.5, 3.7)</td>
+<td headers="AD + MCI stub_1_39 p.value" class="gt_row gt_right">1.18 × 10<sup style="font-size: 65%;">−4</sup></td></tr>
+    <tr><th id="stub_1_40" scope="row" class="gt_row gt_center gt_stub">Asian</th>
+<td headers="AD + MCI stub_1_40 term" class="gt_row gt_center">e4/e4</td>
+<td headers="AD + MCI stub_1_40 effect" class="gt_row gt_center">9.8 (2.8, 34)</td>
+<td headers="AD + MCI stub_1_40 p.value" class="gt_row gt_right">3.38 × 10<sup style="font-size: 65%;">−4</sup></td></tr>
+    <tr><th id="stub_1_41" scope="row" class="gt_row gt_center gt_stub">Hispanic</th>
+<td headers="AD + MCI stub_1_41 term" class="gt_row gt_center">e2+</td>
+<td headers="AD + MCI stub_1_41 effect" class="gt_row gt_center">1.4 (0.75, 2.7)</td>
+<td headers="AD + MCI stub_1_41 p.value" class="gt_row gt_right">0.284</td></tr>
+    <tr><th id="stub_1_42" scope="row" class="gt_row gt_center gt_stub">Hispanic</th>
+<td headers="AD + MCI stub_1_42 term" class="gt_row gt_center">e2/e4</td>
+<td headers="AD + MCI stub_1_42 effect" class="gt_row gt_center">0.6 (0.11, 3.3)</td>
+<td headers="AD + MCI stub_1_42 p.value" class="gt_row gt_right">0.556</td></tr>
+    <tr><th id="stub_1_43" scope="row" class="gt_row gt_center gt_stub">Hispanic</th>
+<td headers="AD + MCI stub_1_43 term" class="gt_row gt_center">e3/e4</td>
+<td headers="AD + MCI stub_1_43 effect" class="gt_row gt_center">2.1 (1.6, 2.9)</td>
+<td headers="AD + MCI stub_1_43 p.value" class="gt_row gt_right">1.74 × 10<sup style="font-size: 65%;">−6</sup></td></tr>
+    <tr><th id="stub_1_44" scope="row" class="gt_row gt_center gt_stub">Hispanic</th>
+<td headers="AD + MCI stub_1_44 term" class="gt_row gt_center">e4/e4</td>
+<td headers="AD + MCI stub_1_44 effect" class="gt_row gt_center">8.2 (2.8, 24)</td>
+<td headers="AD + MCI stub_1_44 p.value" class="gt_row gt_right">1.06 × 10<sup style="font-size: 65%;">−4</sup></td></tr>
+    <tr><th id="stub_1_45" scope="row" class="gt_row gt_center gt_stub">Black</th>
+<td headers="AD + MCI stub_1_45 term" class="gt_row gt_center">e2+</td>
+<td headers="AD + MCI stub_1_45 effect" class="gt_row gt_center">0.63 (0.45, 0.88)</td>
+<td headers="AD + MCI stub_1_45 p.value" class="gt_row gt_right">0.006</td></tr>
+    <tr><th id="stub_1_46" scope="row" class="gt_row gt_center gt_stub">Black</th>
+<td headers="AD + MCI stub_1_46 term" class="gt_row gt_center">e2/e4</td>
+<td headers="AD + MCI stub_1_46 effect" class="gt_row gt_center">1.7 (1.1, 2.6)</td>
+<td headers="AD + MCI stub_1_46 p.value" class="gt_row gt_right">0.013</td></tr>
+    <tr><th id="stub_1_47" scope="row" class="gt_row gt_center gt_stub">Black</th>
+<td headers="AD + MCI stub_1_47 term" class="gt_row gt_center">e3/e4</td>
+<td headers="AD + MCI stub_1_47 effect" class="gt_row gt_center">1.9 (1.5, 2.4)</td>
+<td headers="AD + MCI stub_1_47 p.value" class="gt_row gt_right">1.32 × 10<sup style="font-size: 65%;">−9</sup></td></tr>
+    <tr><th id="stub_1_48" scope="row" class="gt_row gt_center gt_stub">Black</th>
+<td headers="AD + MCI stub_1_48 term" class="gt_row gt_center">e4/e4</td>
+<td headers="AD + MCI stub_1_48 effect" class="gt_row gt_center">6.5 (4.4, 9.8)</td>
+<td headers="AD + MCI stub_1_48 p.value" class="gt_row gt_right">1.62 × 10<sup style="font-size: 65%;">−19</sup></td></tr>
+    <tr class="gt_group_heading_row">
+      <th colspan="4" class="gt_group_heading" scope="colgroup" id="AD">AD</th>
+    </tr>
+    <tr class="gt_row_group_first"><th id="stub_1_49" scope="row" class="gt_row gt_center gt_stub">NHW</th>
+<td headers="AD stub_1_49 term" class="gt_row gt_center">e2+</td>
+<td headers="AD stub_1_49 effect" class="gt_row gt_center">0.65 (0.56, 0.76)</td>
+<td headers="AD stub_1_49 p.value" class="gt_row gt_right">3.50 × 10<sup style="font-size: 65%;">−8</sup></td></tr>
+    <tr><th id="stub_1_50" scope="row" class="gt_row gt_center gt_stub">NHW</th>
+<td headers="AD stub_1_50 term" class="gt_row gt_center">e2/e4</td>
+<td headers="AD stub_1_50 effect" class="gt_row gt_center">2 (1.6, 2.6)</td>
+<td headers="AD stub_1_50 p.value" class="gt_row gt_right">3.83 × 10<sup style="font-size: 65%;">−9</sup></td></tr>
+    <tr><th id="stub_1_51" scope="row" class="gt_row gt_center gt_stub">NHW</th>
+<td headers="AD stub_1_51 term" class="gt_row gt_center">e3/e4</td>
+<td headers="AD stub_1_51 effect" class="gt_row gt_center">2.6 (2.4, 2.8)</td>
+<td headers="AD stub_1_51 p.value" class="gt_row gt_right">1.30 × 10<sup style="font-size: 65%;">−106</sup></td></tr>
+    <tr><th id="stub_1_52" scope="row" class="gt_row gt_center gt_stub">NHW</th>
+<td headers="AD stub_1_52 term" class="gt_row gt_center">e4/e4</td>
+<td headers="AD stub_1_52 effect" class="gt_row gt_center">6 (5, 7.1)</td>
+<td headers="AD stub_1_52 p.value" class="gt_row gt_right">4.58 × 10<sup style="font-size: 65%;">−90</sup></td></tr>
+    <tr><th id="stub_1_53" scope="row" class="gt_row gt_center gt_stub">Asian</th>
+<td headers="AD stub_1_53 term" class="gt_row gt_center">e2+</td>
+<td headers="AD stub_1_53 effect" class="gt_row gt_center">0.63 (0.31, 1.3)</td>
+<td headers="AD stub_1_53 p.value" class="gt_row gt_right">0.197</td></tr>
+    <tr><th id="stub_1_54" scope="row" class="gt_row gt_center gt_stub">Asian</th>
+<td headers="AD stub_1_54 term" class="gt_row gt_center">e2/e4</td>
+<td headers="AD stub_1_54 effect" class="gt_row gt_center">7.5 (0.82, 68)</td>
+<td headers="AD stub_1_54 p.value" class="gt_row gt_right">0.074</td></tr>
+    <tr><th id="stub_1_55" scope="row" class="gt_row gt_center gt_stub">Asian</th>
+<td headers="AD stub_1_55 term" class="gt_row gt_center">e3/e4</td>
+<td headers="AD stub_1_55 effect" class="gt_row gt_center">2.5 (1.5, 4)</td>
+<td headers="AD stub_1_55 p.value" class="gt_row gt_right">1.80 × 10<sup style="font-size: 65%;">−4</sup></td></tr>
+    <tr><th id="stub_1_56" scope="row" class="gt_row gt_center gt_stub">Asian</th>
+<td headers="AD stub_1_56 term" class="gt_row gt_center">e4/e4</td>
+<td headers="AD stub_1_56 effect" class="gt_row gt_center">12 (3.2, 41)</td>
+<td headers="AD stub_1_56 p.value" class="gt_row gt_right">1.55 × 10<sup style="font-size: 65%;">−4</sup></td></tr>
+    <tr><th id="stub_1_57" scope="row" class="gt_row gt_center gt_stub">Black</th>
+<td headers="AD stub_1_57 term" class="gt_row gt_center">e2+</td>
+<td headers="AD stub_1_57 effect" class="gt_row gt_center">0.67 (0.46, 0.98)</td>
+<td headers="AD stub_1_57 p.value" class="gt_row gt_right">0.040</td></tr>
+    <tr><th id="stub_1_58" scope="row" class="gt_row gt_center gt_stub">Black</th>
+<td headers="AD stub_1_58 term" class="gt_row gt_center">e2/e4</td>
+<td headers="AD stub_1_58 effect" class="gt_row gt_center">1.7 (1.1, 2.7)</td>
+<td headers="AD stub_1_58 p.value" class="gt_row gt_right">0.029</td></tr>
+    <tr><th id="stub_1_59" scope="row" class="gt_row gt_center gt_stub">Black</th>
+<td headers="AD stub_1_59 term" class="gt_row gt_center">e3/e4</td>
+<td headers="AD stub_1_59 effect" class="gt_row gt_center">2.3 (1.8, 2.9)</td>
+<td headers="AD stub_1_59 p.value" class="gt_row gt_right">3.84 × 10<sup style="font-size: 65%;">−12</sup></td></tr>
+    <tr><th id="stub_1_60" scope="row" class="gt_row gt_center gt_stub">Black</th>
+<td headers="AD stub_1_60 term" class="gt_row gt_center">e4/e4</td>
+<td headers="AD stub_1_60 effect" class="gt_row gt_center">8.7 (5.7, 13)</td>
+<td headers="AD stub_1_60 p.value" class="gt_row gt_right">3.27 × 10<sup style="font-size: 65%;">−23</sup></td></tr>
+    <tr><th id="stub_1_61" scope="row" class="gt_row gt_center gt_stub">Hispanic</th>
+<td headers="AD stub_1_61 term" class="gt_row gt_center">e2+</td>
+<td headers="AD stub_1_61 effect" class="gt_row gt_center">1.4 (0.71, 2.9)</td>
+<td headers="AD stub_1_61 p.value" class="gt_row gt_right">0.309</td></tr>
+    <tr><th id="stub_1_62" scope="row" class="gt_row gt_center gt_stub">Hispanic</th>
+<td headers="AD stub_1_62 term" class="gt_row gt_center">e2/e4</td>
+<td headers="AD stub_1_62 effect" class="gt_row gt_center">0.85 (0.15, 4.8)</td>
+<td headers="AD stub_1_62 p.value" class="gt_row gt_right">0.854</td></tr>
+    <tr><th id="stub_1_63" scope="row" class="gt_row gt_center gt_stub">Hispanic</th>
+<td headers="AD stub_1_63 term" class="gt_row gt_center">e3/e4</td>
+<td headers="AD stub_1_63 effect" class="gt_row gt_center">2.5 (1.8, 3.4)</td>
+<td headers="AD stub_1_63 p.value" class="gt_row gt_right">1.12 × 10<sup style="font-size: 65%;">−7</sup></td></tr>
+    <tr><th id="stub_1_64" scope="row" class="gt_row gt_center gt_stub">Hispanic</th>
+<td headers="AD stub_1_64 term" class="gt_row gt_center">e4/e4</td>
+<td headers="AD stub_1_64 effect" class="gt_row gt_center">9.2 (3.1, 27)</td>
+<td headers="AD stub_1_64 p.value" class="gt_row gt_right">6.58 × 10<sup style="font-size: 65%;">−5</sup></td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Fishers Z score</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>apoe_diff <span class="ot">&lt;-</span> apoe_geno_res <span class="sc">%&gt;%</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(race, outcome, term, <span class="at">b =</span> estimate, <span class="at">se =</span> std.error) <span class="sc">%&gt;%</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> race, <span class="at">values_from =</span> <span class="fu">c</span>(b, se)) <span class="sc">%&gt;%</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(.,</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>         <span class="do">## Black vs NHW</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">diff_nhw_bla =</span> <span class="fu">fzscore</span>(b_NHW, b_Black, se_NHW, se_Black),</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">p_diff_nhw_bla =</span> <span class="dv">2</span><span class="sc">*</span><span class="fu">pnorm</span>(<span class="at">q=</span><span class="fu">abs</span>(diff_nhw_bla), <span class="at">lower.tail=</span><span class="cn">FALSE</span>),</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>         <span class="co"># NHW vs Hispanic</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">diff_nhw_his =</span> <span class="fu">fzscore</span>(b_NHW, b_Hispanic, se_NHW, se_Hispanic), </span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>         <span class="at">p_diff_nhw_his =</span> <span class="dv">2</span><span class="sc">*</span><span class="fu">pnorm</span>(<span class="at">q=</span><span class="fu">abs</span>(diff_nhw_his), <span class="at">lower.tail=</span><span class="cn">FALSE</span>),</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>         <span class="co"># NHW vs Asian</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>         <span class="at">diff_nhw_asi =</span> <span class="fu">fzscore</span>(b_NHW, b_Asian, se_NHW, se_Asian), </span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>         <span class="at">p_diff_nhw_asi =</span> <span class="dv">2</span><span class="sc">*</span><span class="fu">pnorm</span>(<span class="at">q=</span><span class="fu">abs</span>(diff_nhw_asi), <span class="at">lower.tail=</span><span class="cn">FALSE</span>),</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>         <span class="co"># Black vs Hispanic</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>         <span class="at">diff_bla_his =</span> <span class="fu">fzscore</span>(b_Black, b_Hispanic, se_Black, se_Hispanic), </span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>         <span class="at">p_diff_bla_his =</span> <span class="dv">2</span><span class="sc">*</span><span class="fu">pnorm</span>(<span class="at">q=</span><span class="fu">abs</span>(diff_bla_his), <span class="at">lower.tail=</span><span class="cn">FALSE</span>),</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>         <span class="co"># Black vs Asian</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>         <span class="at">diff_bla_asi =</span> <span class="fu">fzscore</span>(b_Black, b_Asian, se_Black, se_Asian), </span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>         <span class="at">p_diff_bla_asi =</span> <span class="dv">2</span><span class="sc">*</span><span class="fu">pnorm</span>(<span class="at">q=</span><span class="fu">abs</span>(diff_bla_asi), <span class="at">lower.tail=</span><span class="cn">FALSE</span>),</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>         </span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>         <span class="co"># Hispanic vs Asian</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>         <span class="at">diff_his_asi =</span> <span class="fu">fzscore</span>(b_Hispanic, b_Asian, se_Hispanic, se_Asian), </span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>         <span class="at">p_diff_his_asi =</span> <span class="dv">2</span><span class="sc">*</span><span class="fu">pnorm</span>(<span class="at">q=</span><span class="fu">abs</span>(diff_his_asi), <span class="at">lower.tail=</span><span class="cn">FALSE</span>)</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>apoe_diff_long <span class="ot">&lt;-</span> <span class="fu">full_join</span>(</span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>  apoe_diff <span class="sc">%&gt;%</span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(term, outcome, <span class="fu">starts_with</span>(<span class="st">'diff'</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_longer</span>(</span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>      <span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">'diff'</span>),</span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>      <span class="at">names_to =</span> <span class="st">'contrast'</span>, </span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>      <span class="at">values_to =</span> <span class="st">'z'</span>, </span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>      <span class="at">names_prefix =</span> <span class="st">"diff_"</span>,</span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>  apoe_diff <span class="sc">%&gt;%</span></span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(term, outcome, <span class="fu">starts_with</span>(<span class="st">'p_'</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_longer</span>(</span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a>      <span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">'p_'</span>),</span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>      <span class="at">names_to =</span> <span class="st">'contrast'</span>, </span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a>      <span class="at">values_to =</span> <span class="st">'p'</span>, </span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a>      <span class="at">names_prefix =</span> <span class="st">"p_diff_"</span>,</span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(contrast, <span class="at">sep =</span> <span class="st">"_"</span>, <span class="at">into =</span> <span class="fu">c</span>(<span class="st">"race1"</span>, <span class="st">"race2"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a>    <span class="at">stars =</span> <span class="fu">case_when</span>(</span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a>      p <span class="sc">&gt;</span> <span class="fl">0.05</span> <span class="sc">~</span> <span class="st">""</span>, </span>
+<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a>      <span class="fu">between</span>(p,  <span class="fl">0.01</span>, <span class="fl">0.05</span>) <span class="sc">~</span> <span class="st">"*"</span>,</span>
+<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a>      <span class="fu">between</span>(p, <span class="fl">0.001</span>, <span class="fl">0.01</span>) <span class="sc">~</span> <span class="st">"**"</span>,</span>
+<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a>      p <span class="sc">&lt;</span> <span class="fl">0.001</span> <span class="sc">~</span> <span class="st">"***"</span></span>
+<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a>df_pval <span class="ot">&lt;-</span> <span class="fu">filter</span>(apoe_diff_long, p <span class="sc">&lt;</span> <span class="fl">0.05</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb10-57"><a href="#cb10-57" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">group1 =</span> race1, <span class="at">group2 =</span> race2) <span class="sc">%&gt;%</span></span>
+<span id="cb10-58"><a href="#cb10-58" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">y.position =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>), </span>
+<span id="cb10-59"><a href="#cb10-59" aria-hidden="true" tabindex="-1"></a>         <span class="at">group1 =</span> <span class="fu">case_when</span>(</span>
+<span id="cb10-60"><a href="#cb10-60" aria-hidden="true" tabindex="-1"></a>           group1 <span class="sc">==</span> <span class="st">"nhw"</span> <span class="sc">~</span> <span class="st">"NHW"</span>, </span>
+<span id="cb10-61"><a href="#cb10-61" aria-hidden="true" tabindex="-1"></a>           group1 <span class="sc">==</span> <span class="st">"bla"</span> <span class="sc">~</span> <span class="st">"Black"</span>, </span>
+<span id="cb10-62"><a href="#cb10-62" aria-hidden="true" tabindex="-1"></a>           group1 <span class="sc">==</span> <span class="st">"jpa"</span> <span class="sc">~</span> <span class="st">"Asian"</span>, </span>
+<span id="cb10-63"><a href="#cb10-63" aria-hidden="true" tabindex="-1"></a>           group1 <span class="sc">==</span> <span class="st">"his"</span> <span class="sc">~</span> <span class="st">"Hispanic"</span></span>
+<span id="cb10-64"><a href="#cb10-64" aria-hidden="true" tabindex="-1"></a>         ), </span>
+<span id="cb10-65"><a href="#cb10-65" aria-hidden="true" tabindex="-1"></a>         <span class="at">group2 =</span> <span class="fu">case_when</span>(</span>
+<span id="cb10-66"><a href="#cb10-66" aria-hidden="true" tabindex="-1"></a>           group2 <span class="sc">==</span> <span class="st">"nhw"</span> <span class="sc">~</span> <span class="st">"NHW"</span>, </span>
+<span id="cb10-67"><a href="#cb10-67" aria-hidden="true" tabindex="-1"></a>           group2 <span class="sc">==</span> <span class="st">"bla"</span> <span class="sc">~</span> <span class="st">"Black"</span>, </span>
+<span id="cb10-68"><a href="#cb10-68" aria-hidden="true" tabindex="-1"></a>           group2 <span class="sc">==</span> <span class="st">"jpa"</span> <span class="sc">~</span> <span class="st">"Asian"</span>, </span>
+<span id="cb10-69"><a href="#cb10-69" aria-hidden="true" tabindex="-1"></a>           group2 <span class="sc">==</span> <span class="st">"his"</span> <span class="sc">~</span> <span class="st">"Hispanic"</span></span>
+<span id="cb10-70"><a href="#cb10-70" aria-hidden="true" tabindex="-1"></a>         ),</span>
+<span id="cb10-71"><a href="#cb10-71" aria-hidden="true" tabindex="-1"></a>         <span class="at">race =</span> <span class="cn">NA</span>, </span>
+<span id="cb10-72"><a href="#cb10-72" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>There was limited evidence of population-specific effects of APOE geneotype on AD risk was observed in the NACC UDS. The e2+ allele was associated with lower risk in NHW and Black populations in comparison to Hispanics, while the e4/e4 allele was associated with higher risk in Black populations compared to NHW.</p>
+<div class="cell">
+<details>
+<summary>NACC Plot</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>apoe_geno_res_p <span class="ot">&lt;-</span> apoe_geno_res <span class="sc">%&gt;%</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">race =</span> <span class="fu">fct_relevel</span>(race, <span class="st">'Asian'</span>, <span class="st">'Black'</span>, <span class="st">'Hispanic'</span>, <span class="st">'NHW'</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(., <span class="fu">aes</span>(<span class="at">x =</span> race, <span class="at">y =</span> or, <span class="at">color =</span> race)) <span class="sc">+</span> </span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_grid</span>(<span class="at">cols =</span> <span class="fu">vars</span>(term), <span class="at">rows =</span> <span class="fu">vars</span>(outcome)) <span class="sc">+</span> </span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">1</span>, <span class="at">linetype =</span> <span class="dv">2</span>) <span class="sc">+</span> </span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> or_lci, <span class="at">ymax =</span> or_hci), <span class="at">linewidth =</span> <span class="fl">0.75</span>) <span class="sc">+</span> </span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="st">"Odds Ratio"</span>, <span class="at">trans =</span> <span class="st">'log'</span>, </span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>                       <span class="at">breaks =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">8</span>, <span class="dv">16</span>, <span class="dv">32</span>), </span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>                       <span class="at">labels =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">8</span>, <span class="dv">16</span>, <span class="dv">32</span>)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span> </span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>( <span class="st">"#4DAF4A"</span>, <span class="st">"#E41A1C"</span>, <span class="st">"#377EB8"</span>, <span class="st">"#984EA3"</span>)) <span class="sc">+</span> </span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> theme.size),</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">315</span>, <span class="at">vjust =</span> <span class="fl">0.5</span>, <span class="at">hjust=</span><span class="dv">0</span>), </span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>      <span class="at">legend.position =</span> <span class="st">"bottom"</span>, </span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">strip.background =</span> <span class="fu">element_blank</span>(), </span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>      <span class="at">strip.text =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">'bold'</span>)</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>      ) <span class="sc">+</span> </span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>  ggprism<span class="sc">::</span><span class="fu">add_pvalue</span>(df_pval, <span class="at">bracket.nudge.y =</span> <span class="dv">3</span>, <span class="at">label =</span> <span class="st">"{stars}"</span>, <span class="at">colour =</span> <span class="st">'black'</span>, <span class="at">tip.length =</span> <span class="fl">0.01</span>, <span class="at">bracket.size =</span> <span class="fl">0.2</span>) </span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>apoe_geno_res_p</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="NACC_apoe_files/figure-html/plot_nacc-1.png" class="img-fluid" width="672"></p>
+</div>
+<details>
+<summary>NACC Plot</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"../results/figures/nacc_apoe_race.png"</span>, <span class="at">plot =</span> apoe_geno_res_p, <span class="at">width =</span> <span class="dv">6</span>, <span class="at">height =</span> <span class="dv">6</span>, <span class="at">units =</span> <span class="st">'in'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

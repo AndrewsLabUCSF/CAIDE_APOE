@@ -1,0 +1,2534 @@
+---
+title: "Population-specific effects of APOE in NACC"
+format: html
+editor: visual
+knitr: 
+  opts_chunk: 
+    code-fold: true
+    warning: false
+    error: false
+    message: false
+    echo: false
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| label: packages
+#| code-summary: Load R Packages
+#| echo: false
+
+library(tidyverse)
+library(glue)
+library(survival)
+library(survminer)
+library(broom)
+library(gtsummary)
+library(gt)
+library(emmeans)
+library(gtools)
+
+`%nin%` = negate(`%in%`)
+theme_gtsummary_compact()
+
+# Compares b/se using z score method - doi: 10.1038/s41380-019-0596-9
+fzscore <- function(b1, b2, se1, se2){(b1 - b2)/sqrt(se1^2 + se2^2)}
+
+setwd("~/Dropbox/Research/UCSF/ABA")
+```
+
+```{r}
+#| label: import
+#| code-summary: Import data 
+
+dat <- read_rds('data/nacc.rds') %>%
+  # filter(NACCAVST >= 2) %>%
+  mutate(
+    apoe_geno = fct_recode(apoe_geno,
+      'e2+' = '22', 'e2+' = '23', "e3/e3" = "33", "e2/e4" = "24", "e3/e4" = "34", "e4/e4" = "44" 
+    ), 
+    apoe_geno = fct_relevel(apoe_geno, "e3/e3")
+  )
+
+```
+
+```{r}
+#| label: table 1
+#| code-summary: Table 1
+#| tbl-cap: Table 1 NACC Cohort Characteristics
+
+tab_rf <- dat %>% 
+  dplyr::select(race, SEX, NACCAGE, i_EDUC, i_NACCBMI, i_hyperten, i_diabetes, i_hypchol, apoe, CDRSUM, NACCUDSD, NACCETPR) %>%
+  mutate(
+    NACCUDSD = fct_recode(as.factor(NACCUDSD), 'CU' = '1', "MCI" = "3", "ADRD" = "4"),
+    NACCETPR = fct_recode(as.factor(NACCETPR), 'CU' = '88', "AD" = "1", "LBD" = "2", "FTLD" = '6', "FTLD" = '7', 'VCID' = '8'),
+    NACCETPR = fct_relevel(NACCETPR),
+    SEX = as.factor(SEX),
+    SEX = fct_recode(SEX,  'Male' = '1', "Female" = "2")
+  ) %>%
+  tbl_summary(by = race,
+              statistic = list(all_continuous() ~ "{mean} ({sd})")) %>%
+  add_n() 
+
+tab_rf
+
+as_gt(tab_rf) %>%
+  gtsave(., "~/Downloads/table_rf.docx")
+```
+
+
+```{r}
+#| label: table 1
+#| code-summary: Table 1
+#| tbl-cap: Table 1 NACC Cohort Characteristics
+
+tab_caide <- dat %>% 
+  dplyr::select(race, SEX, NACCAGE, apoe, starts_with('caide'), CDRSUM, NACCUDSD, NACCETPR) %>%
+  mutate(
+    NACCUDSD = fct_recode(as.factor(NACCUDSD), 'CU' = '1', "MCI" = "3", "ADRD" = "4"),
+    NACCETPR = fct_recode(as.factor(NACCETPR), 'CU' = '88', "AD" = "1", "LBD" = "2", "FTLD" = '6', "FTLD" = '7', 'VCID' = '8'),
+    NACCETPR = fct_relevel(NACCETPR),
+    SEX = as.factor(SEX),
+    SEX = fct_recode(SEX,  'Male' = '1', "Female" = "2")
+  ) %>%
+  tbl_summary(by = race,
+              statistic = list(all_continuous() ~ "{mean} ({sd})")) %>%
+  add_n() 
+
+tab_caide
+
+as_gt(tab_caide) %>%
+  gtsave(., "~/Downloads/table_caid.docx")
+```
+
+```{r}
+#| label: table 1.1
+#| code-summary: Table 1.1
+#| tbl-cap: Table 1.1 NACC Cohort Characteristics
+
+tab_mcaide <- dat %>% 
+  dplyr::select(race, SEX, NACCAGE, apoe, starts_with('mcaide'), CDRSUM, NACCUDSD, NACCETPR) %>%
+  mutate(
+    NACCUDSD = fct_recode(as.factor(NACCUDSD), 'CU' = '1', "MCI" = "3", "ADRD" = "4"),
+    NACCETPR = fct_recode(as.factor(NACCETPR), 'CU' = '88', "AD" = "1", "LBD" = "2", "FTLD" = '6', "FTLD" = '7', 'VCID' = '8'),
+    NACCETPR = fct_relevel(NACCETPR),
+    SEX = as.factor(SEX),
+    SEX = fct_recode(SEX,  'Male' = '1', "Female" = "2")
+  ) %>%
+  tbl_summary(by = race,
+              statistic = list(all_continuous() ~ "{mean} ({sd})")) %>%
+  add_n() 
+
+tab_mcaide
+
+as_gt(tab_mcaide) %>%
+  gtsave(., "~/Downloads/table_mcaid.docx")
+
+```
+
+## Baseline Regression Models
+### APOE Genotype
+```{r}
+#| label: apoe_regression_models
+#| code-summary: APOE genotype Regression Models
+
+apoe_mod_fit <- function(data){
+  # glm(dx ~ apoe_geno + SEX + aoo, data = data, family = 'binomial')
+  glm(dx ~ apoe_geno + SEX + NACCAGE, data = data, family = 'binomial')
+}
+
+res <- bind_rows(
+  dat %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD + MCI",
+      res = map(data, apoe_mod_fit), 
+    ) %>%
+    select(-data), 
+
+  dat %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD",
+      res = map(data, apoe_mod_fit), 
+    ) %>%
+    select(-data), 
+  
+  dat %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD + MCI",
+      res = map(data, apoe_mod_fit), 
+    ) %>%
+    select(-data), 
+
+  dat %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD",
+      res = map(data, apoe_mod_fit), 
+    ) %>%
+    select(-data), 
+) %>%
+  mutate(
+    fit = map(res, glance),
+    df = map(res, tidy), 
+  )
+
+apoe_geno_res <- res %>%
+  select(race, outcome, df) %>%
+  unnest(cols = df) %>%
+  ungroup() %>%
+  filter(str_detect(term, 'apoe')) %>%
+  mutate(
+    lci = estimate - (std.error * 1.96),
+    hci = estimate + (std.error * 1.96), 
+    or = exp(estimate),
+    or_lci = exp(lci),
+    or_hci = exp(hci),
+    term = str_replace(term, "apoe_geno", ""), 
+    term = fct_relevel(term, 'e3/e3', 'e2+', 'e2/e4', 'e3/e4', 'e4/e4'),    
+  )
+```
+
+```{r}
+#| label: apoe_difference
+#| code-summary: APOE genotype differences
+
+apoe_diff <- apoe_geno_res %>%
+  select(race, outcome, term, b = estimate, se = std.error) %>%
+  pivot_wider(names_from = race, values_from = c(b, se)) %>%
+  mutate(.,
+         ## Black vs NHW
+         diff_nhw_bla = fzscore(b_NHW, b_Black, se_NHW, se_Black),
+         p_diff_nhw_bla = 2*pnorm(q=abs(diff_nhw_bla), lower.tail=FALSE),
+         # NHW vs Hispanic
+         diff_nhw_his = fzscore(b_NHW, b_Hispanic, se_NHW, se_Hispanic), 
+         p_diff_nhw_his = 2*pnorm(q=abs(diff_nhw_his), lower.tail=FALSE),
+         # NHW vs Asian
+         diff_nhw_asi = fzscore(b_NHW, b_Asian, se_NHW, se_Asian), 
+         p_diff_nhw_asi = 2*pnorm(q=abs(diff_nhw_asi), lower.tail=FALSE),
+    
+         # Black vs Hispanic
+         diff_bla_his = fzscore(b_Black, b_Hispanic, se_Black, se_Hispanic), 
+         p_diff_bla_his = 2*pnorm(q=abs(diff_bla_his), lower.tail=FALSE),
+         # Black vs Asian
+         diff_bla_asi = fzscore(b_Black, b_Asian, se_Black, se_Asian), 
+         p_diff_bla_asi = 2*pnorm(q=abs(diff_bla_asi), lower.tail=FALSE),
+         
+         # Hispanic vs Asian
+         diff_his_asi = fzscore(b_Hispanic, b_Asian, se_Hispanic, se_Asian), 
+         p_diff_his_asi = 2*pnorm(q=abs(diff_his_asi), lower.tail=FALSE)
+  )
+
+apoe_diff_long <- full_join(
+  apoe_diff %>%
+    select(term, outcome, starts_with('diff')) %>%
+    pivot_longer(
+      cols = starts_with('diff'),
+      names_to = 'contrast', 
+      values_to = 'z', 
+      names_prefix = "diff_",
+    ),
+  
+  apoe_diff %>%
+    select(term, outcome, starts_with('p_')) %>%
+    pivot_longer(
+      cols = starts_with('p_'),
+      names_to = 'contrast', 
+      values_to = 'p', 
+      names_prefix = "p_diff_",
+    )
+) %>%
+  separate(contrast, sep = "_", into = c("race1", "race2")) %>%
+  mutate(
+    stars = case_when(
+      p > 0.05 ~ "", 
+      between(p,  0.01, 0.05) ~ "*",
+      between(p, 0.001, 0.01) ~ "**",
+      p < 0.001 ~ "***"
+    )
+  )
+
+df_pval <- filter(apoe_diff_long, p < 0.05) %>%
+  rename(group1 = race1, group2 = race2) %>%
+  mutate(y.position = c(3, 3), 
+         group1 = case_when(
+           group1 == "nhw" ~ "NHW", 
+           group1 == "bla" ~ "Black", 
+           group1 == "jpa" ~ "Asian", 
+           group1 == "his" ~ "Hispanic"
+         ), 
+         group2 = case_when(
+           group2 == "nhw" ~ "NHW", 
+           group2 == "bla" ~ "Black", 
+           group2 == "jpa" ~ "Asian", 
+           group2 == "his" ~ "Hispanic"
+         ),
+         race = NA, 
+         reference = NA,
+          term = fct_recode(term, "ε2+" = "e2+", "ε2/ε4" = "e2/e4", "ε3/ε4" = "e3/e4", "ε4/ε4" = "e4/e4")
+
+  )
+```
+
+```{r}
+#| label: apoe_plots
+#| code-summary: APOE genotype plots
+
+theme.size = 8
+
+apoe_geno_res_p <- apoe_geno_res %>%
+    # filter(., outcome == "AD") %>%
+    #   add_row(
+    #   outcome = c("AD", "AD + MCI", "ADRD", "ADRD + MCI"),
+    #   race = c('Black', 'Hispanic', 'Asian',  'NHW'),
+    #   or = 1,
+    #   term =  "e3/e3",
+    # ) %>%
+  mutate(race = fct_relevel(race, 'Black', 'Hispanic', 'Asian',  'NHW'), 
+        term = fct_recode(term, "ε2+" = "e2+",  "ε3/ε3 \n(reference)" = "e3/e3",
+                          "ε2/ε4" = "e2/e4", "ε3/ε4" = "e3/e4", "ε4/ε4" = "e4/e4"),
+        term = fct_relevel(term, "ε2+", "ε3/ε3 \n(reference)", "ε2/ε4", "ε3/ε4", "ε4/ε4"),
+        reference = ifelse(or == 1, TRUE, FALSE)
+        ) %>%
+  ggplot(., aes(x = race, y = or, color = race)) + 
+    facet_grid(cols = vars(term), rows = vars(outcome)) + 
+    geom_hline(yintercept = 1, linetype = 2) + 
+    geom_point() + 
+    geom_linerange(aes(ymin = or_lci, ymax = or_hci), linewidth = 0.75) + 
+    scale_y_continuous("Odds Ratio", trans = 'log', 
+                       breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 
+                       labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32)
+    ) + 
+    scale_color_manual(values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
+    theme_bw() + 
+    theme(
+      text = element_text(size = theme.size),
+      axis.text.x = element_text(angle = 315, vjust = 0.5, hjust=0), 
+      axis.title.x = element_blank(),
+      legend.position = "bottom", 
+      strip.background = element_blank(), 
+      strip.text = element_text(face = 'bold')
+      ) + 
+  ggprism::add_pvalue(df_pval #%>% filter(outcome == "AD")
+                      , bracket.nudge.y = 3, label = "{stars}", colour = 'black', tip.length = 0.01, bracket.size = 0.2) 
+
+apoe_geno_res_p
+ggsave("results/figures/nacc_apoe_race_all_bl.png", plot = apoe_geno_res_p, width = 9, height = 5, units = 'in')
+
+```
+
+### CAIDE 
+```{r}
+glm(dx ~ race + apoe + z_caide, data = dat, family = 'binomial') %>% 
+  tidy()
+
+glm(dx_lv ~ race + apoe + z_caide, data = dat, family = 'binomial') %>% 
+  tidy()
+
+lm(ad_age_lv ~ race + apoe + z_caide, data = dat) %>% 
+  tidy()
+
+```
+
+```{r}
+#| label: regression_models
+#| code-summary: Regression Models
+
+caide_mod_fit <- function(data){
+  # glm(dx ~ apoe_geno + SEX + aoo, data = data, family = 'binomial')
+  glm(dx ~ apoe, data = data, family = 'binomial')
+}
+
+res <- bind_rows(
+  dat %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD + MCI",
+      res = map(data, caide_mod_fit), 
+    ), 
+
+  dat %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD",
+      res = map(data, caide_mod_fit), 
+    ), 
+  
+  dat %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD + MCI",
+      res = map(data, caide_mod_fit), 
+    ), 
+
+  dat %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD",
+      res = map(data, caide_mod_fit), 
+    ), 
+) %>%
+  mutate(
+    fit = map(res, glance),
+    df = map(res, tidy),
+    pred = map2(res, data, predict, type = 'response'), 
+  ) %>%
+  select(-data)
+
+caide_res <- res %>%
+  select(race, outcome, df) %>%
+  unnest(cols = df) %>%
+  ungroup() %>%
+  filter(str_detect(term, 'apoe|caide')) %>%
+  mutate(
+    lci = estimate - (std.error * 1.96),
+    hci = estimate + (std.error * 1.96), 
+    or = exp(estimate),
+    or_lci = exp(lci),
+    or_hci = exp(hci),
+    term = str_replace(term, "apoe", ""), 
+    term = fct_relevel(term, 'e2+', 'e4+', 'z_caide'),    
+    race = fct_relevel(race, "Black", "Hispanic", "Asian", "NHW"), 
+    term = fct_recode(term, "ε2+" = "e2+", "ε4+" = "e4+", "CAIDE" = "z_caide")
+  )
+```
+
+```{r}
+#| label: apoe_difference
+#| code-summary: APOE genotype differences
+
+caide_diff <- caide_res %>%
+  select(race, outcome, term, b = estimate, se = std.error, p = p.value ) %>%
+  pivot_wider(names_from = race, values_from = c(b, se, p)) %>%
+  mutate(.,
+         ## Black vs NHW
+         diff_nhw_bla = fzscore(b_NHW, b_Black, se_NHW, se_Black),
+         p_diff_nhw_bla = 2*pnorm(q=abs(diff_nhw_bla), lower.tail=FALSE),
+         # NHW vs Hispanic
+         diff_nhw_his = fzscore(b_NHW, b_Hispanic, se_NHW, se_Hispanic), 
+         p_diff_nhw_his = 2*pnorm(q=abs(diff_nhw_his), lower.tail=FALSE),
+         # NHW vs Asian
+         diff_nhw_asi = fzscore(b_NHW, b_Asian, se_NHW, se_Asian), 
+         p_diff_nhw_asi = 2*pnorm(q=abs(diff_nhw_asi), lower.tail=FALSE),
+    
+         # Black vs Hispanic
+         diff_bla_his = fzscore(b_Black, b_Hispanic, se_Black, se_Hispanic), 
+         p_diff_bla_his = 2*pnorm(q=abs(diff_bla_his), lower.tail=FALSE),
+         # Black vs Asian
+         diff_bla_asi = fzscore(b_Black, b_Asian, se_Black, se_Asian), 
+         p_diff_bla_asi = 2*pnorm(q=abs(diff_bla_asi), lower.tail=FALSE),
+         
+         # Hispanic vs Asian
+         diff_his_asi = fzscore(b_Hispanic, b_Asian, se_Hispanic, se_Asian), 
+         p_diff_his_asi = 2*pnorm(q=abs(diff_his_asi), lower.tail=FALSE)
+  )
+
+caide_diff_long <- full_join(
+  caide_diff %>%
+    select(term, outcome, starts_with('diff')) %>%
+    pivot_longer(
+      cols = starts_with('diff'),
+      names_to = 'contrast', 
+      values_to = 'z', 
+      names_prefix = "diff_",
+    ),
+  
+  caide_diff %>%
+    select(term, outcome, starts_with('p_diff')) %>%
+    pivot_longer(
+      cols = starts_with('p_'),
+      names_to = 'contrast', 
+      values_to = 'p', 
+      names_prefix = "p_diff_",
+    )
+) %>%
+  separate(contrast, sep = "_", into = c("race1", "race2")) %>%
+  mutate(
+    stars = case_when(
+      p > 0.05 ~ "", 
+      between(p,  0.01, 0.05) ~ "*",
+      between(p, 0.001, 0.01) ~ "**",
+      p < 0.001 ~ "***"
+    )
+  )
+
+caide_df_pval <- filter(caide_diff_long, p < 0.05) %>%
+  rename(group1 = race1, group2 = race2) %>%
+  mutate(y.position = rep(0.4, 19), 
+         group1 = case_when(
+           group1 == "nhw" ~ "NHW", 
+           group1 == "bla" ~ "Black", 
+           group1 == "asi" ~ "Asian", 
+           group1 == "his" ~ "Hispanic"
+         ), 
+         group2 = case_when(
+           group2 == "nhw" ~ "NHW", 
+           group2 == "bla" ~ "Black", 
+           group2 == "asi" ~ "Asian", 
+           group2 == "his" ~ "Hispanic"
+         ),
+         race = NA, 
+         reference = NA,
+         term = fct_recode(term, "ε2+" = "e2+", "ε4+" = "e4+", "CAIDE" = "z_caide")
+
+  )
+```
+
+```{r}
+#| label: apoe_plots
+#| code-summary: APOE genotype plots
+
+theme.size = 8
+
+effect_plot <- function(x){
+  x %>%
+    mutate(race = fct_relevel(race, 'Black', 'Hispanic', 'Asian',  'NHW'), 
+        term = fct_recode(term, "ε2+" = "e2+", "ε4+" = "e4+", "CAIDE" = "z_caide", "mCAIDE" = "z_mcaide"),
+        ) %>%
+  ggplot(., aes(x = race, y = or, color = race)) + 
+    facet_grid(cols = vars(term), rows = vars(outcome)) + 
+    geom_hline(yintercept = 1, linetype = 2) + 
+    geom_point() + 
+    geom_linerange(aes(ymin = or_lci, ymax = or_hci), linewidth = 0.75) + 
+    scale_y_continuous("Odds Ratio", trans = 'log', 
+                       breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 
+                       labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32)
+    ) + 
+    scale_color_manual(values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
+    theme_bw() + 
+    theme(
+      text = element_text(size = theme.size),
+      axis.text.x = element_text(angle = 315, vjust = 0.5, hjust=0), 
+      axis.title.x = element_blank(),
+      legend.position = "bottom", 
+      strip.background = element_blank(), 
+      strip.text = element_text(face = 'bold')
+      )
+  }
+
+caide_e2_res_p <- filter(caide_res, term == "e2+") %>% effect_plot(.) 
+caide_e4_res_p <- filter(caide_res, term == "e4+") %>% effect_plot(.) + 
+  ggprism::add_pvalue(caide_df_pval %>% filter(term == "ε4+")
+                      , bracket.nudge.y = 3, label = "{stars}", colour = 'black', tip.length = 0.01, bracket.size = 0.2) 
+
+caide_res_p <- filter(caide_res, term == "z_caide") %>% effect_plot(.) + 
+  ggprism::add_pvalue(caide_df_pval %>% filter(term == "CAIDE")
+                      , bracket.nudge.y = 3, label = "{stars}", colour = 'black', tip.length = 0.01, bracket.size = 0.2) 
+
+
+caide_res_p
+caide_e4_res_p
+caide_e2_res_p
+
+ggsave("results/figures/nacc_apoe_race_all_bl.png", plot = apoe_geno_res_p, width = 9, height = 5, units = 'in')
+
+```
+
+
+```{r}
+#| label: apoe_plots
+#| code-summary: APOE genotype plots
+
+nacc_caid_apoe_all_bl_p <- ggplot(caide_res, aes(x = or, y = race, color = race)) + 
+    facet_grid(cols = vars(term), rows = vars(outcome), scales = 'free', labeller = label_wrap_gen(width = 7)) + 
+    geom_vline(xintercept = 1, linetype = 2) + 
+    geom_point() + 
+    geom_linerange(aes(xmin = or_lci, xmax = or_hci), linewidth = 0.75) + 
+    scale_y_discrete(limits=rev) +  
+    scale_color_manual(
+      labels = c("Black", "Latinx", "Asian", "NHW"),
+      values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
+    theme_bw() + 
+    labs(x = "Odds Ratio") + 
+    theme(
+      text = element_text(size = 14),
+      axis.title.y = element_blank(),
+      legend.position = "bottom", 
+      strip.background = element_blank(), 
+      strip.text = element_text(face = 'bold'), 
+      legend.title=element_blank()
+      )
+
+ggsave("results/figures/nacc_caid_apoe_all_bl.png", plot = nacc_caid_apoe_all_bl_p, width = 9, height = 4, units = 'in')
+
+```
+
+```{r}
+#| label: adard_mci_apoe_plots
+#| code-summary: ADRD+MCI Main effect plots
+
+theme.size = 8
+
+nacc_caid_apoe_adrd_mci_bl_p <- ggplot(caide_res %>% filter(outcome == "ADRD + MCI"), aes(x = or, y = race, color = race)) + 
+    facet_grid(cols = vars(term), rows = vars(outcome), scales = 'free') + 
+    geom_vline(xintercept = 1, linetype = 2) + 
+    geom_point() + 
+    geom_linerange(aes(xmin = or_lci, xmax = or_hci), linewidth = 0.75) + 
+    # scale_x_continuous("Odds Ratio", trans = 'log', 
+    #                    breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 
+    #                    labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32)
+    # ) + 
+    scale_y_discrete(limits=rev) +  
+    scale_color_manual(
+      labels = c("Black", "Latinx", "Asian", "NHW"),
+      values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
+    theme_bw() + 
+    labs(x = "Odds Ratio") + 
+    theme(
+      text = element_text(size = 14),
+      axis.title.y = element_blank(),
+      legend.position = "bottom", 
+      strip.background = element_blank(), 
+      strip.text = element_text(face = 'bold')
+      )
+
+ggsave("results/figures/nacc_caid_apoe_adrd_mci_bl.png", plot = nacc_caid_apoe_adrd_mci_bl_p, width = 9, height = 3.5, units = 'in')
+
+```
+
+
+```{r}
+test <- filter(res, race == "NHW", outcome == "ADRD + MCI") %>%
+  select(data, pred) %>%
+  unnest(c(data, pred)) %>%
+  ungroup()
+
+
+
+pROC::auc(test$dx, test$pred, plot = TRUE, print.auc = TRUE)
+
+
+```
+
+#### Interaction
+```{r}
+
+glm(dx ~ race + caide_apoe, data = dat, family = 'binomial') %>% 
+  tidy()
+
+glm(dx_lv ~ race + caide_apoe, data = dat, family = 'binomial') %>% 
+  tidy()
+
+lm(ad_age_lv ~ race + caide_apoe, data = dat) %>% 
+  tidy()
+
+
+```
+
+```{r}
+#| label: regression_models
+#| code-summary: Regression Models
+
+add_me <- tibble(
+    outcome = c("AD", "AD + MCI", "ADRD", "ADRD + MCI"),
+    race = c('Black', 'Hispanic', 'Asian',  'NHW'),
+  ) %>% 
+    expand(outcome, race) %>%
+    mutate(
+      estimate = 0, 
+      term = "mid_e3/e3"
+    )
+
+caide_apoe_cat_mod_fit <- function(data){
+  glm(dx ~ caide_apoe, data = data, family = 'binomial')
+}
+
+caide_apoe_cat_res <- bind_rows(
+  dat %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD + MCI",
+      res = map(data, caide_apoe_cat_mod_fit), 
+    ) %>%
+    select(-data), 
+
+  dat %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD",
+      res = map(data, caide_apoe_cat_mod_fit), 
+    ) %>%
+    select(-data), 
+  
+  dat %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD + MCI",
+      res = map(data, caide_apoe_cat_mod_fit), 
+    ) %>%
+    select(-data), 
+
+  dat %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD",
+      res = map(data, caide_apoe_cat_mod_fit), 
+    ) %>%
+    select(-data), 
+) %>%
+  mutate(
+    fit = map(res, glance),
+    df = map(res, tidy), 
+  )
+
+caide_apoe_cat_df <- caide_apoe_cat_res %>%
+  select(race, outcome, df) %>%
+  unnest(cols = df) %>%
+  ungroup() %>%
+  filter(str_detect(term, 'caide_apoe'))  %>%
+  bind_rows(add_me) %>%
+  mutate(
+    lci = estimate - (std.error * 1.96),
+    hci = estimate + (std.error * 1.96), 
+    or = exp(estimate),
+    or_lci = exp(lci),
+    or_hci = exp(hci),
+    term = str_replace(term, "caide_apoe", ""), 
+    term = fct_relevel(term, 
+                       "high_e4+", "mid_e4+", "low_e4+", 
+                       "high_e3/e3", "mid_e3/e3",  "low_e3/e3", 
+                        "high_e2+", "mid_e2+", "low_e2+",
+                       ),
+    term = fct_recode(term, 
+                     "Unfavourable, e4+" = "high_e4+", "Intermediate, e4+" = "mid_e4+", "Favourable, e4+" = "low_e4+", 
+                     "Unfavourable, e3/e3" = "high_e3/e3", "Intermediate, e3/e3 (reference)" = "mid_e3/e3", "Favourable, e3/e3" = "low_e3/e3", 
+                     "Unfavourable, e2+" = "high_e2+", "Intermediate, e2+" = "mid_e2+", "Favourable, e2+" = "low_e2+" 
+                      ),
+    reference = ifelse(or == 1, TRUE, FALSE), 
+    race = fct_relevel(race, "Black", "Hispanic", "Asian", "NHW"), 
+    race = fct_recode(race, "Latinx" = "Hispanic"), 
+  ) 
+
+```
+
+```{r}
+#| label: apoe_plots
+#| code-summary: APOE genotype plots
+
+theme.size = 8
+
+nacc_caide_apoe_cat_all_bl <- ggplot(caide_apoe_cat_df, aes(x = or, y = term, color = race, shape = reference)) + 
+  facet_grid(cols = vars(race), rows = vars(outcome), scales = "free_x", labeller = label_wrap_gen(width = 7)) + 
+  geom_vline(xintercept = 1, linetype = 2) + 
+  geom_point() + 
+  geom_linerange(aes(xmin = or_lci, xmax = or_hci), linewidth = 0.75) + 
+  scale_x_continuous("Odds Ratio", trans = 'log', 
+                     breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32),
+                     labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32),
+                       limits = c(0.15, 9), 
+                       oob=scales::rescale_none
+                       ) + 
+  scale_color_manual(values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
+  scale_shape_manual(values = c(16, 15), guide = 'none') + 
+  theme_bw() + 
+  theme(
+    text = element_text(size = theme.size),
+    axis.title.y = element_blank(),
+    legend.position = "bottom", 
+    strip.background = element_blank(), 
+    strip.text = element_text(face = 'bold'), 
+    legend.title = element_blank()
+    )
+
+nacc_caide_apoe_cat_all_bl 
+
+ggsave("results/figures/nacc_caide_apoe_cat_all_bl.png", plot = nacc_caide_apoe_cat_all_bl, width = 9, height = 4, units = 'in')
+
+```
+
+```{r}
+#| label: caide_apoe_adrd_mci_bl_presentation
+#| code-summary: CAIDE * APOE ADRD + MCI plots
+
+theme.size = 14
+
+caide_apoe_adrd_mci_bl_p <- caide_apoe_cat_df %>%
+  filter(outcome == "ADRD + MCI") %>% 
+  ggplot(., aes(x = or, y = term, color = race, shape = reference)) + 
+    facet_grid(cols = vars(race), rows = vars(outcome), scales = "free_x") + 
+    geom_vline(xintercept = 1, linetype = 2) + 
+    geom_point() + 
+    geom_linerange(aes(xmin = or_lci, xmax = or_hci), linewidth = 0.75) + 
+    scale_x_continuous("Odds Ratio", trans = 'log',
+                       breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32),
+                       labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 
+                       limits = c(0.15, 9), 
+                       oob=scales::rescale_none
+    ) +
+    scale_color_manual(
+      values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")
+      ) + 
+    scale_shape_manual(values = c(16, 15), guide = 'none') + 
+    theme_bw() + 
+    theme(
+      text = element_text(size = theme.size),
+      axis.title.y = element_blank(),
+      axis.text.x = element_text(size = 10),
+      legend.position = "bottom", 
+      strip.background = element_blank(), 
+      strip.text = element_text(face = 'bold')
+      )
+
+
+ggsave("results/figures/caide_apoe_adrd_mci_bl.png", plot = caide_apoe_adrd_mci_bl_p, width = 9, height = 3.5, units = 'in')
+
+```
+
+### mCAIDE 
+```{r}
+glm(dx ~ race + apoe + z_mcaide, data = dat, family = 'binomial') %>% 
+  tidy()
+
+glm(dx_lv ~ race + apoe + z_mcaide, data = dat, family = 'binomial') %>% 
+  tidy()
+
+lm(ad_age_lv ~ race + apoe + z_mcaide, data = dat) %>% 
+  tidy()
+
+```
+
+
+```{r}
+#| label: regression_models
+#| code-summary: Regression Models
+
+mcaide_mod_fit <- function(data){
+  # glm(dx ~ apoe_geno + SEX + aoo, data = data, family = 'binomial')
+  glm(dx ~ apoe + z_mcaide, data = data, family = 'binomial')
+}
+
+mcaide_res <- bind_rows(
+  dat %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD + MCI",
+      res = map(data, mcaide_mod_fit), 
+    ), 
+
+  dat %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD",
+      res = map(data, mcaide_mod_fit), 
+    ), 
+  
+  dat %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD + MCI",
+      res = map(data, mcaide_mod_fit), 
+    ),
+
+  dat %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD",
+      res = map(data, mcaide_mod_fit), 
+    ), 
+) %>%
+  mutate(
+    fit = map(res, glance),
+    df = map(res, tidy), 
+    pred = map2(res, data, predict, type = 'response'), 
+  ) %>% 
+  select(-data)
+
+mcaide_res_df <- mcaide_res %>%
+  select(race, outcome, df) %>%
+  unnest(cols = df) %>%
+  ungroup() %>%
+  filter(str_detect(term, 'apoe|mcaide')) %>%
+  mutate(
+    lci = estimate - (std.error * 1.96),
+    hci = estimate + (std.error * 1.96), 
+    or = exp(estimate),
+    or_lci = exp(lci),
+    or_hci = exp(hci),
+    term = str_replace(term, "apoe", ""), 
+    term = fct_relevel(term, 'e2+', 'e4+', 'z_mcaide'),    
+    race = fct_relevel(race, "Black", "Hispanic", "Asian", "NHW"), 
+    term = fct_recode(term, "ε2+" = "e2+", "ε4+" = "e4+", "mCAIDE" = "z_mcaide")
+  )
+
+```
+
+```{r}
+#| label: apoe_difference
+#| code-summary: APOE genotype differences
+
+mcaide_diff <- mcaide_res_df %>%
+  select(race, outcome, term, b = estimate, se = std.error, p = p.value ) %>%
+  pivot_wider(names_from = race, values_from = c(b, se, p)) %>%
+  mutate(.,
+         ## Black vs NHW
+         diff_nhw_bla = fzscore(b_NHW, b_Black, se_NHW, se_Black),
+         p_diff_nhw_bla = 2*pnorm(q=abs(diff_nhw_bla), lower.tail=FALSE),
+         # NHW vs Hispanic
+         diff_nhw_his = fzscore(b_NHW, b_Hispanic, se_NHW, se_Hispanic), 
+         p_diff_nhw_his = 2*pnorm(q=abs(diff_nhw_his), lower.tail=FALSE),
+         # NHW vs Asian
+         diff_nhw_asi = fzscore(b_NHW, b_Asian, se_NHW, se_Asian), 
+         p_diff_nhw_asi = 2*pnorm(q=abs(diff_nhw_asi), lower.tail=FALSE),
+    
+         # Black vs Hispanic
+         diff_bla_his = fzscore(b_Black, b_Hispanic, se_Black, se_Hispanic), 
+         p_diff_bla_his = 2*pnorm(q=abs(diff_bla_his), lower.tail=FALSE),
+         # Black vs Asian
+         diff_bla_asi = fzscore(b_Black, b_Asian, se_Black, se_Asian), 
+         p_diff_bla_asi = 2*pnorm(q=abs(diff_bla_asi), lower.tail=FALSE),
+         
+         # Hispanic vs Asian
+         diff_his_asi = fzscore(b_Hispanic, b_Asian, se_Hispanic, se_Asian), 
+         p_diff_his_asi = 2*pnorm(q=abs(diff_his_asi), lower.tail=FALSE)
+  )
+
+mcaide_diff_long <- full_join(
+  mcaide_diff %>%
+    select(term, outcome, starts_with('diff')) %>%
+    pivot_longer(
+      cols = starts_with('diff'),
+      names_to = 'contrast', 
+      values_to = 'z', 
+      names_prefix = "diff_",
+    ),
+  
+  mcaide_diff %>%
+    select(term, outcome, starts_with('p_diff')) %>%
+    pivot_longer(
+      cols = starts_with('p_'),
+      names_to = 'contrast', 
+      values_to = 'p', 
+      names_prefix = "p_diff_",
+    )
+) %>%
+  separate(contrast, sep = "_", into = c("race1", "race2")) %>%
+  mutate(
+    stars = case_when(
+      p > 0.05 ~ "", 
+      between(p,  0.01, 0.05) ~ "*",
+      between(p, 0.001, 0.01) ~ "**",
+      p < 0.001 ~ "***"
+    )
+  )
+
+mcaide_df_pval <- filter(mcaide_diff_long, p < 0.05) %>%
+  rename(group1 = race1, group2 = race2) %>%
+  mutate(y.position = rep(0.4, 16), 
+         group1 = case_when(
+           group1 == "nhw" ~ "NHW", 
+           group1 == "bla" ~ "Black", 
+           group1 == "asi" ~ "Asian", 
+           group1 == "his" ~ "Hispanic"
+         ), 
+         group2 = case_when(
+           group2 == "nhw" ~ "NHW", 
+           group2 == "bla" ~ "Black", 
+           group2 == "asi" ~ "Asian", 
+           group2 == "his" ~ "Hispanic"
+         ),
+         race = NA, 
+         reference = NA,
+          term = fct_recode(term, "ε2+" = "e2+", "ε4+" = "e4+", "mCAIDE" = "z_mcaide"),
+
+  )
+```
+
+
+
+```{r}
+#| label: apoe_plots
+#| code-summary: APOE genotype plots
+
+mcaide_e2_res_p <- filter(mcaide_res_df, term == "e2+") %>% effect_plot(.) 
+mcaide_e4_res_p <- filter(mcaide_res_df, term == "e4+") %>% effect_plot(.) + 
+  ggprism::add_pvalue(caide_df_pval %>% filter(term == "ε4+")
+                      , bracket.nudge.y = 3, label = "{stars}", colour = 'black', tip.length = 0.01, bracket.size = 0.2) 
+
+mcaide_res_p <- filter(mcaide_res_df, term == "z_mcaide") %>% effect_plot(.) + 
+  ggprism::add_pvalue(mcaide_df_pval %>% filter(term == "mCAIDE")
+                      , bracket.nudge.y = 3, label = "{stars}", colour = 'black', tip.length = 0.01, bracket.size = 0.2) 
+
+
+mcaide_res_p
+caide_e4_res_p
+
+ggsave("results/figures/nacc_apoe_race_all_bl.png", plot = apoe_geno_res_p, width = 9, height = 5, units = 'in')
+
+```
+
+
+```{r}
+#| label: adard_mci_apoe_plots
+#| code-summary: ADRD+MCI Main effect plots
+
+theme.size = 8
+
+nacc_mcaid_apoe_adrd_mci_bl_p <- ggplot(mcaide_res_df %>% filter(outcome == "ADRD + MCI"), aes(x = or, y = race, color = race)) + 
+    facet_grid(cols = vars(term), rows = vars(outcome), scales = 'free') + 
+    geom_vline(xintercept = 1, linetype = 2) + 
+    geom_point() + 
+    geom_linerange(aes(xmin = or_lci, xmax = or_hci), linewidth = 0.75) + 
+    # scale_x_continuous("Odds Ratio", trans = 'log', 
+    #                    breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 
+    #                    labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32)
+    # ) + 
+    scale_y_discrete(limits=rev) +  
+    scale_color_manual(
+      labels = c("Black", "Latinx", "Asian", "NHW"),
+      values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
+    theme_bw() + 
+    labs(x = "Odds Ratio") + 
+    theme(
+      text = element_text(size = 14),
+      axis.title.y = element_blank(),
+      legend.position = "bottom", 
+      strip.background = element_blank(), 
+      strip.text = element_text(face = 'bold')
+      )
+
+ggsave("results/figures/nacc_mcaid_apoe_adrd_mci_bl.png", plot = nacc_mcaid_apoe_adrd_mci_bl_p, width = 9, height = 3.5, units = 'in')
+
+```
+
+#### Interaction
+```{r}
+
+glm(dx ~ race + mcaide_apoe, data = dat, family = 'binomial') %>% 
+  tidy()
+
+glm(dx_lv ~ race + mcaide_apoe, data = dat, family = 'binomial') %>% 
+  tidy()
+
+lm(sdx_lv ~ race + mcaide_apoe, data = dat) %>% 
+  tidy()
+
+
+```
+
+```{r}
+#| label: regression_models
+#| code-summary: Regression Models
+
+add_me <- tibble(
+    outcome = c("AD", "AD + MCI", "ADRD", "ADRD + MCI"),
+    race = c('Black', 'Hispanic', 'Asian',  'NHW'),
+  ) %>% 
+    expand(outcome, race) %>%
+    mutate(
+      estimate = 0, 
+      term = "mid_e3/e3"
+    )
+
+mcaide_apoe_cat_mod_fit <- function(data){
+  glm(dx ~ mcaide_apoe, data = data, family = 'binomial')
+}
+
+mcaide_apoe_cat_res <- bind_rows(
+  dat %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD + MCI",
+      res = map(data, mcaide_apoe_cat_mod_fit), 
+    ) %>%
+    select(-data), 
+
+  dat %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD",
+      res = map(data, mcaide_apoe_cat_mod_fit), 
+    ) %>%
+    select(-data), 
+  
+  dat %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD + MCI",
+      res = map(data, mcaide_apoe_cat_mod_fit), 
+    ) %>%
+    select(-data), 
+
+  dat %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD",
+      res = map(data, mcaide_apoe_cat_mod_fit), 
+    ) %>%
+    select(-data), 
+) %>%
+  mutate(
+    fit = map(res, glance),
+    df = map(res, tidy), 
+  )
+
+mcaide_apoe_cat_df <- mcaide_apoe_cat_res %>%
+  select(race, outcome, df) %>%
+  unnest(cols = df) %>%
+  ungroup() %>%
+  filter(str_detect(term, 'mcaide_apoe'))  %>%
+  bind_rows(add_me) %>%
+  mutate(
+    lci = estimate - (std.error * 1.96),
+    hci = estimate + (std.error * 1.96), 
+    or = exp(estimate),
+    or_lci = exp(lci),
+    or_hci = exp(hci),
+    term = str_replace(term, "mcaide_apoe", ""), 
+    term = fct_relevel(term, 
+                       "high_e4+", "mid_e4+", "low_e4+", 
+                       "high_e3/e3", "mid_e3/e3",  "low_e3/e3", 
+                        "high_e2+", "mid_e2+", "low_e2+",
+                       ),    
+        term = fct_recode(term, 
+                     "Unfavourable, e4+" = "high_e4+", "Intermediate, e4+" = "mid_e4+", "Favourable, e4+" = "low_e4+", 
+                     "Unfavourable, e3/e3" = "high_e3/e3", "Intermediate, e3/e3 (reference)" = "mid_e3/e3", "Favourable, e3/e3" = "low_e3/e3", 
+                     "Unfavourable, e2+" = "high_e2+", "Intermediate, e2+" = "mid_e2+", "Favourable, e2+" = "low_e2+" 
+                      ),
+    reference = ifelse(or == 1, TRUE, FALSE), 
+    race = fct_relevel(race, "Black", "Hispanic", "Asian", "NHW"), 
+    race = fct_recode(race, "Latinx" = "Hispanic"), 
+
+  ) 
+
+group_split(mcaide_apoe_cat_df, outcome) %>% map(., print, n = Inf)
+
+```
+
+```{r}
+#| label: apoe_plots
+#| code-summary: APOE genotype plots
+
+theme.size = 8
+
+ggplot(mcaide_apoe_cat_df, aes(x = or, y = term, color = race)) + 
+  facet_grid(cols = vars(race), rows = vars(outcome), scales = "free_x") + 
+  geom_vline(xintercept = 1, linetype = 2) + 
+  geom_point() + 
+  geom_linerange(aes(xmin = or_lci, xmax = or_hci), linewidth = 0.75) + 
+  scale_x_continuous("Odds Ratio", trans = 'log', 
+                     # breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 
+                     # labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32)
+  ) + 
+  scale_color_manual(values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
+  theme_bw() + 
+  theme(
+    text = element_text(size = theme.size),
+    axis.title.y = element_blank(),
+    legend.position = "bottom", 
+    strip.background = element_blank(), 
+    strip.text = element_text(face = 'bold')
+    )
+
+
+ggsave("results/figures/nacc_apoe_race_all_bl.png", plot = apoe_geno_res_p, width = 9, height = 5, units = 'in')
+
+```
+
+```{r}
+#| label: caide_apoe_adrd_mci_bl_presentation
+#| code-summary: CAIDE * APOE ADRD + MCI plots
+
+theme.size = 14
+
+mcaide_apoe_adrd_mci_bl_p <- mcaide_apoe_cat_df %>%
+  filter(outcome == "ADRD + MCI") %>% 
+  ggplot(., aes(x = or, y = term, color = race, shape = reference)) + 
+    facet_grid(cols = vars(race), rows = vars(outcome), scales = "free_x") + 
+    geom_vline(xintercept = 1, linetype = 2) + 
+    geom_point() + 
+    geom_linerange(aes(xmin = or_lci, xmax = or_hci), linewidth = 0.75) + 
+    scale_x_continuous("Odds Ratio", trans = 'log',
+                       breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32),
+                       labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 
+                       limits = c(0.1, 9),
+                       oob=scales::rescale_none
+    ) +
+    scale_color_manual(
+      values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")
+      ) + 
+    scale_shape_manual(values = c(16, 15), guide = 'none') + 
+    theme_bw() + 
+    theme(
+      text = element_text(size = theme.size),
+      axis.title.y = element_blank(),
+      axis.text.x = element_text(size = 10),
+      legend.position = "bottom", 
+      strip.background = element_blank(), 
+      strip.text = element_text(face = 'bold')
+      )
+
+
+ggsave("results/figures/mcaide_apoe_adrd_mci_bl.png", plot = mcaide_apoe_adrd_mci_bl_p, width = 9, height = 3.5, units = 'in')
+
+```
+
+### risk factors 
+```{r}
+rf_all_bl_res <- glm(dx ~ race + apoe + NACCAGE + SEX + i_EDUC + i_NACCBMI + i_BPSYS + i_hypchol, data = dat, family = 'binomial')
+tidy(rf_all_res)
+
+rf_all_lv_res <- glm(dx_lv ~ race + apoe + NACCAGE_lv + SEX + i_EDUC + i_NACCBMI + i_BPSYS + i_hypchol, data = dat, family = 'binomial')
+tidy(rf_all_lv_res)
+
+rf_all_lm_res <- lm(ad_age_lv ~ race + apoe + SEX + i_EDUC + i_NACCBMI + i_BPSYS + i_hypchol, data = dat)
+tidy(rf_all_lm_res)
+
+```
+
+```{r}
+#| label: regression_models
+#| code-summary: Regression Models
+
+rf_mod_fit <- function(data){
+  # glm(dx ~ apoe_geno + SEX + aoo, data = data, family = 'binomial')
+  glm(dx_lv ~ apoe + NACCAGE + SEX + i_EDUC + i_NACCBMI + i_BPSYS + i_hypchol, data = data, family = 'binomial')
+}
+
+rf_res <- bind_rows(
+  dat %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD + MCI",
+      res = map(data, rf_mod_fit), 
+    ) %>%
+    select(-data), 
+
+  dat %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD",
+      res = map(data, rf_mod_fit), 
+    ) %>%
+    select(-data), 
+  
+  dat %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD + MCI",
+      res = map(data, rf_mod_fit), 
+    ) %>%
+    select(-data), 
+
+  dat %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD",
+      res = map(data, rf_mod_fit), 
+    ) %>%
+    select(-data), 
+) %>%
+  mutate(
+    fit = map(res, glance),
+    df = map(res, tidy), 
+  )
+
+rf_res_df <- rf_res %>%
+  select(race, outcome, df) %>%
+  unnest(cols = df) %>%
+  ungroup() %>%
+  filter(!str_detect(term, 'Intercept')) %>%
+  mutate(
+    lci = estimate - (std.error * 1.96),
+    hci = estimate + (std.error * 1.96), 
+    or = exp(estimate),
+    or_lci = exp(lci),
+    or_hci = exp(hci),
+    term = str_replace(term, "apoe", ""), 
+    term = fct_recode(term, "Age" = "NACCAGE", "Female" = "SEX2", "Education" = 'i_EDUC', 
+                      "BMI" = "i_NACCBMI", 'SBP' = "i_BPSYS", "Hyprchol." = 'i_hypchol1'),
+    term = fct_relevel(term, 'e2+', 'e4+', 'Age', "Female", "Education", "BMI", "SBP", "Hyprchol."),    
+    race = fct_relevel(race, 'Black', 'Hispanic', 'Asian',  'NHW'),
+  )
+```
+
+
+```{r}
+#| label: apoe_plots
+#| code-summary: APOE genotype plots
+
+
+ggplot(rf_res_df, aes(y = race, x = or, color = race)) + 
+  facet_grid(cols = vars(term), rows = vars(outcome), scales = 'free_x') + 
+  geom_vline(xintercept = 1, linetype = 2) + 
+  geom_point() + 
+  geom_linerange(aes(xmin = or_lci, xmax = or_hci), linewidth = 0.75) + 
+  # scale_x_continuous("Odds Ratio", trans = 'log', 
+  #                    breaks = c(0.25, 0.5, 0.75, 1, 2, 4, 8, 16, 32), 
+  #                    labels = c(0.25, 0.5, 0.75, 1, 2, 4, 8, 16, 32)
+  # ) + 
+  scale_color_manual(values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
+  theme_bw() + 
+  theme(
+    text = element_text(size = theme.size),
+    # axis.text.x = element_text(angle = 315, vjust = 0.5, hjust=0), 
+    # axis.title.x = element_blank(),
+    legend.position = "bottom", 
+    strip.background = element_blank(), 
+    strip.text = element_text(face = 'bold')
+    )
+
+
+ggsave("results/figures/nacc_apoe_race_all_bl.png", plot = apoe_geno_res_p, width = 9, height = 5, units = 'in')
+
+```
+
+```{r}
+#| label: apoe_plots
+#| code-summary: APOE genotype plots
+
+
+rf_race_all_adrd_mci_bl_p <- ggplot(rf_res_df %>% filter(outcome == "ADRD + MCI"), aes(y = race, x = or, color = race)) + 
+  facet_grid(cols = vars(term), rows = vars(outcome), scales = 'free_x') + 
+  geom_vline(xintercept = 1, linetype = 2) + 
+  geom_point() + 
+  geom_linerange(aes(xmin = or_lci, xmax = or_hci), linewidth = 0.75) + 
+  # scale_x_continuous("Odds Ratio", trans = 'log', 
+  #                    breaks = c(0.25, 0.5, 0.75, 1, 2, 4, 8, 16, 32), 
+  #                    labels = c(0.25, 0.5, 0.75, 1, 2, 4, 8, 16, 32)
+  # ) + 
+  scale_color_manual(values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
+  scale_y_discrete(limits=rev) +  
+  theme_bw() + 
+  labs(xlab = "Odds Ratio") + 
+  theme(
+    text = element_text(size = theme.size),
+    axis.title.y = element_blank(),
+    axis.text.x = element_text(size = 5),
+    legend.position = "bottom", 
+    strip.background = element_blank(), 
+    strip.text = element_text(face = 'bold')
+    )
+
+
+ggsave("results/figures/nacc_rf_race_all_adrd_mci_bl.png", plot = rf_race_all_adrd_mci_bl_p, width = 9, height = 4, units = 'in')
+
+```
+
+## AD Age Score 
+```{r}
+dat_sdx <- dat %>%
+  # select(NACCID, NACCAVST, DECAGE, SEX, NACCAGE, i_EDUC, i_NACCBMI, i_BPSYS, i_hypchol, race, apoe, aoo_lv, dx_lv, 
+  #        z_caide, caide_cat, caide_apoe, 
+  #        z_mcaide, mcaide_cat, mcaide_apoe, 
+  #        NACCUDSD, NACCETPR) %>%
+  # filter(NACCAVST >= 2) %>%
+  filter(!is.na(sdx_lv)) 
+```
+
+
+### APOE Genotype
+```{r}
+#| label: apoe_regression_models
+#| code-summary: APOE genotype Regression Models
+
+apoe_sdx_fit <- function(data){
+  # glm(dx ~ apoe_geno + SEX + aoo, data = data, family = 'binomial')
+  lm(sdx_lv ~ apoe_geno + SEX, data = data, family = 'binomial')
+}
+
+apoe_sdx_res <- bind_rows(
+  dat_sdx %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD + MCI",
+      res = map(data, apoe_mod_fit), 
+    ) %>%
+    select(-data), 
+
+  dat_sdx %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD",
+      res = map(data, apoe_mod_fit), 
+    ) %>%
+    select(-data), 
+  
+  dat_sdx %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD + MCI",
+      res = map(data, apoe_mod_fit), 
+    ) %>%
+    select(-data), 
+
+  dat_sdx %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD",
+      res = map(data, apoe_mod_fit), 
+    ) %>%
+    select(-data), 
+) %>%
+  mutate(
+    fit = map(res, glance),
+    df = map(res, tidy), 
+  )
+
+apoe_sdx_df <- apoe_sdx_res %>%
+  select(race, outcome, df) %>%
+  unnest(cols = df) %>%
+  ungroup() %>%
+  filter(str_detect(term, 'apoe')) %>%
+  mutate(
+    lci = estimate - (std.error * 1.96),
+    hci = estimate + (std.error * 1.96), 
+    term = str_replace(term, "apoe_geno", ""), 
+    term = fct_relevel(term, 'e3/e3', 'e2+', 'e2/e4', 'e3/e4', 'e4/e4'),    
+  )
+```
+
+```{r}
+#| label: apoe_difference
+#| code-summary: APOE genotype differences
+
+apoe_sdx_diff <- apoe_sdx_df %>%
+  select(race, outcome, term, b = estimate, se = std.error) %>%
+  pivot_wider(names_from = race, values_from = c(b, se)) %>%
+  mutate(.,
+         ## Black vs NHW
+         diff_nhw_bla = fzscore(b_NHW, b_Black, se_NHW, se_Black),
+         p_diff_nhw_bla = 2*pnorm(q=abs(diff_nhw_bla), lower.tail=FALSE),
+         # NHW vs Hispanic
+         diff_nhw_his = fzscore(b_NHW, b_Hispanic, se_NHW, se_Hispanic), 
+         p_diff_nhw_his = 2*pnorm(q=abs(diff_nhw_his), lower.tail=FALSE),
+         # NHW vs Asian
+         diff_nhw_asi = fzscore(b_NHW, b_Asian, se_NHW, se_Asian), 
+         p_diff_nhw_asi = 2*pnorm(q=abs(diff_nhw_asi), lower.tail=FALSE),
+    
+         # Black vs Hispanic
+         diff_bla_his = fzscore(b_Black, b_Hispanic, se_Black, se_Hispanic), 
+         p_diff_bla_his = 2*pnorm(q=abs(diff_bla_his), lower.tail=FALSE),
+         # Black vs Asian
+         diff_bla_asi = fzscore(b_Black, b_Asian, se_Black, se_Asian), 
+         p_diff_bla_asi = 2*pnorm(q=abs(diff_bla_asi), lower.tail=FALSE),
+         
+         # Hispanic vs Asian
+         diff_his_asi = fzscore(b_Hispanic, b_Asian, se_Hispanic, se_Asian), 
+         p_diff_his_asi = 2*pnorm(q=abs(diff_his_asi), lower.tail=FALSE)
+  )
+
+apoe_sdx_diff_long <- full_join(
+  apoe_sdx_diff %>%
+    select(term, outcome, starts_with('diff')) %>%
+    pivot_longer(
+      cols = starts_with('diff'),
+      names_to = 'contrast', 
+      values_to = 'z', 
+      names_prefix = "diff_",
+    ),
+  
+  apoe_sdx_diff %>%
+    select(term, outcome, starts_with('p_')) %>%
+    pivot_longer(
+      cols = starts_with('p_'),
+      names_to = 'contrast', 
+      values_to = 'p', 
+      names_prefix = "p_diff_",
+    )
+) %>%
+  separate(contrast, sep = "_", into = c("race1", "race2")) %>%
+  mutate(
+    stars = case_when(
+      p > 0.05 ~ "", 
+      between(p,  0.01, 0.05) ~ "*",
+      between(p, 0.001, 0.01) ~ "**",
+      p < 0.001 ~ "***"
+    )
+  )
+
+apoe_sdx_df_pval <- filter(apoe_sdx_diff_long, p < 0.05) %>%
+  rename(group1 = race1, group2 = race2) %>%
+  mutate(y.position = c(3, 3), 
+         group1 = case_when(
+           group1 == "nhw" ~ "NHW", 
+           group1 == "bla" ~ "Black", 
+           group1 == "jpa" ~ "Asian", 
+           group1 == "his" ~ "Hispanic"
+         ), 
+         group2 = case_when(
+           group2 == "nhw" ~ "NHW", 
+           group2 == "bla" ~ "Black", 
+           group2 == "jpa" ~ "Asian", 
+           group2 == "his" ~ "Hispanic"
+         ),
+         race = NA, 
+         reference = NA,
+          term = fct_recode(term, "ε2+" = "e2+", "ε2/ε4" = "e2/e4", "ε3/ε4" = "e3/e4", "ε4/ε4" = "e4/e4")
+
+  )
+```
+
+```{r}
+#| label: apoe_plots
+#| code-summary: APOE genotype plots
+
+theme.size = 8
+
+apoe_geno_sdx_res_p <- apoe_sdx_df %>%
+    # filter(., outcome == "AD") %>%
+    #   add_row(
+    #   outcome = c("AD", "AD + MCI", "ADRD", "ADRD + MCI"),
+    #   race = c('Black', 'Hispanic', 'Asian',  'NHW'),
+    #   or = 1,
+    #   term =  "e3/e3",
+    # ) %>%
+  mutate(race = fct_relevel(race, 'Black', 'Hispanic', 'Asian',  'NHW'), 
+        term = fct_recode(term, "ε2+" = "e2+",  "ε3/ε3 \n(reference)" = "e3/e3",
+                          "ε2/ε4" = "e2/e4", "ε3/ε4" = "e3/e4", "ε4/ε4" = "e4/e4"),
+        term = fct_relevel(term, "ε2+", "ε3/ε3 \n(reference)", "ε2/ε4", "ε3/ε4", "ε4/ε4"),
+        reference = ifelse(estimate == 0, TRUE, FALSE)
+        ) %>%
+  ggplot(., aes(x = race, y = estimate, color = race)) + 
+    facet_grid(cols = vars(term), rows = vars(outcome)) + 
+    geom_hline(yintercept = 1, linetype = 2) + 
+    geom_point() + 
+    geom_linerange(aes(ymin = lci, ymax = hci), linewidth = 0.75) + 
+    # scale_y_continuous("Odds Ratio", trans = 'log', 
+    #                    breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 
+    #                    labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32)
+    # ) + 
+    scale_color_manual(values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
+    theme_bw() + 
+    theme(
+      text = element_text(size = theme.size),
+      axis.text.x = element_text(angle = 315, vjust = 0.5, hjust=0), 
+      axis.title.x = element_blank(),
+      legend.position = "bottom", 
+      strip.background = element_blank(), 
+      strip.text = element_text(face = 'bold')
+      ) + 
+  ggprism::add_pvalue(df_pval #%>% filter(outcome == "AD")
+                      , bracket.nudge.y = 3, label = "{stars}", colour = 'black', tip.length = 0.01, bracket.size = 0.2) 
+
+apoe_geno_res_p
+ggsave("results/figures/nacc_apoe_race_all_bl.png", plot = apoe_geno_res_p, width = 9, height = 5, units = 'in')
+
+```
+
+### Risk Factors
+```{r}
+lm_res <- lm(ad_age_lv ~ race + apoe + SEX + i_EDUC + i_NACCBMI + i_BPSYS + i_hypchol, data = dat) 
+lm_res <- lm(sdx_lv ~ race + apoe + SEX + i_EDUC + i_NACCBMI + i_BPSYS + i_hypchol, data = dat) 
+tidy(lm_res)
+
+ggplot(dat, aes(x = aoo, y = sdx_lv, color = as.factor(dx_lv))) + 
+  geom_smooth()
+
+ggplot(dat, aes(x = aoo, y = sdx_lv, color = as.factor(dx_lv))) + 
+  geom_smooth() + 
+  facet_wrap(vars(race))
+
+```
+
+
+```{r}
+#| label: regression_models
+#| code-summary: Regression Models
+
+rf_lm_fit <- function(data){
+  # glm(dx ~ apoe_geno + SEX + aoo, data = data, family = 'binomial')
+  lm(sdx_lv ~ apoe + NACCAGE + SEX + i_EDUC + i_NACCBMI + i_BPSYS + i_hypchol, data = data)
+}
+
+rf_lm_res <- bind_rows(
+  dat_sdx %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD + MCI",
+      res = map(data, rf_lm_fit), 
+    ) %>%
+    select(-data), 
+
+  dat_sdx %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD",
+      res = map(data, rf_lm_fit), 
+    ) %>%
+    select(-data), 
+  
+  dat_sdx %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD + MCI",
+      res = map(data, rf_mod_fit), 
+    ) %>%
+    select(-data), 
+
+  dat_sdx %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD",
+      res = map(data, rf_lm_fit), 
+    ) %>%
+    select(-data), 
+) %>%
+  mutate(
+    fit = map(res, glance),
+    df = map(res, tidy), 
+  )
+
+rf_res_df <- rf_lm_res %>%
+  select(race, outcome, df) %>%
+  unnest(cols = df) %>%
+  ungroup() %>%
+  filter(!str_detect(term, 'Intercept')) %>%
+  mutate(
+    lci = estimate - (std.error * 1.96),
+    hci = estimate + (std.error * 1.96), 
+    or = exp(estimate),
+    or_lci = exp(lci),
+    or_hci = exp(hci),
+    term = str_replace(term, "apoe", ""), 
+    term = fct_recode(term, "Age" = "NACCAGE", "Female" = "SEX2", "Education" = 'i_EDUC', 
+                      "BMI" = "i_NACCBMI", 'SBP' = "i_BPSYS", "Hyprchol." = 'i_hypchol1'),
+    term = fct_relevel(term, 'e2+', 'e4+', 'Age', "Female", "Education", "BMI", "SBP", "Hyprchol."),    
+    race = fct_relevel(race, 'Black', 'Hispanic', 'Asian',  'NHW'),
+  )
+```
+
+### CAIDE 
+```{r}
+glm(dx ~ race + apoe + z_caide, data = dat, family = 'binomial') %>% 
+  tidy()
+
+glm(dx_lv ~ race + apoe + z_caide, data = dat, family = 'binomial') %>% 
+  tidy()
+
+lm(sdx_lv ~ race + apoe + z_caide, data = dat) %>% 
+  tidy()
+
+```
+
+```{r}
+#| label: regression_models
+#| code-summary: Regression Models
+
+caide_sdx_fit <- function(data){
+  lm(sdx_lv ~ apoe + z_caide, data = data)
+}
+
+caide_sdx_res  <- bind_rows(
+  dat_sdx %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD + MCI",
+      res = map(data, caide_sdx_fit), 
+    ) %>%
+    select(-data), 
+
+  dat_sdx %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD",
+      res = map(data, caide_sdx_fit), 
+    ) %>%
+    select(-data), 
+  
+  dat_sdx %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD + MCI",
+      res = map(data, caide_sdx_fit), 
+    ) %>%
+    select(-data), 
+
+  dat_sdx %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD",
+      res = map(data, caide_sdx_fit), 
+    ) %>%
+    select(-data), 
+) %>%
+  mutate(
+    fit = map(res, glance),
+    df = map(res, tidy), 
+  )
+
+caide_sdx_df <- caide_sdx_res  %>%
+  select(race, outcome, df) %>%
+  unnest(cols = df) %>%
+  ungroup() %>%
+  filter(str_detect(term, 'apoe|caide')) %>%
+  mutate(
+    lci = estimate - (std.error * 1.96),
+    hci = estimate + (std.error * 1.96), 
+    term = str_replace(term, "apoe", ""), 
+    term = fct_relevel(term, 'e2+', 'e4+', 'z_caide'),    
+  )
+
+group_split(caide_sdx_df, outcome) 
+```
+
+
+#### Interaction
+```{r}
+#| label: regression_models
+#| code-summary: Regression Models
+
+add_me <- tibble(
+    outcome = c("AD", "AD + MCI", "ADRD", "ADRD + MCI"),
+    race = c('Black', 'Hispanic', 'Asian',  'NHW'),
+  ) %>% 
+    expand(outcome, race) %>%
+    mutate(
+      estimate = 0, 
+      term = "mid_e3/e3"
+    )
+
+caide_apoe_cat_sdx_fit <- function(data){
+  lm(sdx_lv ~ caide_apoe, data = data)
+}
+
+caide_apoe_cat_sdx_res <- bind_rows(
+  dat_sdx %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD + MCI",
+      res = map(data, caide_apoe_cat_sdx_fit), 
+    ) %>%
+    select(-data), 
+
+  dat_sdx %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD",
+      res = map(data, caide_apoe_cat_sdx_fit), 
+    ) %>%
+    select(-data), 
+  
+  dat_sdx %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD + MCI",
+      res = map(data, caide_apoe_cat_sdx_fit), 
+    ) %>%
+    select(-data), 
+
+  dat_sdx %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD",
+      res = map(data, caide_apoe_cat_sdx_fit), 
+    ) %>%
+    select(-data), 
+) %>%
+  mutate(
+    fit = map(res, glance),
+    df = map(res, tidy), 
+  )
+
+caide_apoe_cat_sdx_df <- caide_apoe_cat_sdx_res %>%
+  select(race, outcome, df) %>%
+  unnest(cols = df) %>%
+  ungroup() %>%
+  filter(str_detect(term, 'caide_apoe'))  %>%
+  bind_rows(add_me) %>%
+  mutate(
+    lci = estimate - (std.error * 1.96),
+    hci = estimate + (std.error * 1.96), 
+    term = str_replace(term, "caide_apoe", ""), 
+    term = fct_relevel(term, 
+                       "high_e4+", "mid_e4+", "low_e4+", 
+                       "high_e3/e3", "mid_e3/e3",  "low_e3/e3", 
+                        "high_e2+", "mid_e2+", "low_e2+",
+                       ),
+    term = fct_recode(term, 
+                     "Unfavourable, e4+" = "high_e4+", "Intermediate, e4+" = "mid_e4+", "Favourable, e4+" = "low_e4+", 
+                     "Unfavourable, e3/e3" = "high_e3/e3", "Intermediate, e3/e3 (reference)" = "mid_e3/e3", "Favourable, e3/e3" = "low_e3/e3", 
+                     "Unfavourable, e2+" = "high_e2+", "Intermediate, e2+" = "mid_e2+", "Favourable, e2+" = "low_e2+" 
+                      ),
+    reference = ifelse(estimate == 0, TRUE, FALSE)
+  ) 
+
+```
+
+```{r}
+#| label: apoe_plots
+#| code-summary: APOE genotype plots
+
+theme.size = 8
+
+ggplot(caide_apoe_cat_sdx_df, aes(x = estimate, y = term, color = race, shape = reference)) + 
+  facet_grid(cols = vars(race), rows = vars(outcome), scales = "free_x") + 
+  geom_vline(xintercept = 0, linetype = 2) + 
+  geom_point() + 
+  geom_linerange(aes(xmin = lci, xmax = hci), linewidth = 0.75) + 
+  scale_x_continuous("β coefficent", #trans = 'log', 
+                     # breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 
+                     # labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32)
+  ) + 
+  scale_color_manual(values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
+  scale_shape_manual(values = c(16, 15)) + 
+  theme_bw() + 
+  theme(
+    text = element_text(size = theme.size),
+    axis.title.y = element_blank(),
+    legend.position = "bottom", 
+    strip.background = element_blank(), 
+    strip.text = element_text(face = 'bold')
+    )
+
+
+ggsave("results/figures/nacc_apoe_race_all_bl.png", plot = apoe_geno_res_p, width = 9, height = 5, units = 'in')
+
+```
+
+### mCAIDE 
+```{r}
+glm(dx ~ race + apoe + z_mcaide, data = dat, family = 'binomial') %>% 
+  tidy()
+
+glm(dx_lv ~ race + apoe + z_mcaide, data = dat, family = 'binomial') %>% 
+  tidy()
+
+lm(ad_age_lv ~ race + apoe + z_mcaide, data = dat) %>% 
+  tidy()
+
+```
+
+
+```{r}
+#| label: regression_models
+#| code-summary: Regression Models
+
+mcaide_sdx_fit <- function(data){
+  # glm(dx ~ apoe_geno + SEX + aoo, data = data, family = 'binomial')
+  lm(sdx_lv ~ apoe + z_mcaide, data = data)
+}
+
+mcaide_sdx_res <- bind_rows(
+  dat_sdx %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD + MCI",
+      res = map(data, mcaide_mod_fit), 
+    ) %>%
+    select(-data), 
+
+  dat_sdx %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD",
+      res = map(data, mcaide_mod_fit), 
+    ) %>%
+    select(-data), 
+  
+  dat_sdx %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD + MCI",
+      res = map(data, mcaide_mod_fit), 
+    ) %>%
+    select(-data), 
+
+  dat_sdx %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD",
+      res = map(data, mcaide_mod_fit), 
+    ) %>%
+    select(-data), 
+) %>%
+  mutate(
+    fit = map(res, glance),
+    df = map(res, tidy), 
+  )
+
+mcaide_sdx_df <- mcaide_sdx_res %>%
+  select(race, outcome, df) %>%
+  unnest(cols = df) %>%
+  ungroup() %>%
+  filter(str_detect(term, 'apoe|caide')) %>%
+  mutate(
+    lci = estimate - (std.error * 1.96),
+    hci = estimate + (std.error * 1.96), 
+    or = exp(estimate),
+    or_lci = exp(lci),
+    or_hci = exp(hci),
+    term = str_replace(term, "apoe", ""), 
+    term = fct_relevel(term, 'e2+', 'e4+', 'z_mcaide'),    
+  )
+
+group_split(mcaide_sdx_df, outcome)
+```
+
+#### Interaction
+```{r}
+#| label: regression_models
+#| code-summary: Regression Models
+
+add_me <- tibble(
+    outcome = c("AD", "AD + MCI", "ADRD", "ADRD + MCI"),
+    race = c('Black', 'Hispanic', 'Asian',  'NHW'),
+  ) %>% 
+    expand(outcome, race) %>%
+    mutate(
+      estimate = 0, 
+      term = "mid_e3/e3"
+    )
+
+mcaide_apoe_cat_sdx_fit <- function(data){
+  lm(sdx_lv ~ mcaide_apoe, data = data)
+}
+
+mcaide_apoe_cat_sdx_res <- bind_rows(
+  dat_sdx %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD + MCI",
+      res = map(data, mcaide_apoe_cat_sdx_fit), 
+    ) %>%
+    select(-data), 
+
+  dat_sdx %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD",
+      res = map(data, mcaide_apoe_cat_sdx_fit), 
+    ) %>%
+    select(-data), 
+  
+  dat_sdx %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD + MCI",
+      res = map(data, mcaide_apoe_cat_sdx_fit), 
+    ) %>%
+    select(-data), 
+
+  dat_sdx %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD",
+      res = map(data, mcaide_apoe_cat_sdx_fit), 
+    ) %>%
+    select(-data), 
+) %>%
+  mutate(
+    fit = map(res, glance),
+    df = map(res, tidy), 
+  )
+
+mcaide_apoe_cat_sdx_df <- mcaide_apoe_cat_sdx_res %>%
+  select(race, outcome, df) %>%
+  unnest(cols = df) %>%
+  ungroup() %>%
+  filter(str_detect(term, 'mcaide_apoe'))  %>%
+  bind_rows(add_me) %>%
+  mutate(
+    lci = estimate - (std.error * 1.96),
+    hci = estimate + (std.error * 1.96), 
+    term = str_replace(term, "mcaide_apoe", ""), 
+    term = fct_relevel(term, 
+                       "high_e4+", "mid_e4+", "low_e4+", 
+                       "high_e3/e3", "mid_e3/e3",  "low_e3/e3", 
+                        "high_e2+", "mid_e2+", "low_e2+",
+                       ),
+    term = fct_recode(term, 
+                     "Unfavourable, e4+" = "high_e4+", "Intermediate, e4+" = "mid_e4+", "Favourable, e4+" = "low_e4+", 
+                     "Unfavourable, e3/e3" = "high_e3/e3", "Intermediate, e3/e3 (reference)" = "mid_e3/e3", "Favourable, e3/e3" = "low_e3/e3", 
+                     "Unfavourable, e2+" = "high_e2+", "Intermediate, e2+" = "mid_e2+", "Favourable, e2+" = "low_e2+" 
+                      ),
+    reference = ifelse(estimate == 0, TRUE, FALSE)
+  ) 
+
+```
+
+```{r}
+#| label: apoe_plots
+#| code-summary: APOE genotype plots
+
+theme.size = 8
+
+ggplot(mcaide_apoe_cat_sdx_df, aes(x = estimate, y = term, color = race, shape = reference)) + 
+  facet_grid(cols = vars(race), rows = vars(outcome), scales = "free_x") + 
+  geom_vline(xintercept = 0, linetype = 2) + 
+  geom_point() + 
+  geom_linerange(aes(xmin = lci, xmax = hci), linewidth = 0.75) + 
+  scale_x_continuous("β coefficent", #trans = 'log', 
+                     # breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 
+                     # labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32)
+  ) + 
+  scale_color_manual(values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
+  scale_shape_manual(values = c(16, 15)) + 
+  theme_bw() + 
+  theme(
+    text = element_text(size = theme.size),
+    axis.title.y = element_blank(),
+    legend.position = "bottom", 
+    strip.background = element_blank(), 
+    strip.text = element_text(face = 'bold')
+    )
+
+
+ggsave("results/figures/nacc_apoe_race_all_bl.png", plot = apoe_geno_res_p, width = 9, height = 5, units = 'in')
+```
+
+## Cox Regression models 
+
+```{r}
+## last visit
+dat_lv <- dat %>%
+  # select(NACCID, NACCAVST, DECAGE, SEX, NACCAGE, i_EDUC, i_NACCBMI, i_BPSYS, i_hypchol, race, apoe, aoo_lv, dx_lv, 
+  #        z_caide, caide_cat, caide_apoe, 
+  #        z_mcaide, mcaide_cat, mcaide_apoe, 
+  #        NACCUDSD, NACCETPR) %>%
+  filter(!is.na(aoo), !is.na(dx_aoo)) 
+
+dat_lv2 <- dat %>%
+  # select(NACCID, NACCAVST, DECAGE, SEX, NACCAGE, i_EDUC, i_NACCBMI, i_BPSYS, i_hypchol, race, apoe, aoo_lv, dx_lv, 
+  #        z_caide, caide_cat, caide_apoe, 
+  #        z_mcaide, mcaide_cat, mcaide_apoe, 
+  #        NACCUDSD, NACCETPR) %>%
+  filter(!is.na(aoo_lv), !is.na(dx_lv)) 
+
+count(dat_lv, NACCAVST >= 2, race)
+count(dat_lv, DECAGE < NACCAGE)
+count(dat_lv, dx, dx_aoo)
+count(dat_lv, NACCAVST >= 2, dx_aoo)
+
+###
+count(dat_lv, race, dx_lv) %>% 
+  filter(!is.na(dx_lv)) %>%
+  mutate(
+    dx_lv = as.character(dx_lv),
+    dx_lv = fct_recode(dx_lv, "CU" = "0", "ADRD" = "1")
+    ) %>%
+  pivot_wider(
+    names_from = dx_lv, values_from = n
+  ) %>%
+  mutate(
+    n = CU + ADRD, 
+    EffN = 4/(1/ADRD + 1/CU)
+  )
+
+
+## Survical model 
+surv_mod <- function(data){with(data, Surv(aoo, dx_aoo))}
+
+## Survical fit
+dat.surv <- with(dat_lv, Surv(aoo, dx_aoo))
+dat.surv <- with(dat_lv, Surv(aoo_lv, dx_lv))
+
+
+dat.survfit <- survfit(Surv(aoo, dx_aoo) ~ apoe, start.time=55, data = dat_lv)
+dat.survfit <- survfit(Surv(aoo, dx_aoo) ~ caide_cat, start.time=55, data = dat_lv)
+dat.survfit <- survfit(Surv(aoo, dx_aoo) ~ mcaide_cat, start.time=55, data = dat_lv)
+dat.survfit <- survfit(Surv(aoo, dx_aoo) ~ caide_apoe, start.time=55, data = dat_lv)
+dat.survfit <- survfit(Surv(aoo, dx_aoo) ~ race, start.time=55, data = dat_lv)
+ 
+ggsurvplot(dat.survfit, data = dat_lv, risk.table = TRUE,  pval = TRUE, 
+           palette = "Set1",
+           ggtheme = theme_minimal()) 
+
+dat.survfit2 <- survfit(Surv(aoo_lv, dx_lv) ~ apoe, start.time=55, data = dat_lv2)
+dat.survfit2 <- survfit(Surv(aoo_lv, dx_lv) ~ caide_cat, start.time=55, data = dat_lv2)
+dat.survfit2 <- survfit(Surv(aoo_lv, dx_lv) ~ mcaide_cat, start.time=55, data = dat_lv2)
+dat.survfit2 <- survfit(Surv(aoo, dx_aoo) ~ caide_apoe, start.time=55, data = dat_lv2)
+dat.survfit2 <- survfit(Surv(aoo, dx_aoo) ~ race, start.time=55, data = dat_lv)
+
+ggsurvplot(dat.survfit2, data = dat_lv2, risk.table = TRUE,  pval = TRUE, 
+           palette = "Set1",
+           ggtheme = theme_minimal()) 
+
+```
+
+
+
+
+### CAIDE
+#### KM Curves
+```{r}
+caide.survfit <- survfit(Surv(aoo, dx_aoo) ~ caide_cat, start.time=55, data = dat_lv)
+
+ggsurvplot(caide.survfit, data = dat_lv, risk.table = TRUE,  pval = TRUE, 
+           palette = "Set1",
+           ggtheme = theme_minimal()) 
+
+all_cox_res <- coxph(dat.surv ~ z_caide + apoe + race, data=dat_lv)
+
+```
+
+
+#### Cox Regression
+```{r}
+## Cox model
+caide_cox_fit <- function(surv, data){
+  coxph(surv ~ z_caide + apoe, data=data)
+}
+
+caide_apoe_cox_fit <- function(surv, data){
+  coxph(surv ~ caide_apoe, data=data)
+}
+
+## results 
+caide_cox_res <- bind_rows(
+  dat_lv %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD + MCI",
+      surv = map(data, surv_mod),
+      res = map2(surv, data, caide_cox_fit),
+    ), 
+
+  dat_lv %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD + MCI",
+      surv = map(data, surv_mod),
+      res = map2(surv, data, caide_apoe_cox_fit),
+    ), 
+
+  # dat_lv %>%
+  #   filter(NACCUDSD %nin% c(3)) %>%
+  #   group_by(race) %>%
+  #   nest() %>%
+  #   mutate(
+  #     outcome = "ADRD",
+  #     surv = map(data, surv_mod),
+  #     res = map2(surv, data, caide_cox_fit),
+  #   ), 
+  # 
+  # dat_lv %>%
+  #   filter(NACCETPR %in% c(1, 88)) %>%
+  #   group_by(race) %>%
+  #   nest() %>%
+  #   mutate(
+  #     outcome = "AD + MCI",
+  #     surv = map(data, surv_mod),
+  #     res = map2(surv, data, caide_cox_fit),
+  #   ), 
+  # 
+  # dat_lv %>%
+  #   filter(NACCETPR %in% c(1, 88)) %>%
+  #   filter(NACCUDSD %nin% c(3)) %>%
+  #   group_by(race) %>%
+  #   nest() %>%
+  #   mutate(
+  #     outcome = "AD",
+  #     surv = map(data, surv_mod),
+  #     res = map2(surv, data, caide_cox_fit),
+  #   ),
+) %>%
+  mutate(df = map(res, tidy)) %>%
+  select(-data, -surv)
+
+
+caide_cox_res_df <- caide_cox_res %>%
+  select(race, outcome, df) %>%
+  unnest(cols = df) %>%
+  ungroup() %>%
+  mutate(
+    lci = estimate - (std.error * 1.96),
+    hci = estimate + (std.error * 1.96), 
+    hr = exp(estimate),
+    hr_lci = exp(lci),
+    hr_hci = exp(hci),
+    term = str_replace(term, "apoe", ""), 
+    term = fct_relevel(term, 'e2+', 'e4+', 'z_caide'),    
+    )
+
+group_split(caide_cox_res_df, race)
+
+```
+
+#### Plots
+```{r}
+
+
+theme.size = 8
+
+cox_coeff_plot <- function(x){
+  x %>%
+    mutate(race = fct_relevel(race, 'Black', 'Hispanic', 'Asian',  'NHW'), 
+        term = fct_recode(term, "ε2+" = "e2+", "ε4+" = "e4+", "CAIDE" = "z_caide", "mCAIDE" = "z_mcaide"),
+        ) %>%
+  ggplot(., aes(x = race, y = hr, color = race)) + 
+    facet_grid(cols = vars(term), rows = vars(outcome)) + 
+    geom_hline(yintercept = 1, linetype = 2) + 
+    geom_point() + 
+    geom_linerange(aes(ymin = hr_lci, ymax = hr_hci), linewidth = 0.75) + 
+    scale_y_continuous("Hazards Ratio", trans = 'log', 
+                       breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 
+                       labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32)
+    ) + 
+    scale_color_manual(values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
+    theme_bw() + 
+    theme(
+      text = element_text(size = theme.size),
+      axis.text.x = element_text(angle = 315, vjust = 0.5, hjust=0), 
+      axis.title.x = element_blank(),
+      legend.position = "bottom", 
+      strip.background = element_blank(), 
+      strip.text = element_text(face = 'bold')
+      )
+  }
+
+caide_e2_cox_p <- filter(caide_cox_res_df, term == "e2+") %>% cox_coeff_plot(.) 
+caide_e4_cox_p <- filter(caide_cox_res_df, term == "e4+") %>% cox_coeff_plot(.) 
+caide_cox_p <- filter(caide_cox_res_df, term == "z_caide") %>% cox_coeff_plot(.) 
+
+
+caide_e2_cox_p
+caide_e4_cox_p
+caide_cox_p
+
+```
+
+### mCAIDE
+
+#### KM Curves
+```{r}
+mcaide.survfit <- survfit(Surv(aoo, dx_aoo) ~ mcaide_cat, start.time=55, data = dat_lv)
+
+ggsurvplot(mcaide.survfit, data = dat_lv, risk.table = TRUE,  pval = TRUE, 
+           palette = "Set1",
+           ggtheme = theme_minimal()) 
+
+all_cox_res <- coxph(dat.surv ~ z_mcaide + apoe + race, data=dat_lv)
+
+```
+
+#### Cox Regression
+```{r}
+## Cox model
+mcaide_cox_fit <- function(surv, data){
+  coxph(surv ~ z_mcaide + apoe, data=data)
+}
+
+## results 
+mcaide_cox_res <- bind_rows(
+  dat_lv %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD + MCI",
+      surv = map(data, surv_mod),
+      res = map2(surv, data, mcaide_cox_fit),
+    ), 
+
+  dat_lv %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD",
+      surv = map(data, surv_mod),
+      res = map2(surv, data, mcaide_cox_fit),
+    ), 
+  
+  dat_lv %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD + MCI",
+      surv = map(data, surv_mod),
+      res = map2(surv, data, mcaide_cox_fit),
+    ), 
+
+  dat_lv %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD",
+      surv = map(data, surv_mod),
+      res = map2(surv, data, mcaide_cox_fit),
+    ),
+) %>%
+  mutate(df = map(res, tidy)) %>%
+  select(-data, -surv)
+
+
+mcaide_cox_res_df <- mcaide_cox_res %>%
+  select(race, outcome, df) %>%
+  unnest(cols = df) %>%
+  ungroup() %>%
+  mutate(
+    lci = estimate - (std.error * 1.96),
+    hci = estimate + (std.error * 1.96), 
+    hr = exp(estimate),
+    hr_lci = exp(lci),
+    hr_hci = exp(hci),
+    term = str_replace(term, "apoe", ""), 
+    term = fct_relevel(term, 'e2+', 'e4+', 'z_mcaide'),    
+    )
+
+
+```
+
+#### Plots
+```{r}
+
+mcaide_e2_cox_p <- filter(mcaide_cox_res_df, term == "e2+") %>% cox_coeff_plot(.) 
+mcaide_e4_cox_p <- filter(mcaide_cox_res_df, term == "e4+") %>% cox_coeff_plot(.) 
+mcaide_cox_p <- filter(mcaide_cox_res_df, term == "z_mcaide") %>% cox_coeff_plot(.) 
+
+
+mcaide_e2_cox_p
+mcaide_e4_cox_p
+mcaide_cox_p
+
+```
+
+
+### Risk factors
+#### KM Curves
+```{r}
+rf.survfit <- survfit(Surv(aoo, dx_aoo) ~ race, start.time=55, data = dat_lv)
+
+ggsurvplot(rf.survfit, data = dat_lv, risk.table = TRUE,  pval = TRUE, 
+           palette = "Set1",
+           ggtheme = theme_minimal()) 
+
+rf_cox_res <- coxph(dat.surv ~ race + apoe + SEX + i_EDUC + i_NACCBMI + i_BPSYS + i_hypchol, data=dat_lv)
+rf_cox_interaction_res <- coxph(dat.surv ~ race * apoe + SEX + i_EDUC + i_NACCBMI + i_BPSYS + i_hypchol, data=dat_lv)
+
+```
+
+#### Cox Regression Models
+```{r}
+## Cox model
+rf_cox_fit <- function(surv, data){
+  coxph(surv ~ SEX + i_EDUC + i_NACCBMI + i_BPSYS + i_hypchol + apoe, data=data)
+}
+
+## results 
+rf_cox_res <- bind_rows(
+  dat_lv %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD + MCI",
+      surv = map(data, surv_mod),
+      res = map2(surv, data, rf_cox_fit),
+    ), 
+
+  dat_lv %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD",
+      surv = map(data, surv_mod),
+      res = map2(surv, data, rf_cox_fit),
+    ), 
+  
+  dat_lv %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD + MCI",
+      surv = map(data, surv_mod),
+      res = map2(surv, data, rf_cox_fit),
+    ), 
+
+  dat_lv %>%
+    filter(NACCETPR %in% c(1, 88)) %>%
+    filter(NACCUDSD %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD",
+      surv = map(data, surv_mod),
+      res = map2(surv, data, rf_cox_fit),
+    ),
+) %>%
+  mutate(df = map(res, tidy)) %>%
+  select(-data, -surv)
+
+
+rf_cox_res_df <- rf_cox_res %>%
+  select(race, outcome, df) %>%
+  unnest(cols = df) %>%
+  ungroup() %>%
+  filter(!str_detect(term, 'Intercept')) %>%
+  mutate(
+    lci = estimate - (std.error * 1.96),
+    hci = estimate + (std.error * 1.96), 
+    hr = exp(estimate),
+    hr_lci = exp(lci),
+    hr_hci = exp(hci),
+    term = str_replace(term, "apoe", ""), 
+    term = fct_recode(term, "Female" = "SEX2", "Education" = 'i_EDUC', 
+                      "BMI" = "i_NACCBMI", 'SBP' = "i_BPSYS", "Hyprchol." = 'i_hypchol1'),
+    term = fct_relevel(term, 'e2+', 'e4+', "Female", "Education", "BMI", "SBP", "Hyprchol."),    
+    race = fct_relevel(race, 'Black', 'Hispanic', 'Asian',  'NHW'),
+  )
+
+group_split(rf_cox_res_df, race)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
