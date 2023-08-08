@@ -1,5 +1,5 @@
 # Filename: tbl_regression.R
-setwd("~/Desktop/Chi_data3/data")
+# setwd("~/Desktop/iidp/data")
 library("tidyverse")
 library("gtsummary")
 library("broom")
@@ -11,9 +11,9 @@ iidp_caide <- read_csv("caide_v2_last.csv")
 
 # prepare data:
 iidp_mcaide$diagnosis <- as.factor(iidp_mcaide$diagnosis)
-iidp_mcaide$mcaide_apoe <- as.factor(iidp_mcaide$mcaide_apoe) # new line
+iidp_mcaide$mcaide_apoe <- as.factor(iidp_mcaide$mcaide_apoe)
 iidp_caide$diagnosis <- as.factor(iidp_caide$diagnosis)
-iidp_caide$caide_apoe <- as.factor(iidp_caide$caide_apoe) # new line
+iidp_caide$caide_apoe <- as.factor(iidp_caide$caide_apoe)
 iidp_caide$physical_act <- as.factor(iidp_caide$physical_act)
 iidp_mcaide$physical_act <- as.factor(iidp_mcaide$physical_act)
 

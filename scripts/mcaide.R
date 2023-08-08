@@ -1,7 +1,7 @@
-# Filename: mcaide_last_v2.R
-# calculation of caide & mcaide
+# Filename: mcaide.R
+# munging data; calculation of caide & mcaide
 
-setwd("~/Desktop/Chi_data3/data")
+# setwd("~/Desktop/iidp/")
 library("tidyverse")
 library("gtsummary")
 library("missForest")
@@ -11,7 +11,7 @@ library("magrittr")
 library("MASS")
 library("readxl")
 
-data <- read_excel("CAIDE Risk Score and APOE project_with Shea.xlsx", 
+data <- read_excel("CAIDE_APOE/resources/CAIDE Risk Score and APOE project_with Shea.xlsx", 
                    sheet = "Sheet1", guess_max = 10000) %>% 
                    janitor::clean_names()
 
@@ -179,7 +179,7 @@ iidp_factor_tib <- tibble(iidp_factor_only)
 str(iidp_nmv_tib)
 str(iidp_factor_tib)
 
-# join iidp_nmv and iidp_factor_only by column bind:
+# join chi_nmv and chi_factor_only by column bind:
 iidp_nmv_cb <- cbind(iidp_nmv_tib, iidp_factor_tib)
 
 # fix i_names:
