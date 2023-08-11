@@ -1,5 +1,5 @@
 # Filename: tbl_regression.R
-# setwd("~/Desktop/iidp/data")
+setwd("~/Desktop/Chi_data3/data")
 library("tidyverse")
 library("gtsummary")
 library("broom")

@@ -1,7 +1,7 @@
-# Filename: mcaide.R
-# munging data; calculation of caide & mcaide
+# Filename: mcaide_last_v2.R
+# calculation of caide & mcaide after munging data
 
-# setwd("~/Desktop/iidp/")
+setwd("~/Desktop/Chi_data3/data")
 library("tidyverse")
 library("gtsummary")
 library("missForest")
@@ -11,7 +11,7 @@ library("magrittr")
 library("MASS")
 library("readxl")
 
-data <- read_excel("CAIDE_APOE/resources/CAIDE Risk Score and APOE project_with Shea.xlsx", 
+data <- read_excel("CAIDE_Risk_Score_and_APOE_project_with_Shea.xlsx", 
                    sheet = "Sheet1", guess_max = 10000) %>% 
                    janitor::clean_names()
 
