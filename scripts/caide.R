@@ -1,7 +1,7 @@
-# Filename: mcaide_last_v2.R
+# Filename: caide.R
+# Date: 08-11-2023
 # calculation of caide & mcaide after munging data
 
-setwd("~/Desktop/Chi_data3/data")
 library("tidyverse")
 library("gtsummary")
 library("missForest")
@@ -361,5 +361,5 @@ mcaide_calc <- iidpdata %>%
 write_csv(x = mcaide_calc, "mcaide_v2_last.csv")
 
 # make table --> see table1.R
-# do regression --> see tbl_regression.R
+# do regression --> see regression.R
 

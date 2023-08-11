@@ -1,5 +1,5 @@
-# Filename: tbl_regression.R
-setwd("~/Desktop/Chi_data3/data")
+# Filename: regression.R
+# Date: 08-11-2023
 library("tidyverse")
 library("gtsummary")
 library("broom")
