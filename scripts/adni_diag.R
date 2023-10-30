@@ -89,7 +89,7 @@ adni_novel <- adni_raw %>%
         dxmci == "-4" |
         dxmdue == "-4" |
         dxmothet == "-4" ~ NA_real_,
-        ###TRUE ~
+        TRUE ~ NA_real_
     )
   )
 
