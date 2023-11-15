@@ -1,9 +1,3 @@
-###########################################################################
-# Program to produce a new diagnosis variable for the adni-nacc dataset
-# Also, the tables and regression for the three cases are produced by this code
-###########################################################################
-
-setwd("/Users/elinorvelasquez/Desktop/ADNI/")
 
 library("tidyverse")
 library("missForest")
@@ -13,84 +7,139 @@ library("broom")
 library("ggplot2")
 library("gtsummary")
 library("rmarkdown")
+library(vcfR)
 
+setwd("~/gitcode/CAIDE_APOE")
 
-adni_raw <- read_csv("~/Desktop/ADNI/DXSUM_PDXCONV_ADNIALL_12Oct2023.csv") %>%
+## Import datasets
+### Key variables 
+merge.raw <- read_csv("resources/ADNI/ADNIMERGE_25Sep2023.csv") %>%
   janitor::clean_names()
 
-adni_novel <- adni_raw %>%
+### Diagnostic summary
+dxsum_raw <- read_csv("resources/ADNI/DXSUM_PDXCONV_ADNIALL_25Sep2023.csv", guess_max = 14000) %>%
+  janitor::clean_names() 
+
+### Vitals 
+vitals.raw <- read_csv("resources/ADNI/VITALS_26Sep2023.csv") %>%
+  janitor::clean_names()
+
+### Cholesterol 
+labs.raw <- read_csv("resources/ADNI/LABDATA_26Sep2023.csv") %>%
+  janitor::clean_names() 
+
+### Genetics
+apoeres.raw <- read_csv("resources/ADNI/APOERES_15Nov2023.csv") %>%
+  janitor::clean_names() 
+
+## Wrangling 
+### Genetics
+apoeres <- apoeres.raw %>%
+  unite(apoe_geno, apgen1, apgen2, sep = "") %>%
+  select(phase, rid, ptid, viscode, apoe_geno)
+
+### Merge 
+merge <- merge.raw %>%
   mutate(
-    diag = case_when(
-      ### ADRD ###
-      dxcurren == 3 | dxad == 1 | dxddue == 1 ~ 1, # all cohorts; AD
-      
-      (phase == "ADNIGO" | phase == "ADNI2" | phase == "ADNI3") & 
-        dxddue == 2 & dxodes == 1 ~ 1, # Frontal-temporal
-      phase == "ADNI1" & dxothdem == 1 & dxodes == 1 ~ 1, # Frontal-temporal
-      
-      (phase == "ADNIGO" | phase == "ADNI2" | phase == "ADNI3") & 
-        dxddue == 2 & dxodes == 9 ~ 1, # Vascular Dementia
-      phase == "ADNI1" & dxothdem == 1 & dxodes == 7 ~ 1, # Vascular Dementia
-      
-      ### CN ###
-      dxcurren == 1 | # ADNI1
-      dxnorm == 1 | # ADNI1
-      diagnosis == 1 | # ADNI3
-      dxchange == 1 ~ 0, # ADNIGO, ADNI2
-      
-      ### MCI ###
-      diagnosis == 2 | # ADNI3
-      dxcurren == 2 | # ADNI1
-      dxmci == 1 | # ADNI1
-      dxchange == 2 | # ADNIGO, ADNI2
-      dxmdue == 1 ~ 1, # ADNIGO, ADNI2, ADNI3
-      phase == "ADNI1" & 
-        (dxmothet == 1 | # Frontal Lobe Dementia
-           dxmothet == 6) ~ 1, # Vascular Dementia
-      (phase == "ADNIGO" | phase == "ADNI2" | phase == "ADNI3") &
-        (dxmothet == 1 | # Frontal Lobe Dementia
-           dxmothet == 9) ~ 1, # Vascular Dementia
-      dxmothsp == "Dementia with Lewy bodies" |
-        dxmothsp == "vascular cognitive impairment" |
-        dxmothsp == "'Mixed' Vascular/Alzheimer's" |
-        dxmothsp == "(Also Alzheimer's Disease)" |
-        dxmothsp == "MCI due to Alzheimer's Disease" |
-        dxmothsp == "Mixed: Vascular/Alzheimer's" | 
-        dxmothsp == "vascular dis" |
-        dxmothsp == "Alzheimer's Disease" |
-        dxmothsp == "Dementia with Lewy Bodies" | 
-        dxmothsp == "Lewy Bodies" |
-        dxmothsp == "Lewy Body Disease" |
-        dxmothsp == "Mixed AD and vascular cognitive impairment. The amount of 
-      vascular disease cannot be ignored in formulating the dianosis" |
-        dxmothsp == "Possible Limbic associate TAU Encephalopathy (LATE)" |
-        dxmothsp == "TDP-43" |
-        dxmothsp == "Tauopathy" | 
-        dxmothsp == "also due to Alzheimer's disease" |
-        dxmothsp == "mixed AD and Vascular" |
-        dxmothsp == "mixed AD and vascular" |
-        dxmothsp == "mixed Alz and vascular" |
-        dxmothsp == "mixed etiology = MCI due to AD and MCI due to Vascular 
-      Dementia" | 
-        dxmothsp == "suspected mixed etiology (AD, vascular, LATE)" |
-        dxmothsp == "vascular MCI" |
-        dxmothsp == "Possible Lewy Body Disease vs. Alzheimer Disease" |
-        dxmothsp == "aging or early AD - cannot tell for sure" ~ 1,
-      
-        dxmothsp == "-4" |
-        dxad == "-4" |
-        dxodes == "-4" |
-        dxothdem == "-4" |
-        dxnorm == "-4" |
-        dxmci == "-4" |
-        dxmdue == "-4" |
-        dxmothet == "-4" ~ NA_real_,
-        TRUE ~ NA_real_
+    race = case_when(
+      # ptraccat != "Asian" & ptethcat != "Hisp/Latino" & ptraccat != "Black" 
+      #  & ptraccat != "White" ~ "Other",
+      ptraccat == "White" & ptethcat != "Hisp/Latino" ~ "Non-Hispanic White",
+      ptraccat == "White" & ptethcat == "Hisp/Latino" ~ "Hispanic",
+      ptraccat == "More than one" & ptethcat == "Hisp/Latino" ~ "Hispanic",
+      ptraccat == "Black" ~ "Black",
+      ptraccat == "Asian" ~ "Asian",
+      ptraccat == "Unknown" ~ "Other",
+      ptraccat == "Am Indian/Alaskan" ~ "Other",
+      ptraccat == "Hawaiian/Other PI" ~ "Other",
+      ptraccat == "More than one" ~ "Other",
+      TRUE ~ NA_character_
+    )) %>%
+  filter(viscode == "bl") %>%
+  select(rid, ptid, origprot, colprot, viscode, examdate_bl, examdate, cdrsb, 
+         ptraccat, ptethcat, age, ptgender, pteducat, apoe4, race)
+
+### ADRD Diagnosis aligned with NACC UDS
+dxsum <- dxsum_raw %>%
+  mutate(
+    naccudsd = case_when(
+      dxnorm == 1 ~ 1, 
+      dxmci == 1 ~ 3, 
+      dxad == 1 ~ 4, 
+      dxothdem == 1 ~ 4, 
+      dxchange == 1 ~ 1, 
+      dxchange == 2 ~ 3, 
+      dxchange == 3 ~ 4, 
+      dxchange == 4 ~ 3, 
+      dxchange == 5 ~ 4, 
+      dxchange == 6 ~ 4, 
+      dxchange == 7 ~ 1, 
+      dxchange == 8 ~ 3, 
+      dxchange == 9 ~ 1, 
+      diagnosis == 1 ~ 1, 
+      diagnosis == 2 ~ 3, 
+      diagnosis == 3 ~ 4, 
+    ), 
+    naccetpr = case_when(
+      naccudsd == 1 ~ 88,
+      dxmdue == 1 ~ 1,
+      dxddue == 1 ~ 1,
+      dxad == 1 ~ 4, 
+      phase == "ADNI1" & dxmdue == 1 ~ 1, 
+      phase == "ADNI1" & dxmothet == 1 ~ 7, 
+      phase == "ADNI1" & dxmothet == 6 ~ 8, 
+      phase == "ADNI1" & dxmothet == "6:08" ~ 8, 
+      phase == "ADNI1" & dxmothet == 8 ~ 30, 
+      phase == "ADNI1" & dxodes == 1 ~ 7, 
+      phase == "ADNI1" & dxodes == 12 ~ 18, 
+      dxmothet == 1 ~ 7,
+      dxmothet == 2 ~ 18,
+      dxmothet == 3 ~ 11,
+      dxmothet == 4 ~ 4,
+      dxmothet == 5 ~ 26,
+      dxmothet == 6 ~ 14,
+      dxmothet == 7 ~ 19,
+      dxmothet == 8 ~ 5,
+      dxmothet == 9 ~ 8,
+      dxmothet == 10 ~ 12,
+      dxmothet == 11 ~ 17,
+      dxmothet == 12 ~ 7,
+      dxmothet == 13 ~ 1,
+      str_detect(dxmothsp, "Multiple Systems Atrophy") ~ 3,
+      dxmothet == 14 ~ 30,
+      dxmothet == "2|14" ~ 30,
+      dxmothet == "5|7|14" ~ 27,
+      dxmothet == "7|14" ~ 19,
+      dxmothet == "9" ~ 8,
+      dxmothet == "9|14" ~ 8,
+      dxmothet == "12" ~ 7,
+      dxmothet == "7:9" ~ 19,
+      dxmothet == "2:14" ~ 18,
+      dxmothet == "9:14" ~ 8,
+      dxodes == 1 ~ 7, 
+      dxodes == 2 ~ 18, 
+      dxodes == 3 ~ 11, 
+      dxodes == 4 ~ 4, 
+      dxodes == 5 ~ 26, 
+      dxodes == 6 ~ 14, 
+      dxodes == 7 ~ 19, 
+      dxodes == 8 ~ 5, 
+      dxodes == 9 ~ 8, 
+      dxodes == 10 ~ 12, 
+      dxodes == 11 ~ 17, 
+      dxodes == 12 ~ 7, 
+      dxodes == 13 ~ 1, 
+      str_detect(dxoothsp, "Lewy") ~ 2,
+      dxodes == 14 ~ 30, 
     )
-  ) %>% 
-  dplyr::filter(!is.na(diag)) 
+  ) %>%
+  select(rid, ptid, phase, viscode, viscode2, examdate, naccudsd, naccetpr)
 
 write.csv(adni_novel, "adni_novel.csv")
+
+## Diagnosis
+merge.raw <- read_csv("~/Dropbox/Research/Data/ADNI/ADNIMERGE_25Sep2023.csv") %>%
+  janitor::clean_names()
 
 
 ######################################
