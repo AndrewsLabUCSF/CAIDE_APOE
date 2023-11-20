@@ -36,7 +36,12 @@ apoeres.raw <- read_csv("resources/ADNI/APOERES_15Nov2023.csv") %>%
 ### Genetics
 apoeres <- apoeres.raw %>%
   unite(apoe_geno, apgen1, apgen2, sep = "") %>%
-  select(phase, rid, ptid, viscode, apoe_geno)
+  select(phase, rid, ptid, viscode, apoe_geno) %>%
+  mutate(apoe = case_when(
+    apoe_geno %in% c(33) ~ 'e3/e3', 
+    apoe_geno %in% c(24, 42, 43, 34, 44) ~ "e4+", 
+    apoe_geno %in% c(23, 32, 22) ~ "e2+"
+  ))
 
 ### Merge 
 merge <- merge.raw %>%
@@ -137,200 +142,270 @@ dxsum <- dxsum_raw %>%
 
 write.csv(adni_novel, "adni_novel.csv")
 
-## Diagnosis
-merge.raw <- read_csv("~/Dropbox/Research/Data/ADNI/ADNIMERGE_25Sep2023.csv") %>%
-  janitor::clean_names()
+### Vitals 
 
-
-######################################
-# Make the tables with this new diagnosis variable
-# Case 1. Caide computed with no cholesterol
-# Case 2. Caide computed with cholesterol without the chol missing values
-# Case 3. Caide computed with imputed cholesterol
-######################################
-
-adni_nacc_raw <- 
-  read_csv("~/Desktop/adni_nacc/results 11-03-2023/adni_nacc.csv") %>%
-  janitor::clean_names()
-
-janitor::get_dupes(adni_nacc_raw) # no dupes
-
-# Make new variables for the tables of Case 1, 2, 3:
-table_vars <- adni_nacc_raw %>%
+vitals <- vitals.raw %>%
+  select(phase, rid, viscode2, visdate, vsweight, vswtunit, vsheight, vshtunit, vsbpsys, vsbpdia) %>%
+  arrange(rid, visdate) %>%
   mutate(
-    Gender = gender,
-    Diag = case_when(
-      diag == 1 ~ "ADRD, MCI",
-      diag == 0 ~ "Cog Normal",
-      TRUE ~ NA_character_
+    vsweight = na_if(vsweight, -1),
+    vsweight = na_if(vsweight, -4),
+    vsheight = na_if(vsheight, -1),
+    vsheight = na_if(vsheight, -4),   
+    vswtunit = na_if(vswtunit, -1),
+    vshtunit = na_if(vshtunit, -1),
+    vswtunit = na_if(vswtunit, -4),
+    vshtunit = na_if(vshtunit, -4),
+    vsbpsys = na_if(vsbpsys, -1),
+  ) %>%
+  group_by(rid) %>%
+  tidyr::fill(vsheight, .direction = "down") %>%
+  tidyr::fill(vshtunit, .direction = "down") %>%
+  ungroup() %>%
+  filter(viscode2 == "bl") %>%
+  ## Fix stupid coding errors 
+  mutate(
+    vswtunit = case_when(
+      rid == 6049 ~ 1,
+      TRUE ~ vswtunit 
+    ), 
+    vshtunit = case_when(
+      rid == 7123 ~ 1, 
+      rid == 6916 ~ 2, 
+      rid == 6134 ~ 2,
+      TRUE ~ vshtunit 
     ),
-    Age = case_when(
-      (i_age < 47) ~ "< 47",
-      (i_age >= 47 & i_age <= 53) ~ "47 - 53",
-      (i_age > 53) ~ "> 53",
-      is.na(i_age) ~ NA
+  ) %>%
+  mutate(
+    weight_in_kg = case_when(vswtunit == 1 ~ vsweight*0.453592, #1 is lbs
+                             vswtunit == 2 ~ vsweight,
+                             TRUE ~ NA_real_
     ),
-    Education = case_when(
-      (i_education < 7) ~ "< 7",
-      (i_education >= 7 & i_education <= 9) ~ "7 - 9",
-      (i_education > 9) ~ "> 9", is.na(i_education) ~ NA
+    height_in_cm = case_when(vshtunit == 1 ~ vsheight*2.54, #1 is inches
+                             vshtunit == 2 ~ vsheight,
+                             TRUE ~ NA_real_
     ),
-    Obesity = case_when(
-      (i_bmi <= 30) ~ "No",
-      (i_bmi > 30) ~ "Yes",
-      is.na(i_bmi) ~ NA
+    bmi = weight_in_kg / (height_in_cm / 100)^2
+  )
+
+
+### Cholesterol 
+chol <- labs.raw %>%
+  select(rid, phase, viscode, viscode2, examdate, rct20) %>%
+  arrange(rid, examdate) %>%
+  mutate(
+    rct20 = as.numeric(rct20), 
+    rct20 = na_if(rct20, -1),
+    total_c = rct20 * 0.0259, 
+    high_chol = ifelse(rct20 >= 240, 1, 0)
+  ) %>%
+  filter(!is.na(rct20)) %>%
+  group_by(rid) %>%
+  slice(which.min(examdate)) %>%
+  ungroup()
+
+## Merged data 
+dxsum_merge <- dxsum %>% filter(viscode2 == "bl") %>% select(ptid, viscode2, naccudsd, naccetpr)
+apoe_merge <- select(apoeres, -rid, -phase, -viscode) 
+vitals_merge <- select(vitals, rid, vsbpsys, vsbpdia, weight_in_kg, height_in_cm, bmi)
+chol_merge <- select(chol, rid, total_c, high_chol)
+
+adni_wrangle <- merge %>% 
+  left_join(dxsum_merge, by = "ptid") %>%
+  left_join(apoe_merge, by = "ptid") %>%
+  left_join(vitals_merge, by = "rid") %>%
+  left_join(chol_merge, by = "rid")
+
+
+### impute missing data 
+require(doParallel)
+registerDoParallel(cores=3) 
+getDoParWorkers()
+require(doRNG)
+registerDoRNG(seed = 333)
+
+adni_ximp <- adni_wrangle %>% 
+  select(age, race, cdrsb, apoe_geno, ptgender, pteducat, height_in_cm, weight_in_kg, bmi, vsbpsys, vsbpdia, total_c) %>%
+  mutate(
+    race = as_factor(race), 
+    apoe_geno = as_factor(apoe_geno), 
+    ptgender = as_factor(ptgender), 
+  ) %>%
+  as.data.frame() %>%
+  missForest(xmis = ., variablewise = TRUE, verbose = TRUE, xtrue = filter(., complete.cases(.)), parallelize = 'forests')
+
+adni_imp <- adni_ximp %>%
+  magrittr::extract2(1) %>%
+  select(-age, -race, -cdrsb, -apoe_geno, -ptgender) %>%
+  magrittr::set_colnames(paste0("i_", colnames(.))) %>%
+  as_tibble() %>%
+  mutate(
+    i_pteducat = round(i_pteducat), 
+    i_bmi = round(i_bmi, 1)
+  )
+
+adni <- adni_wrangle %>%
+  bind_cols(adni_imp)
+
+### CAIDE risk score
+caide <- adni %>%
+  mutate(
+    caide_age = case_when(
+      age <= 46 ~ 0, 
+      age >= 47 & age < 53 ~ 3, 
+      age >= 53 ~ 4, 
+      TRUE ~ NA_real_
+    ), 
+    caide_educ = case_when(
+      i_pteducat <= 6 ~ 3, 
+      i_pteducat >= 7 & i_pteducat <= 9 ~ 2, 
+      i_pteducat > 9 ~ 0, 
+      TRUE ~ NA_real_
+    ), 
+    caide_sex = case_when(
+      ptgender == "Male" ~ 1, 
+      ptgender == "Female" ~ 0, 
+      TRUE ~ NA_real_
+    ), 
+    caide_bmi = case_when(
+      i_bmi < 30 ~ 0, 
+      i_bmi >= 30 ~ 2, 
+      TRUE ~ NA_real_
     ),
-    Hypertension = case_when(
-      (i_systbp <= 140) ~ "No",
-      (i_systbp > 140) ~ "Yes",
-      is.na(i_systbp) ~ NA
+    caide_sbp = case_when(
+      i_vsbpsys < 140 ~ 0, 
+      i_vsbpsys >= 140 ~ 2, 
+      TRUE ~ NA_real_
     ),
-    Hypercholesterolemia3 = case_when(
-      (hypchol3 == 1) ~ "Yes",
-      (hypchol3 == 0) ~ "No",
-      is.na(hypchol3) ~ NA
-    ),
-    Hypercholesterolemia2 = case_when(
-      (hypchol2 == 1) ~ "Yes",
-      (hypchol2 == 0) ~ "No",
-      is.na(hypchol2) ~ NA
+    i_caide_chol = case_when(
+      i_total_c < 6.21 ~ 0, 
+      i_total_c >= 6.21 ~ 2, 
+      TRUE ~ NA_real_
+    ), 
+    caide_chol = case_when(
+      total_c < 6.21 ~ 0, 
+      total_c >= 6.21 ~ 2, 
+      TRUE ~ NA_real_
     )
-  ) # end of table_vars
-
-###############################
-# Make table for case 2:
-###############################
-
-adni_nacc_case2 <- table_vars  %>%
+  ) %>%
+  rowwise() %>%
   mutate(
-    caide_apoe2 = fct_relevel(caide_apoe2, "Low, e2+", "Low, e3/e3", "Low, e4+",
-                              "Mid, e2+", "Mid, e3/e3", "Mid, e4+",
-                              "High, e2+", "High, e3/e3", "High, e4+"),
-    mcaide_apoe2 = fct_relevel(mcaide_apoe2, "Low, e2+", "Low, e3/e3", "Low, e4+",
-                               "Mid, e2+", "Mid, e3/e3", "Mid, e4+",
-                               "High, e2+", "High, e3/e3", "High, e4+")
+    caide = sum(caide_age, caide_educ, caide_sex, caide_bmi, caide_sbp, i_caide_chol, na.rm = F), 
+    caide_u_chol = sum(caide_age, caide_educ, caide_sex, caide_bmi, caide_sbp, caide_chol, na.rm = F), 
+    caide_wo_chol = sum(caide_age, caide_educ, caide_sex, caide_bmi, caide_sbp, na.rm = F), 
+    caide_missing = sum(is.na(age), is.na(pteducat), is.na(ptgender), 
+                        is.na(bmi), is.na(total_c), is.na(vsbpsys)),
   ) %>%
-  dplyr::select(race, Diag,
-                Hypercholesterolemia2, 
-                cohort,
-                Gender, Age, Education, Obesity, Hypertension, 
-                caide2, apoe, caide_apoe2, mcaide2, mcaide_apoe2 
+  ungroup() %>%
+  select(ptid, starts_with("caide"))
+
+## mCAIDE
+mcaide <- adni %>%
+  mutate(
+    mcaide_age = case_when(
+      age <= 64 ~ 0, 
+      age >= 65 & age < 73 ~ 1, 
+      age >= 73 ~ 2, 
+      TRUE ~ NA_real_
+    ), 
+    mcaide_educ = case_when(
+      i_pteducat <= 11 ~ 2, 
+      i_pteducat >= 12 & i_pteducat <= 16 ~ 1, 
+      i_pteducat > 16 ~ 0, 
+      TRUE ~ NA_real_
+    ), 
+    mcaide_sex = case_when(
+      ptgender == "Male" ~ 1, 
+      ptgender == "Female" ~ 0, 
+      TRUE ~ NA_real_
+    ), 
+    mcaide_bmi = case_when(
+      i_bmi < 30 ~ 0, 
+      i_bmi >= 30 ~ 2, 
+      TRUE ~ NA_real_
+    ),
+    mcaide_sbp = case_when(
+      i_vsbpsys < 140 ~ 0, 
+      i_vsbpsys >= 140 ~ 2, 
+      TRUE ~ NA_real_
+    ),
+    i_mcaide_chol = case_when(
+      i_total_c < 6.21 ~ 0, 
+      i_total_c >= 6.21 ~ 2, 
+      TRUE ~ NA_real_
+    ), 
+    mcaide_chol = case_when(
+      total_c < 6.21 ~ 0, 
+      total_c >= 6.21 ~ 2, 
+      TRUE ~ NA_real_
+    )
   ) %>%
-  tbl_summary(
-    by = race,
-    type = list(cohort ~ "categorical", Diag ~ "categorical",
-                Gender ~ "categorical", 
-                Obesity ~ "categorical", Hypertension ~ "categorical", 
-                apoe ~ "categorical", race ~ "categorical",
-                caide2 ~ "continuous", caide_apoe2 ~ "categorical",
-                mcaide2 ~ "continuous", mcaide_apoe2 ~ "categorical",
-                Hypercholesterolemia2 ~ "categorical"
-    ),
-    statistic = list(
-      all_continuous() ~ "{mean} ({sd})",
-      all_categorical() ~ "{n} ({p}%)"
-    ),
-    digits = all_continuous() ~ 2,
-    label = list(Gender ~ "Gender", Age ~ "Age", Education ~ "Education", 
-                 race ~ "Race", Diag ~ "Diagnosis", cohort ~ "Cohort",
-                 Obesity ~ "Obesity", Hypertension ~ "Hypertension", 
-                 caide2 ~ "CAIDE_w_chol_noNA", mcaide2 ~ "mCAIDE_w_chol_noNA",
-                 apoe ~ "APOE", caide_apoe2 ~ "CAIDE x APOE_w_chol_noNA",
-                 mcaide_apoe2 ~ "mCAIDE x APOE_w_chol_noNA",
-                 Hypercholesterolemia2 ~ "Hypercholesterolemia_w_chol_noNA"
-    ),
-    missing_text = "Missing"
+  rowwise() %>%
+  mutate(
+    mcaide = sum(mcaide_age, mcaide_educ, mcaide_sex, mcaide_bmi, mcaide_sbp, i_mcaide_chol, na.rm = F), 
+    mcaide_u_chol = sum(mcaide_age, mcaide_educ, mcaide_sex, mcaide_bmi, mcaide_sbp, mcaide_chol, na.rm = F), 
+    mcaide_wo_chol = sum(mcaide_age, mcaide_educ, mcaide_sex, mcaide_bmi, mcaide_sbp, na.rm = F), 
+    mcaide_missing = sum(is.na(age), is.na(pteducat), is.na(ptgender), 
+                        is.na(bmi), is.na(total_c), is.na(vsbpsys)),
   ) %>%
-  modify_header(label = "**Caide with no NAs in Cholesterol**") %>%
-  bold_labels() %>%
-  as_gt %>%
-  gt::gtsave(
-    filename = "~/Desktop/adni_nacc/table_adni_nacc_2.docx", 
-    vwidth = 648, vheight = 288
+  ungroup() %>%
+  select(ptid, starts_with("mcaide"))
+
+## export datsets 
+adni_out <- adni %>%
+  left_join(caide, by = "ptid") %>%
+  left_join(mcaide, by = "ptid")
+
+## Table 1
+adni_out %>%
+  mutate(
+    race = as_factor(race), 
+    race = fct_recode(race, "NHW" = "Non-Hispanic White"), 
+    apoe = as_factor(apoe), 
+    apoe = fct_relevel(apoe, "e3/e3"), 
+    obesity = case_when(
+      bmi < 30 ~ FALSE, 
+      bmi >= 30 ~ TRUE, 
+      TRUE ~ NA_real_
+    ), 
+    htn = case_when(
+      vsbpsys < 140 ~ FALSE, 
+      vsbpsys >= 140 ~ TRUE, 
+      TRUE ~ NA_real_
+    ), 
+    hld = case_when(
+      total_c < 6.21 ~ FALSE, 
+      total_c >= 6.21 ~ TRUE, 
+      TRUE ~ NA_real_
+    ), 
+    dx = case_when(
+      naccudsd == 1 ~ "NL", 
+      naccudsd == 3 ~ "MCI",
+      naccudsd == 4 ~ "ADRD"
+    ), 
+    dx = fct_relevel(dx, "NL", "MCI", "ADRD"),
+    adrd = case_when(
+      naccetpr == 88 ~ "NL", 
+      naccetpr == 1 ~ "AD", 
+      naccetpr == 4 ~ "PSP", 
+      naccetpr == 7 ~ "FTLD", 
+      naccetpr == 8 ~ "VCID", 
+      TRUE ~ NA_character_
+    ), 
+    adrd = fct_relevel(adrd, "NL"), 
+  ) %>%
+  dplyr::select(race, age, pteducat, htn, obesity, hld, caide, mcaide, apoe, dx, adrd) %>%
+  tbl_summary(.,
+              by = race,
+              statistic = list(
+                all_continuous() ~ "{mean} ({sd})",
+                all_categorical() ~ "{n} ({p}%)"
+              )
   )
 
-###############################
-# Make table for case 3:
-###############################
-
-adni_nacc_case3 <- table_vars  %>%
-  mutate(
-    caide_apoe3 = fct_relevel(caide_apoe3, "Low, e2+", "Low, e3/e3", "Low, e4+",
-                              "Mid, e2+", "Mid, e3/e3", "Mid, e4+",
-                              "High, e2+", "High, e3/e3", "High, e4+"),
-    mcaide_apoe3 = fct_relevel(mcaide_apoe3, "Low, e2+", "Low, e3/e3", "Low, e4+",
-                               "Mid, e2+", "Mid, e3/e3", "Mid, e4+",
-                               "High, e2+", "High, e3/e3", "High, e4+")
-  ) %>%
-  dplyr::select(race, Diag,
-                Hypercholesterolemia3, 
-                cohort,
-                Gender, Age, Education, Obesity, Hypertension, 
-                caide3, apoe, caide_apoe3, mcaide3, mcaide_apoe3 
-  ) %>%
-  tbl_summary(
+test %>%
+  tbl_summary(.,
     by = race,
-    type = list(cohort ~ "categorical", Diag ~ "categorical",
-                Gender ~ "categorical", 
-                Obesity ~ "categorical", Hypertension ~ "categorical", 
-                apoe ~ "categorical", race ~ "categorical",
-                caide3 ~ "continuous", caide_apoe3 ~ "categorical",
-                mcaide3 ~ "continuous", mcaide_apoe3 ~ "categorical",
-                Hypercholesterolemia3 ~ "categorical"
-    ),
-    statistic = list(
-      all_continuous() ~ "{mean} ({sd})",
-      all_categorical() ~ "{n} ({p}%)"
-    ),
-    digits = all_continuous() ~ 2,
-    label = list(Gender ~ "Gender", Age ~ "Age", Education ~ "Education", 
-                 race ~ "Race", Diag ~ "Diagnosis", cohort ~ "Cohort",
-                 Obesity ~ "Obesity", Hypertension ~ "Hypertension", 
-                 caide3 ~ "CAIDE_w_imputed_chol", 
-                 mcaide3 ~ "mCAIDE_w_imputed_chol",
-                 apoe ~ "APOE", caide_apoe3 ~ "CAIDE x APOE_w_imputed_chol",
-                 mcaide_apoe3 ~ "mCAIDE x APOE_w_imputed_chol",
-                 Hypercholesterolemia3 ~ "Hypercholesterolemia_w_imputed_chol"
-    ),
-    missing_text = "Missing"
-  ) %>%
-  modify_header(label = "**Caide with imputed Cholesterol**") %>%
-  bold_labels() %>%
-  as_gt %>%
-  gt::gtsave(
-    filename = "~/Desktop/adni_nacc/table_adni_nacc_3.docx", 
-    vwidth = 648, vheight = 288
-  )
-
-###############################
-# Make table for case 1:
-###############################
-
-adni_nacc_case1 <- table_vars  %>%
-  mutate(
-    caide_apoe1 = fct_relevel(caide_apoe1, "Low, e2+", "Low, e3/e3", "Low, e4+",
-                              "Mid, e2+", "Mid, e3/e3", "Mid, e4+",
-                              "High, e2+", "High, e3/e3", "High, e4+"),
-    mcaide_apoe1 = fct_relevel(mcaide_apoe1, "Low, e2+", "Low, e3/e3", "Low, e4+",
-                               "Mid, e2+", "Mid, e3/e3", "Mid, e4+",
-                               "High, e2+", "High, e3/e3", "High, e4+")
-  ) %>%
-  dplyr::select(race, Diag,
-                #Hypercholesterolemia3, 
-                cohort,
-                Gender, Age, Education, Obesity, Hypertension, 
-                caide1, apoe, caide_apoe1, mcaide1, mcaide_apoe1 
-  ) %>%
-  tbl_summary(
-    by = race,
-    type = list(cohort ~ "categorical", Diag ~ "categorical",
-                Gender ~ "categorical", 
-                Obesity ~ "categorical", Hypertension ~ "categorical", 
-                apoe ~ "categorical", race ~ "categorical",
-                caide1 ~ "continuous", caide_apoe1 ~ "categorical",
-                mcaide1 ~ "continuous", mcaide_apoe1 ~ "categorical"#,
-                #Hypercholesterolemia1 ~ "categorical"
-    ),
     statistic = list(
       all_continuous() ~ "{mean} ({sd})",
       all_categorical() ~ "{n} ({p}%)"
@@ -353,380 +428,6 @@ adni_nacc_case1 <- table_vars  %>%
     filename = "~/Desktop/adni_nacc/table_adni_nacc_1.docx", 
     vwidth = 648, vheight = 288
   )
-
-########################################################
-# Regression models with the new diagnosis variable
-########################################################
-
-# Set reference
-adni_nacc_raw$apoe <- factor(adni_nacc_raw$apoe, ordered = FALSE )
-adni_nacc_raw$apoe = relevel(adni_nacc_raw$apoe, ref = "e3/e3")
-
-# Regression Stratified by Race 
-adni_nacc_novel_nhw <-  dplyr::filter(adni_nacc_raw, race == "NHW")
-adni_nacc_novel_black <-  dplyr::filter(adni_nacc_raw, race == "Black")
-adni_nacc_novel_asian <-  dplyr::filter(adni_nacc_raw, race == "Asian")
-adni_nacc_novel_his <-  dplyr::filter(adni_nacc_raw, race == "Hispanic")
-
-# 1. logistic model: diagnosis ~ caide + apoe for NHW
-model_caide1_apoe_nhw <- glm(diag ~ z_caide1 + apoe, 
-                             data=adni_nacc_novel_nhw, family = binomial)
-model_caide2_apoe_nhw <- glm(diag ~ z_caide2 + apoe, 
-                             data=adni_nacc_novel_nhw, family = binomial)
-model_caide3_apoe_nhw <- glm(diag ~ z_caide3 + apoe, 
-                             data=adni_nacc_novel_nhw, family = binomial)
-
-# Glance for #1 model for NHW
-add_glance_source_note(tbl_regression(model_caide1_apoe_nhw)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "NHW: Diagnosis ~ CAIDE + APOE (without Cholesterol)") %>%
-  gt::gtsave(filename = "model_caide1_apoe_nhw.png")
-
-add_glance_source_note(tbl_regression(model_caide2_apoe_nhw)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "NHW: Diagnosis ~ CAIDE + APOE 
-                 (with non-imputed Cholesterol)") %>%
-  gt::gtsave(filename = "model_caide2_apoe_nhw.png")
-
-add_glance_source_note(tbl_regression(model_caide3_apoe_nhw)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "NHW: Diagnosis ~ CAIDE + APOE 
-                 (with imputed Cholesterol)") %>%
-  gt::gtsave(filename = "model_caide3_apoe_nhw.png")
-
-# 1. logistic model: diagnosis ~ caide + apoe for Black
-model_caide1_apoe_black <- glm(diag ~ z_caide1 + apoe, 
-                               data=adni_nacc_novel_black, family = binomial)
-model_caide2_apoe_black <- glm(diag ~ z_caide2 + apoe, 
-                               data=adni_nacc_novel_black, family = binomial)
-model_caide3_apoe_black <- glm(diag ~ z_caide3 + apoe, 
-                               data=adni_nacc_novel_black, family = binomial)
-
-# Glance for #1 model for Black
-add_glance_source_note(tbl_regression(model_caide1_apoe_black)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Black: Diagnosis ~ CAIDE + APOE (without Cholesterol)") %>%
-  gt::gtsave(filename = "model_caide1_apoe_black.png")
-
-add_glance_source_note(tbl_regression(model_caide2_apoe_black)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Black: Diagnosis ~ CAIDE + APOE 
-                 (with non-imputed Cholesterol)") %>%
-  gt::gtsave(filename = "model_caide2_apoe_black.png")
-
-add_glance_source_note(tbl_regression(model_caide3_apoe_black)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Black: Diagnosis ~ CAIDE + APOE 
-                 (with imputed Cholesterol)") %>%
-  gt::gtsave(filename = "model_caide3_apoe_black.png")
-
-# 1. logistic model: diagnosis ~ caide + apoe for Asian
-model_caide1_apoe_asian <- glm(diag ~ z_caide1 + apoe, 
-                               data=adni_nacc_novel_asian, family = binomial)
-model_caide2_apoe_asian <- glm(diag ~ z_caide2 + apoe, 
-                               data=adni_nacc_novel_asian, family = binomial)
-model_caide3_apoe_asian <- glm(diag ~ z_caide3 + apoe, 
-                               data=adni_nacc_novel_asian, family = binomial)
-
-# Glance for #1 model for Asian
-add_glance_source_note(tbl_regression(model_caide1_apoe_asian)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Asian: Diagnosis ~ CAIDE + APOE (without Cholesterol)") %>%
-  gt::gtsave(filename = "model_caide1_apoe_asian.png")
-
-add_glance_source_note(tbl_regression(model_caide2_apoe_asian)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Asian: Diagnosis ~ CAIDE + APOE 
-                 (with non-imputed Cholesterol)") %>%
-  gt::gtsave(filename = "model_caide2_apoe_asian.png")
-
-add_glance_source_note(tbl_regression(model_caide3_apoe_asian)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Asian: Diagnosis ~ CAIDE + APOE 
-                 (with imputed Cholesterol)") %>%
-  gt::gtsave(filename = "model_caide3_apoe_asian.png")
-
-# 1. logistic model: diagnosis ~ caide + apoe for Hispanic
-model_caide1_apoe_his <- glm(diag ~ z_caide1 + apoe, 
-                             data=adni_nacc_novel_his, family = binomial)
-model_caide2_apoe_his <- glm(diag ~ z_caide2 + apoe, 
-                             data=adni_nacc_novel_his, family = binomial)
-model_caide3_apoe_his <- glm(diag ~ z_caide3 + apoe, 
-                             data=adni_nacc_novel_his, family = binomial)
-
-# Glance for #1 model for Hispanic
-add_glance_source_note(tbl_regression(model_caide1_apoe_his)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Hispanic: Diagnosis ~ CAIDE + APOE 
-                 (without Cholesterol)") %>%
-  gt::gtsave(filename = "model_caide1_apoe_his.png")
-
-add_glance_source_note(tbl_regression(model_caide2_apoe_his)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Hispanic: Diagnosis ~ CAIDE + APOE 
-                 (with non-imputed Cholesterol)") %>%
-  gt::gtsave(filename = "model_caide2_apoe_his.png")
-
-add_glance_source_note(tbl_regression(model_caide3_apoe_his)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Hispanic: Diagnosis ~ CAIDE + APOE 
-                 (with imputed Cholesterol)") %>%
-  gt::gtsave(filename = "model_caide3_apoe_his.png")
-
-# 2. logistic model: diagnosis ~ mcaide + apoe for NHW
-model_mcaide1_apoe_nhw <- glm(diag ~ z_mcaide1 + apoe, 
-                              data=adni_nacc_novel_nhw, family = binomial)
-model_mcaide2_apoe_nhw <- glm(diag ~ z_mcaide2 + apoe, 
-                              data=adni_nacc_novel_nhw, family = binomial)
-model_mcaide3_apoe_nhw <- glm(diag ~ z_mcaide3 + apoe, 
-                              data=adni_nacc_novel_nhw, family = binomial)
-
-# Glance for #2 model for NHW
-add_glance_source_note(tbl_regression(model_mcaide1_apoe_nhw)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "NHW: Diagnosis ~ mCAIDE + APOE (without Cholesterol)") %>%
-  gt::gtsave(filename = "model_mcaide1_apoe_nhw.png")
-
-add_glance_source_note(tbl_regression(model_mcaide2_apoe_nhw)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "NHW: Diagnosis ~ mCAIDE + APOE 
-                 (with non-imputed Cholesterol)") %>%
-  gt::gtsave(filename = "model_mcaide2_apoe_nhw.png")
-
-add_glance_source_note(tbl_regression(model_mcaide3_apoe_nhw)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "NHW: Diagnosis ~ mCAIDE + APOE 
-                 (with imputed Cholesterol)") %>%
-  gt::gtsave(filename = "model_mcaide3_apoe_nhw.png")
-
-# 2. logistic model: diagnosis ~ mcaide + apoe for Black
-model_mcaide1_apoe_black <- glm(diag ~ z_mcaide1 + apoe, 
-                                data=adni_nacc_novel_black, 
-                                family = binomial)
-model_mcaide2_apoe_black <- glm(diag ~ z_mcaide2 + apoe, 
-                                data=adni_nacc_novel_black, 
-                                family = binomial)
-model_mcaide3_apoe_black <- glm(diag ~ z_mcaide3 + apoe, 
-                                data=adni_nacc_novel_black, 
-                                family = binomial)
-
-# Glance for #2 model for Black
-add_glance_source_note(tbl_regression(model_mcaide1_apoe_black)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Black: Diagnosis ~ mCAIDE + APOE (without Cholesterol)") %>%
-  gt::gtsave(filename = "model_mcaide1_apoe_black.png")
-
-add_glance_source_note(tbl_regression(model_mcaide2_apoe_black)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Black: Diagnosis ~ mCAIDE + APOE 
-                 (with non-imputed Cholesterol)") %>%
-  gt::gtsave(filename = "model_mcaide2_apoe_black.png")
-
-add_glance_source_note(tbl_regression(model_mcaide3_apoe_black)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Black: Diagnosis ~ mCAIDE + APOE 
-                 (with imputed Cholesterol)") %>%
-  gt::gtsave(filename = "model_mcaide3_apoe_black.png")
-
-# 2. logistic model: diagnosis ~ mcaide + apoe for Asian
-model_mcaide1_apoe_asian <- glm(diag ~ z_mcaide1 + apoe, 
-                                data=adni_nacc_novel_asian, 
-                                family = binomial)
-model_mcaide2_apoe_asian <- glm(diag ~ z_mcaide2 + apoe, 
-                                data=adni_nacc_novel_asian, 
-                                family = binomial)
-model_mcaide3_apoe_asian <- glm(diag ~ z_mcaide3 + apoe, 
-                                data=adni_nacc_novel_asian, 
-                                family = binomial)
-
-# Glance for #2 model for Asian
-add_glance_source_note(tbl_regression(model_mcaide1_apoe_asian)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Asian: Diagnosis ~ mCAIDE + APOE (without Cholesterol)") %>%
-  gt::gtsave(filename = "model_mcaide1_apoe_asian.png")
-
-add_glance_source_note(tbl_regression(model_mcaide2_apoe_asian)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Asian: Diagnosis ~ mCAIDE + APOE 
-                 (with non-imputed Cholesterol)") %>%
-  gt::gtsave(filename = "model_mcaide2_apoe_asian.png")
-
-add_glance_source_note(tbl_regression(model_mcaide3_apoe_asian)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Asian: Diagnosis ~ mCAIDE + APOE 
-                 (with imputed Cholesterol)") %>%
-  gt::gtsave(filename = "model_mcaide3_apoe_asian.png")
-
-# 2. logistic model: diagnosis ~ mcaide + apoe for Hispanic
-model_mcaide1_apoe_his <- glm(diag ~ z_mcaide1 + apoe, data=adni_nacc_novel_his, 
-                              family = binomial)
-model_mcaide2_apoe_his <- glm(diag ~ z_mcaide2 + apoe, data=adni_nacc_novel_his, 
-                              family = binomial)
-model_mcaide3_apoe_his <- glm(diag ~ z_mcaide3 + apoe, data=adni_nacc_novel_his, 
-                              family = binomial)
-
-# Glance for #2 model for Hispanic
-add_glance_source_note(tbl_regression(model_mcaide1_apoe_his)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Hispanic: Diagnosis ~ mCAIDE + APOE 
-                 (without Cholesterol)") %>%
-  gt::gtsave(filename = "model_mcaide1_apoe_his.png")
-
-add_glance_source_note(tbl_regression(model_mcaide2_apoe_his)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Hispanic: Diagnosis ~ mCAIDE + APOE 
-                 (with non-imputed Cholesterol)") %>%
-  gt::gtsave(filename = "model_mcaide2_apoe_his.png")
-
-add_glance_source_note(tbl_regression(model_mcaide3_apoe_his)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Hispanic: Diagnosis ~ mCAIDE + APOE 
-                 (with imputed Cholesterol)") %>%
-  gt::gtsave(filename = "model_mcaide3_apoe_his.png")
-
-# 3 logistic model: diag ~ i_bmi + i_systbp + i_age + i_education + gender + 
-#                            apoe + cohort + chol for NHW
-model_all3_nhw <- glm(diag ~ i_bmi + i_systbp + i_age + i_education + gender + 
-                        apoe + cohort + hypchol3, 
-                      data=adni_nacc_novel_nhw, family = binomial)
-
-model_all2_nhw <- glm(diag ~ i_bmi + i_systbp + i_age + i_education + gender + 
-                        apoe + cohort + hypchol2, 
-                      data=adni_nacc_novel_nhw, family = binomial)
-
-model_all1_nhw <- glm(diag ~ i_bmi + i_systbp + i_age + i_education + gender + 
-                        apoe + cohort, 
-                      data=adni_nacc_novel_nhw, family = binomial)
-
-# glance for all: NHW
-add_glance_source_note(tbl_regression(model_all1_nhw)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "NHW: Diag ~ i_bmi + i_systbp + i_age + i_education + gender + 
-                        apoe + cohort 
-                        (without Cholesterol)") %>%
-  gt::gtsave(filename = "model_all1_nhw.png")
-
-add_glance_source_note(tbl_regression(model_all2_nhw)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "NHW: Diag ~ i_bmi + i_systbp + i_age + i_education + gender + 
-                        apoe + cohort + hypchol2 
-                        (with non-imputed Cholesterol)") %>%
-  gt::gtsave(filename = "model_all2_nhw.png")
-
-add_glance_source_note(tbl_regression(model_all3_nhw)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "NHW: Diag ~ i_bmi + i_systbp + i_age + i_education + gender + 
-                        apoe + cohort + hypchol3 
-                        (with imputed Cholesterol)") %>%
-  gt::gtsave(filename = "model_all3_nhw.png")
-
-# 3 logistic model: diag ~ i_bmi + i_systbp + i_age + i_education + gender + 
-#                            apoe + cohort + chol for Black
-model_all3_black <- glm(diag ~ i_bmi + i_systbp + i_age + i_education + 
-                          gender + apoe + cohort + hypchol3, 
-                        data=adni_nacc_novel_black, family = binomial)
-
-model_all2_black <- glm(diag ~ i_bmi + i_systbp + i_age + i_education + 
-                          gender + apoe + cohort + hypchol2, 
-                        data=adni_nacc_novel_black, family = binomial)
-
-model_all1_black <- glm(diag ~ i_bmi + i_systbp + i_age + i_education + 
-                          gender + apoe + cohort, 
-                        data=adni_nacc_novel_black, family = binomial)
-
-# glance for all: Black
-add_glance_source_note(tbl_regression(model_all1_black)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Black: Diag ~ i_bmi + i_systbp + i_age + i_education + 
-                   gender + apoe + cohort (without Cholesterol)") %>%
-  gt::gtsave(filename = "model_all1_black.png")
-
-add_glance_source_note(tbl_regression(model_all2_black)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Black: Diag ~ i_bmi + i_systbp + i_age + i_education + 
-                   gender + apoe + cohort + hypchol2 
-                   (with non-imputed Cholesterol)") %>%
-  gt::gtsave(filename = "model_all2_black.png")
-
-add_glance_source_note(tbl_regression(model_all3_black)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Black: Diag ~ i_bmi + i_systbp + i_age + i_education + 
-                   gender + apoe + cohort + hypchol3 
-                   (with imputed Cholesterol)") %>%
-  gt::gtsave(filename = "model_all3_black.png")
-
-# 3 logistic model: diag ~ i_bmi + i_systbp + i_age + i_education + gender + 
-#                            apoe + cohort + chol for Asian
-
-model_all3_asian <- glm(diag ~ i_bmi + i_systbp + i_age + i_education + 
-                          gender + apoe + cohort + hypchol3, 
-                        data=adni_nacc_novel_asian, family = binomial)
-
-model_all2_asian <- glm(diag ~ i_bmi + i_systbp + i_age + i_education + 
-                          gender + apoe + cohort + hypchol2, 
-                        data=adni_nacc_novel_asian, family = binomial)
-
-model_all1_asian <- glm(diag ~ i_bmi + i_systbp + i_age + i_education + 
-                          gender + apoe + cohort, 
-                        data=adni_nacc_novel_asian, family = binomial)
-
-# glance for all: Asian
-add_glance_source_note(tbl_regression(model_all1_asian)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Asian: Diag ~ i_bmi + i_systbp + i_age + i_education + 
-                   gender + apoe + cohort (without Cholesterol)") %>%
-  gt::gtsave(filename = "model_all1_asian.png")
-
-add_glance_source_note(tbl_regression(model_all2_asian)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Asian: Diag ~ i_bmi + i_systbp + i_age + i_education + 
-                   gender + apoe + cohort + hypchol2 
-                   (with non-imputed Cholesterol)") %>%
-  gt::gtsave(filename = "model_all2_asian.png")
-
-add_glance_source_note(tbl_regression(model_all3_asian)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Asian: Diag ~ i_bmi + i_systbp + i_age + i_education + 
-                   gender + apoe + cohort + hypchol3 
-                   (with imputed Cholesterol)") %>%
-  gt::gtsave(filename = "model_all3_asian.png")
-
-# 3 logistic model: diag ~ i_bmi + i_systbp + i_age + i_education + gender + 
-#                            apoe + cohort + chol for Hispanic
-model_all3_his <- glm(diag ~ i_bmi + i_systbp + i_age + i_education + 
-                        gender + apoe + cohort + hypchol3, 
-                      data=adni_nacc_novel_his, family = binomial)
-
-model_all2_his <- glm(diag ~ i_bmi + i_systbp + i_age + i_education + 
-                        gender + apoe + cohort + hypchol2, 
-                      data=adni_nacc_novel_his, family = binomial)
-
-model_all1_his <- glm(diag ~ i_bmi + i_systbp + i_age + i_education + 
-                        gender + apoe + cohort, 
-                      data=adni_nacc_novel_his, family = binomial)
-
-# glance for all: Hispanic
-add_glance_source_note(tbl_regression(model_all1_his)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Hispanic: Diag ~ i_bmi + i_systbp + i_age + i_education + 
-                   gender + apoe + cohort (without Cholesterol)") %>%
-  gt::gtsave(filename = "model_all1_his.png")
-
-
-add_glance_source_note(tbl_regression(model_all2_his)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Hispanic: Diag ~ i_bmi + i_systbp + i_age + i_education + 
-                   gender + apoe + cohort + hypchol2 
-                   (with non-imputed Cholesterol)") %>%
-  gt::gtsave(filename = "model_all2_his.png")
-
-add_glance_source_note(tbl_regression(model_all3_his)) %>% as_gt %>%
-  gt::tab_header(title = 
-                   "Hispanic: Diag ~ i_bmi + i_systbp + i_age + i_education + 
-                   gender + apoe + cohort + hypchol3 
-                   (with imputed Cholesterol)") %>%
-  gt::gtsave(filename = "model_all3_his.png")
-
 
 
 
