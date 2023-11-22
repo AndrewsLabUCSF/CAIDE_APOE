@@ -389,7 +389,35 @@ mcaide <- adni %>%
 ## export datsets 
 adni_out <- adni %>%
   left_join(caide, by = "ptid") %>%
-  left_join(mcaide, by = "ptid")
+  left_join(mcaide, by = "ptid") %>%
+  mutate(
+    htn = case_when(
+      vsbpsys < 140 ~ FALSE, 
+      vsbpsys >= 140 ~ TRUE, 
+      TRUE ~ NA_real_
+    ), 
+    hld = case_when(
+      total_c < 6.21 ~ FALSE, 
+      total_c >= 6.21 ~ TRUE, 
+      TRUE ~ NA_real_
+    ), 
+    i_htn = case_when(
+      i_vsbpsys < 140 ~ FALSE, 
+      i_vsbpsys >= 140 ~ TRUE, 
+      TRUE ~ NA_real_
+    ), 
+    i_hld = case_when(
+      i_total_c < 6.21 ~ FALSE, 
+      i_total_c >= 6.21 ~ TRUE, 
+      TRUE ~ NA_real_
+    ), 
+    dx = case_when(
+      naccudsd == 1 ~ 0, 
+      naccudsd == 3 ~ 1,
+      naccudsd == 4 ~ 1
+    )
+  )
+    
 
 write_tsv(adni_out, "data/adni.csv")
 
@@ -403,16 +431,6 @@ adni_out %>%
     obesity = case_when(
       bmi < 30 ~ FALSE, 
       bmi >= 30 ~ TRUE, 
-      TRUE ~ NA_real_
-    ), 
-    htn = case_when(
-      vsbpsys < 140 ~ FALSE, 
-      vsbpsys >= 140 ~ TRUE, 
-      TRUE ~ NA_real_
-    ), 
-    hld = case_when(
-      total_c < 6.21 ~ FALSE, 
-      total_c >= 6.21 ~ TRUE, 
       TRUE ~ NA_real_
     ), 
     dx = case_when(
