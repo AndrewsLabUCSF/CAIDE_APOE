@@ -7,6 +7,7 @@ library("broom")
 library("ggplot2")
 library("gtsummary")
 library("rmarkdown")
+library(lubridate)
 library(vcfR)
 
 setwd("~/gitcode/CAIDE_APOE")
@@ -19,6 +20,10 @@ merge.raw <- read_csv("resources/ADNI/ADNIMERGE_25Sep2023.csv") %>%
 ### Diagnostic summary
 dxsum_raw <- read_csv("resources/ADNI/DXSUM_PDXCONV_ADNIALL_25Sep2023.csv", guess_max = 14000) %>%
   janitor::clean_names() 
+
+### patient demographics
+ptdemo.raw <- read_csv("resources/ADNI/PTDEMOG_21Nov2023.csv") %>%
+  janitor::clean_names()
 
 ### Vitals 
 vitals.raw <- read_csv("resources/ADNI/VITALS_26Sep2023.csv") %>%
@@ -63,6 +68,30 @@ merge <- merge.raw %>%
   filter(viscode == "bl") %>%
   select(rid, ptid, origprot, colprot, viscode, examdate_bl, examdate, cdrsb, 
          ptraccat, ptethcat, age, ptgender, pteducat, apoe4, race)
+
+## CI Age of Onset
+ptdemo.raw %>% count(VISCODE) %>% arrange(-n) %>% print(n = Inf)
+aoo <- ptdemo.raw %>% 
+  group_by(ptid) %>%
+  slice_min(visdate) %>%
+  ungroup() %>%
+  mutate(
+    ptadbeg = na_if(ptadbeg, -4), 
+    ptadbeg = na_if(ptadbeg, -1), 
+    ptaddx = na_if(ptaddx, 9999), 
+    ptdobyy = as.character(ptdobyy),
+    ptdobyy = as.Date(ptdobyy, format = "%Y"),
+    age = year(visdate) - year(ptdobyy),
+    ad_yoo = case_when(
+      !is.na(ptadbeg) ~ ptadbeg, 
+      !is.na(ptaddx) ~ ptaddx
+    ), 
+    ad_yoo = as.character(ad_yoo),
+    ad_yoo = as.Date(ad_yoo, format = "%Y"),
+    ad_aoo = year(ad_yoo) - year(ptdobyy)
+    ) %>%
+  select(phase, ptid, viscode2, visdate, ptdobyy, age, ptcogbeg, ptmcibeg, ptadbeg, ptaddx, ad_yoo, ad_aoo
+         ) 
 
 ### ADRD Diagnosis aligned with NACC UDS
 dxsum <- dxsum_raw %>%
@@ -143,7 +172,6 @@ dxsum <- dxsum_raw %>%
 write.csv(adni_novel, "adni_novel.csv")
 
 ### Vitals 
-
 vitals <- vitals.raw %>%
   select(phase, rid, viscode2, visdate, vsweight, vswtunit, vsheight, vshtunit, vsbpsys, vsbpdia) %>%
   arrange(rid, visdate) %>%
@@ -209,12 +237,19 @@ dxsum_merge <- dxsum %>% filter(viscode2 == "bl") %>% select(ptid, viscode2, nac
 apoe_merge <- select(apoeres, -rid, -phase, -viscode) 
 vitals_merge <- select(vitals, rid, vsbpsys, vsbpdia, weight_in_kg, height_in_cm, bmi)
 chol_merge <- select(chol, rid, total_c, high_chol)
+aoo_merge <- select(aoo, ptid, ad_aoo)
 
 adni_wrangle <- merge %>% 
   left_join(dxsum_merge, by = "ptid") %>%
+  left_join(aoo_merge, by = "ptid") %>%
   left_join(apoe_merge, by = "ptid") %>%
   left_join(vitals_merge, by = "rid") %>%
-  left_join(chol_merge, by = "rid")
+  left_join(chol_merge, by = "rid") %>%
+  filter(race != "Other")  %>%
+  filter(age >= 55 & !is.na(age)) %>%
+  filter(is.na(ad_aoo) | ad_aoo >= 55) %>%
+  filter(!is.na(apoe_geno)) %>%
+  filter(naccetpr %in% c(1, 2, 4, 5, 6, 7, 8, 88))
 
 
 ### impute missing data 
@@ -303,8 +338,8 @@ caide <- adni %>%
 mcaide <- adni %>%
   mutate(
     mcaide_age = case_when(
-      age <= 64 ~ 0, 
-      age >= 65 & age < 73 ~ 1, 
+      age <= 64.5 ~ 0, 
+      age > 64.5 & age < 73 ~ 1, 
       age >= 73 ~ 2, 
       TRUE ~ NA_real_
     ), 
@@ -356,6 +391,8 @@ adni_out <- adni %>%
   left_join(caide, by = "ptid") %>%
   left_join(mcaide, by = "ptid")
 
+write_tsv(adni_out, "data/adni.csv")
+
 ## Table 1
 adni_out %>%
   mutate(
@@ -379,55 +416,43 @@ adni_out %>%
       TRUE ~ NA_real_
     ), 
     dx = case_when(
-      naccudsd == 1 ~ "NL", 
+      naccudsd == 1 ~ "CU", 
       naccudsd == 3 ~ "MCI",
       naccudsd == 4 ~ "ADRD"
     ), 
-    dx = fct_relevel(dx, "NL", "MCI", "ADRD"),
+    dx = fct_relevel(dx, "CU", "MCI", "ADRD"),
     adrd = case_when(
-      naccetpr == 88 ~ "NL", 
+      naccetpr == 88 ~ "CU", 
       naccetpr == 1 ~ "AD", 
       naccetpr == 4 ~ "PSP", 
       naccetpr == 7 ~ "FTLD", 
       naccetpr == 8 ~ "VCID", 
       TRUE ~ NA_character_
     ), 
-    adrd = fct_relevel(adrd, "NL"), 
+    adrd = fct_relevel(adrd, "CU"), 
   ) %>%
-  dplyr::select(race, age, pteducat, htn, obesity, hld, caide, mcaide, apoe, dx, adrd) %>%
+  dplyr::select(race, age, ptgender, pteducat, htn, obesity, hld, caide, mcaide, apoe, dx, adrd) %>%
   tbl_summary(.,
               by = race,
               statistic = list(
                 all_continuous() ~ "{mean} ({sd})",
                 all_categorical() ~ "{n} ({p}%)"
-              )
+              ), 
+              label = list(ptgender ~ "Gender",
+                           age ~ "Age",
+                           pteducat ~ "Education",
+                           race ~ "Race",
+                           dx ~ "Diagnosis",
+                           adrd ~ "ADRD",
+                           obesity ~ "Obesity",
+                           htn ~ "Hypertension",
+                           hld ~ "Dyslipidemia",
+                           caide ~ "CAIDE",
+                           mcaide ~ "mCAIDE",
+                           apoe ~ "APOE"
+                           )
   )
 
-test %>%
-  tbl_summary(.,
-    by = race,
-    statistic = list(
-      all_continuous() ~ "{mean} ({sd})",
-      all_categorical() ~ "{n} ({p}%)"
-    ),
-    digits = all_continuous() ~ 2,
-    label = list(Gender ~ "Gender", Age ~ "Age", Education ~ "Education", 
-                 race ~ "Race", Diag ~ "Diagnosis", cohort ~ "Cohort",
-                 Obesity ~ "Obesity", Hypertension ~ "Hypertension", 
-                 caide1 ~ "CAIDE_w_no_chol", 
-                 mcaide1 ~ "mCAIDE_w_no_chol",
-                 apoe ~ "APOE", caide_apoe1 ~ "CAIDE x APOE_w_no_chol",
-                 mcaide_apoe1 ~ "mCAIDE x APOE_w_no_chol"
-    ),
-    missing_text = "Missing"
-  ) %>%
-  modify_header(label = "**Caide with no Cholesterol**") %>%
-  bold_labels() %>%
-  as_gt %>%
-  gt::gtsave(
-    filename = "~/Desktop/adni_nacc/table_adni_nacc_1.docx", 
-    vwidth = 648, vheight = 288
-  )
 
 
 
