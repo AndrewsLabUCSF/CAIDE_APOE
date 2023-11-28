@@ -9,12 +9,12 @@ adni.raw <- read_tsv('data/adni.csv')
 ## ADNI 
 adni.raw %>% count(adrd)
 adni <- adni.raw %>%
-  select(ptid, origprot, age, ptgender, race, apoe, pteducat, bmi, vsbpsys, total_c, htn, hld,
+  select(ptid, origprot, age, ptgender, race, apoe, apoe_geno, pteducat, bmi, vsbpsys, total_c, htn, hld,
          i_bmi, i_vsbpsys, i_pteducat, i_total_c, i_htn, i_hld,
-         starts_with('caide'), starts_with('mcaide'), 
-         cdrsb, naccudsd, naccetpr) %>%
+         i_caide_chol, starts_with('caide'), i_mcaide_chol, starts_with('mcaide'), 
+         cdrsb, dx, naccudsd, naccetpr) %>%
   mutate(
-    cohort = "ADNI"
+    cohort = "ADNI", 
   ) %>%
   rename(
     hypchol = hld, 
@@ -30,13 +30,13 @@ adni <- adni.raw %>%
   
 ## NACC 
 nacc <- nacc.raw %>% 
-  select(NACCID, NACCAGE, SEX, race, apoe, EDUC,  NACCBMI, BPSYS, hypchol, hyperten, 
+  select(NACCID, NACCAGE, SEX, race, apoe, apoe_geno, EDUC,  NACCBMI, BPSYS, hypchol, hyperten, 
          i_NACCBMI, i_BPSYS, i_EDUC, i_hypchol, i_hyperten, 
          starts_with('caide'), starts_with('mcaide'), 
          CDRSUM, dx, NACCUDSD, NACCETPR
          ) %>%
   select(-mcaide_cat, -mcaide_apoe, -caide_cat, -caide_apoe) %>%
-  mutate(cohort = "NACC") %>%
+  mutate(cohort = "NACC", i_caide_chol = caide_chol, i_mcaide_chol = caide_chol) %>%
   rename(
     ptid = NACCID, 
     age = NACCAGE, 

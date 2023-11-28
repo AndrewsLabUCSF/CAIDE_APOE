@@ -34,20 +34,27 @@ theme_gtsummary_compact()
 # Compares b/se using z score method - doi: 10.1038/s41380-019-0596-9
 fzscore <- function(b1, b2, se1, se2){(b1 - b2)/sqrt(se1^2 + se2^2)}
 
-setwd("~/Dropbox/Research/UCSF/ABA")
+setwd("~/gitcode/CAIDE_APOE")
 ```
 
 ```{r}
 #| label: import
 #| code-summary: Import data 
 
-dat <- read_rds('data/nacc.rds') %>%
+dat <- read_tsv("data/joint_df.tsv.gz") %>% 
+  # read_rds('data/nacc.rds') %>%
   # filter(NACCAVST >= 2) %>%
   mutate(
+    apoe_geno = as.character(apoe_geno),
     apoe_geno = fct_recode(apoe_geno,
-      'e2+' = '22', 'e2+' = '23', "e3/e3" = "33", "e2/e4" = "24", "e3/e4" = "34", "e4/e4" = "44" 
-    ), 
-    apoe_geno = fct_relevel(apoe_geno, "e3/e3")
+      'e2+' = '22', 'e2+' = '23', "e3/e3" = "33", "e2/e4" = "24", "e3/e4" = "34", "e4/e4" = "44"
+    ),
+    apoe_geno = fct_relevel(apoe_geno, "e3/e3"),
+    apoe = fct_relevel(apoe, "e3/e3"), 
+    race = fct_relevel(race, "NHW"), 
+    cohort = fct_relevel(cohort, "NACC"), 
+    caide_apoe = fct_relevel(caide_apoe, "mid_e3/e3"), 
+    mcaide_apoe = fct_relevel(mcaide_apoe, "mid_e3/e3") 
   )
 
 ```
@@ -60,22 +67,43 @@ dat <- read_rds('data/nacc.rds') %>%
 #| tbl-cap: Table 1 NACC Cohort Characteristics
 
 tab_rf <- dat %>% 
-  dplyr::select(race, SEX, NACCAGE, i_EDUC, i_NACCBMI, i_hyperten, i_diabetes, i_hypchol, apoe, CDRSUM, NACCUDSD, NACCETPR) %>%
+  # dplyr::select(race, SEX, NACCAGE, i_EDUC, i_NACCBMI, i_hyperten, i_diabetes, i_hypchol, apoe, CDRSUM, NACCUDSD, NACCETPR) %>%
+   dplyr::select(race, cohort, gender, age, i_educ, i_bmi, i_hyperten, i_hypchol, 
+                caide, caide_cat, mcaide, mcaide_cat, apoe, cdrsb, naccudsd, naccetpr) %>%
   mutate(
-    NACCUDSD = fct_recode(as.factor(NACCUDSD), 'CU' = '1', "MCI" = "3", "ADRD" = "4"),
-    NACCETPR = fct_recode(as.factor(NACCETPR), 'CU' = '88', "AD" = "1", "LBD" = "2", "FTLD" = '6', "FTLD" = '7', 'VCID' = '8'),
-    NACCETPR = fct_relevel(NACCETPR),
-    SEX = as.factor(SEX),
-    SEX = fct_recode(SEX,  'Male' = '1', "Female" = "2")
+    naccudsd = fct_recode(as.factor(naccudsd), 'CU' = '1', "MCI" = "3", "ADRD" = "4"),
+    naccetpr = fct_recode(as.factor(naccetpr), 
+                          'CU' = '88', "AD" = "1", "LBD" = "2", "PSP" = '4',  
+                          'CBD' = "5", "FTLD" = '6', "FTLD" = '7', 'VCID' = '8'),
+    naccetpr = fct_relevel(naccetpr),
+    gender = as.factor(gender),
+    # gender = fct_recode(gender,  'Male' = '1', "Female" = "2")
   ) %>%
   tbl_summary(by = race,
-              statistic = list(all_continuous() ~ "{mean} ({sd})")) %>%
+              statistic = list(all_continuous() ~ "{mean} ({sd})"), 
+               label = list(gender ~ "Gender",
+                           age ~ "Age",
+                           i_educ ~ "Education",
+                           race ~ "Race",
+                           naccudsd ~ "Diagnosis",
+                           naccetpr ~ "ADRD",
+                           i_bmi ~ "BMI",
+                           i_hyperten ~ "Hypertension",
+                           i_hypchol ~ "Hypercholesterolemia",
+                           caide ~ "CAIDE",
+                           mcaide ~ "mCAIDE",
+                           apoe ~ "APOE", 
+                           cohort ~ "Cohort", 
+                           caide_cat ~ "CAIDE",
+                           mcaide_cat ~ "mCAIDE") 
+              ) %>%
   add_n() 
 
 tab_rf
 
 as_gt(tab_rf) %>%
-  gtsave(., "~/Downloads/table_rf.docx")
+  gtsave(., "~/results/table_rf.docx")
+
 ```
 
 ```{r}
@@ -84,14 +112,8 @@ as_gt(tab_rf) %>%
 #| tbl-cap: Table 1 NACC Cohort Characteristics
 
 tab_caide <- dat %>% 
-  dplyr::select(race, SEX, NACCAGE, apoe, starts_with('caide'), CDRSUM, NACCUDSD, NACCETPR) %>%
-  mutate(
-    NACCUDSD = fct_recode(as.factor(NACCUDSD), 'CU' = '1', "MCI" = "3", "ADRD" = "4"),
-    NACCETPR = fct_recode(as.factor(NACCETPR), 'CU' = '88', "AD" = "1", "LBD" = "2", "FTLD" = '6', "FTLD" = '7', 'VCID' = '8'),
-    NACCETPR = fct_relevel(NACCETPR),
-    SEX = as.factor(SEX),
-    SEX = fct_recode(SEX,  'Male' = '1', "Female" = "2")
-  ) %>%
+  dplyr::select(race, apoe, caide_age, caide_sex, caide_educ, caide_bmi, caide_sbp, i_caide_chol, 
+                caide, caide_missing, caide_cat, caide_apoe) %>%
   tbl_summary(by = race,
               statistic = list(all_continuous() ~ "{mean} ({sd})")) %>%
   add_n() 
@@ -108,14 +130,8 @@ as_gt(tab_caide) %>%
 #| tbl-cap: Table 1.1 NACC Cohort Characteristics
 
 tab_mcaide <- dat %>% 
-  dplyr::select(race, SEX, NACCAGE, apoe, starts_with('mcaide'), CDRSUM, NACCUDSD, NACCETPR) %>%
-  mutate(
-    NACCUDSD = fct_recode(as.factor(NACCUDSD), 'CU' = '1', "MCI" = "3", "ADRD" = "4"),
-    NACCETPR = fct_recode(as.factor(NACCETPR), 'CU' = '88', "AD" = "1", "LBD" = "2", "FTLD" = '6', "FTLD" = '7', 'VCID' = '8'),
-    NACCETPR = fct_relevel(NACCETPR),
-    SEX = as.factor(SEX),
-    SEX = fct_recode(SEX,  'Male' = '1', "Female" = "2")
-  ) %>%
+  dplyr::select(race, apoe, mcaide_age, mcaide_sex, mcaide_educ, mcaide_bmi, mcaide_sbp, i_mcaide_chol, 
+                mcaide, mcaide_missing, mcaide_cat, mcaide_apoe) %>%
   tbl_summary(by = race,
               statistic = list(all_continuous() ~ "{mean} ({sd})")) %>%
   add_n() 
@@ -137,7 +153,7 @@ as_gt(tab_mcaide) %>%
 
 apoe_mod_fit <- function(data){
   # glm(dx ~ apoe_geno + SEX + aoo, data = data, family = 'binomial')
-  glm(dx ~ apoe_geno + SEX + NACCAGE, data = data, family = 'binomial')
+  glm(dx ~ apoe_geno + gender + age + cohort, data = data, family = 'binomial')
 }
 
 res <- bind_rows(
@@ -151,7 +167,7 @@ res <- bind_rows(
     select(-data), 
 
   dat %>%
-    filter(NACCUDSD %nin% c(3)) %>%
+    filter(naccudsd %nin% c(3)) %>%
     group_by(race) %>%
     nest() %>%
     mutate(
@@ -161,7 +177,7 @@ res <- bind_rows(
     select(-data), 
   
   dat %>%
-    filter(NACCETPR %in% c(1, 88)) %>%
+    filter(naccetpr %in% c(1, 88)) %>%
     group_by(race) %>%
     nest() %>%
     mutate(
@@ -171,8 +187,8 @@ res <- bind_rows(
     select(-data), 
 
   dat %>%
-    filter(NACCETPR %in% c(1, 88)) %>%
-    filter(NACCUDSD %nin% c(3)) %>%
+    filter(naccetpr %in% c(1, 88)) %>%
+    filter(naccudsd %nin% c(3)) %>%
     group_by(race) %>%
     nest() %>%
     mutate(
@@ -263,7 +279,7 @@ apoe_diff_long <- full_join(
 
 df_pval <- filter(apoe_diff_long, p < 0.05) %>%
   rename(group1 = race1, group2 = race2) %>%
-  mutate(y.position = c(3, 3), 
+  mutate(y.position = c(3, 3, 3, 3, 3), 
          group1 = case_when(
            group1 == "nhw" ~ "NHW", 
            group1 == "bla" ~ "Black", 
@@ -326,7 +342,7 @@ apoe_geno_res_p <- apoe_geno_res %>%
                       , bracket.nudge.y = 3, label = "{stars}", colour = 'black', tip.length = 0.01, bracket.size = 0.2) 
 
 apoe_geno_res_p
-ggsave("results/figures/nacc_apoe_race_all_bl.png", plot = apoe_geno_res_p, width = 9, height = 5, units = 'in')
+ggsave("results/figures/joint_apoe_race_all_bl.png", plot = apoe_geno_res_p, width = 9, height = 5, units = 'in')
 
 ```
 
@@ -350,7 +366,7 @@ lm(ad_age_lv ~ race + apoe + z_caide, data = dat) %>%
 
 caide_mod_fit <- function(data){
   # glm(dx ~ apoe_geno + SEX + aoo, data = data, family = 'binomial')
-  glm(dx ~ apoe + z_caide, data = data, family = 'binomial')
+  glm(dx ~ apoe + z_caide + cohort, data = data, family = 'binomial')
 }
 
 res <- bind_rows(
@@ -363,7 +379,7 @@ res <- bind_rows(
     ), 
 
   dat %>%
-    filter(NACCUDSD %nin% c(3)) %>%
+    filter(naccudsd %nin% c(3)) %>%
     group_by(race) %>%
     nest() %>%
     mutate(
@@ -372,7 +388,7 @@ res <- bind_rows(
     ), 
   
   dat %>%
-    filter(NACCETPR %in% c(1, 88)) %>%
+    filter(naccetpr %in% c(1, 88)) %>%
     group_by(race) %>%
     nest() %>%
     mutate(
@@ -381,8 +397,8 @@ res <- bind_rows(
     ), 
 
   dat %>%
-    filter(NACCETPR %in% c(1, 88)) %>%
-    filter(NACCUDSD %nin% c(3)) %>%
+    filter(naccetpr %in% c(1, 88)) %>%
+    filter(naccudsd %nin% c(3)) %>%
     group_by(race) %>%
     nest() %>%
     mutate(
@@ -476,7 +492,7 @@ caide_diff_long <- full_join(
 
 caide_df_pval <- filter(caide_diff_long, p < 0.05) %>%
   rename(group1 = race1, group2 = race2) %>%
-  mutate(y.position = rep(0.4, 19), 
+  mutate(y.position = rep(0.4, 21), 
          group1 = case_when(
            group1 == "nhw" ~ "NHW", 
            group1 == "bla" ~ "Black", 
@@ -528,12 +544,12 @@ effect_plot <- function(x){
       )
   }
 
-caide_e2_res_p <- filter(caide_res, term == "e2+") %>% effect_plot(.) 
-caide_e4_res_p <- filter(caide_res, term == "e4+") %>% effect_plot(.) + 
+caide_e2_res_p <- filter(caide_res, term == "ε2+") %>% effect_plot(.) 
+caide_e4_res_p <- filter(caide_res, term == "ε4+") %>% effect_plot(.) + 
   ggprism::add_pvalue(caide_df_pval %>% filter(term == "ε4+")
                       , bracket.nudge.y = 3, label = "{stars}", colour = 'black', tip.length = 0.01, bracket.size = 0.2) 
 
-caide_res_p <- filter(caide_res, term == "z_caide") %>% effect_plot(.) + 
+caide_res_p <- filter(caide_res, term == "CAIDE") %>% effect_plot(.) + 
   ggprism::add_pvalue(caide_df_pval %>% filter(term == "CAIDE")
                       , bracket.nudge.y = 3, label = "{stars}", colour = 'black', tip.length = 0.01, bracket.size = 0.2) 
 
@@ -542,7 +558,7 @@ caide_res_p
 caide_e4_res_p
 caide_e2_res_p
 
-ggsave("results/figures/nacc_apoe_race_all_bl.png", plot = apoe_geno_res_p, width = 9, height = 5, units = 'in')
+ggsave("results/figures/joint_apoe_race_all_bl.png", plot = apoe_geno_res_p, width = 9, height = 5, units = 'in')
 
 ```
 
@@ -550,7 +566,7 @@ ggsave("results/figures/nacc_apoe_race_all_bl.png", plot = apoe_geno_res_p, widt
 #| label: apoe_plots
 #| code-summary: APOE genotype plots
 
-nacc_caid_apoe_all_bl_p <- ggplot(caide_res, aes(x = or, y = race, color = race)) + 
+joint_caid_apoe_all_bl_p <- ggplot(caide_res, aes(x = or, y = race, color = race)) + 
     facet_grid(cols = vars(term), rows = vars(outcome), scales = 'free', labeller = label_wrap_gen(width = 7)) + 
     geom_vline(xintercept = 1, linetype = 2) + 
     geom_point() + 
@@ -570,7 +586,7 @@ nacc_caid_apoe_all_bl_p <- ggplot(caide_res, aes(x = or, y = race, color = race)
       legend.title=element_blank()
       )
 
-ggsave("results/figures/nacc_caid_apoe_all_bl.png", plot = nacc_caid_apoe_all_bl_p, width = 9, height = 4, units = 'in')
+ggsave("results/figures/joint_caid_apoe_all_bl.png", plot = joint_caid_apoe_all_bl_p, width = 9, height = 4, units = 'in')
 
 ```
 
@@ -580,7 +596,7 @@ ggsave("results/figures/nacc_caid_apoe_all_bl.png", plot = nacc_caid_apoe_all_bl
 
 theme.size = 8
 
-nacc_caid_apoe_adrd_mci_bl_p <- ggplot(caide_res %>% filter(outcome == "ADRD + MCI"), aes(x = or, y = race, color = race)) + 
+joint_caid_apoe_adrd_mci_bl_p <- ggplot(caide_res %>% filter(outcome == "ADRD + MCI"), aes(x = or, y = race, color = race)) + 
     facet_grid(cols = vars(term), rows = vars(outcome), scales = 'free') + 
     geom_vline(xintercept = 1, linetype = 2) + 
     geom_point() + 
@@ -603,7 +619,7 @@ nacc_caid_apoe_adrd_mci_bl_p <- ggplot(caide_res %>% filter(outcome == "ADRD + M
       strip.text = element_text(face = 'bold')
       )
 
-ggsave("results/figures/nacc_caid_apoe_adrd_mci_bl.png", plot = nacc_caid_apoe_adrd_mci_bl_p, width = 9, height = 3.5, units = 'in')
+ggsave("results/figures/joint_caid_apoe_adrd_mci_bl.png", plot = joint_caid_apoe_adrd_mci_bl_p, width = 9, height = 3.5, units = 'in')
 
 ```
 
@@ -624,7 +640,7 @@ pROC::auc(test$dx, test$pred, plot = TRUE, print.auc = TRUE)
 
 ```{r}
 
-glm(dx ~ race + caide_apoe, data = dat, family = 'binomial') %>% 
+glm(dx ~ race + caide_apoe + cohort, data = dat, family = 'binomial') %>% 
   tidy()
 
 glm(dx_lv ~ race + caide_apoe, data = dat, family = 'binomial') %>% 
@@ -651,7 +667,7 @@ add_me <- tibble(
     )
 
 caide_apoe_cat_mod_fit <- function(data){
-  glm(dx ~ caide_apoe, data = data, family = 'binomial')
+  glm(dx ~ caide_apoe + cohort, data = data, family = 'binomial')
 }
 
 caide_apoe_cat_res <- bind_rows(
@@ -665,7 +681,7 @@ caide_apoe_cat_res <- bind_rows(
     select(-data), 
 
   dat %>%
-    filter(NACCUDSD %nin% c(3)) %>%
+    filter(naccudsd %nin% c(3)) %>%
     group_by(race) %>%
     nest() %>%
     mutate(
@@ -675,7 +691,7 @@ caide_apoe_cat_res <- bind_rows(
     select(-data), 
   
   dat %>%
-    filter(NACCETPR %in% c(1, 88)) %>%
+    filter(naccetpr %in% c(1, 88)) %>%
     group_by(race) %>%
     nest() %>%
     mutate(
@@ -685,8 +701,8 @@ caide_apoe_cat_res <- bind_rows(
     select(-data), 
 
   dat %>%
-    filter(NACCETPR %in% c(1, 88)) %>%
-    filter(NACCUDSD %nin% c(3)) %>%
+    filter(naccetpr %in% c(1, 88)) %>%
+    filter(naccudsd %nin% c(3)) %>%
     group_by(race) %>%
     nest() %>%
     mutate(
@@ -736,7 +752,7 @@ caide_apoe_cat_df <- caide_apoe_cat_res %>%
 
 theme.size = 8
 
-nacc_caide_apoe_cat_all_bl <- ggplot(caide_apoe_cat_df, aes(x = or, y = term, color = race, shape = reference)) + 
+joint_caide_apoe_cat_all_bl <- ggplot(caide_apoe_cat_df, aes(x = or, y = term, color = race, shape = reference)) + 
   facet_grid(cols = vars(race), rows = vars(outcome), scales = "free_x", labeller = label_wrap_gen(width = 7)) + 
   geom_vline(xintercept = 1, linetype = 2) + 
   geom_point() + 
@@ -759,9 +775,9 @@ nacc_caide_apoe_cat_all_bl <- ggplot(caide_apoe_cat_df, aes(x = or, y = term, co
     legend.title = element_blank()
     )
 
-nacc_caide_apoe_cat_all_bl 
+joint_caide_apoe_cat_all_bl 
 
-ggsave("results/figures/nacc_caide_apoe_cat_all_bl.png", plot = nacc_caide_apoe_cat_all_bl, width = 9, height = 4, units = 'in')
+ggsave("results/figures/joint_caide_apoe_cat_all_bl.png", plot = joint_caide_apoe_cat_all_bl, width = 9, height = 4, units = 'in')
 
 ```
 
@@ -771,7 +787,7 @@ ggsave("results/figures/nacc_caide_apoe_cat_all_bl.png", plot = nacc_caide_apoe_
 
 theme.size = 14
 
-caide_apoe_adrd_mci_bl_p <- caide_apoe_cat_df %>%
+joint_caide_apoe_adrd_mci_bl_p <- caide_apoe_cat_df %>%
   filter(outcome == "ADRD + MCI") %>% 
   ggplot(., aes(x = or, y = term, color = race, shape = reference)) + 
     facet_grid(cols = vars(race), rows = vars(outcome), scales = "free_x") + 
@@ -799,14 +815,14 @@ caide_apoe_adrd_mci_bl_p <- caide_apoe_cat_df %>%
       )
 
 
-ggsave("results/figures/caide_apoe_adrd_mci_bl.png", plot = caide_apoe_adrd_mci_bl_p, width = 9, height = 3.5, units = 'in')
+ggsave("results/figures/joint_caide_apoe_adrd_mci_bl.png", plot = joint_caide_apoe_adrd_mci_bl_p, width = 9, height = 3.5, units = 'in')
 
 ```
 
 ### mCAIDE
 
 ```{r}
-glm(dx ~ race + apoe + z_mcaide, data = dat, family = 'binomial') %>% 
+glm(dx ~ race + apoe + z_mcaide + cohort, data = dat, family = 'binomial') %>% 
   tidy()
 
 glm(dx_lv ~ race + apoe + z_mcaide, data = dat, family = 'binomial') %>% 
@@ -823,7 +839,7 @@ lm(ad_age_lv ~ race + apoe + z_mcaide, data = dat) %>%
 
 mcaide_mod_fit <- function(data){
   # glm(dx ~ apoe_geno + SEX + aoo, data = data, family = 'binomial')
-  glm(dx ~ apoe + z_mcaide, data = data, family = 'binomial')
+  glm(dx ~ apoe + z_mcaide + cohort, data = data, family = 'binomial')
 }
 
 mcaide_res <- bind_rows(
@@ -836,7 +852,7 @@ mcaide_res <- bind_rows(
     ), 
 
   dat %>%
-    filter(NACCUDSD %nin% c(3)) %>%
+    filter(naccudsd %nin% c(3)) %>%
     group_by(race) %>%
     nest() %>%
     mutate(
@@ -845,7 +861,7 @@ mcaide_res <- bind_rows(
     ), 
   
   dat %>%
-    filter(NACCETPR %in% c(1, 88)) %>%
+    filter(naccetpr %in% c(1, 88)) %>%
     group_by(race) %>%
     nest() %>%
     mutate(
@@ -854,8 +870,8 @@ mcaide_res <- bind_rows(
     ),
 
   dat %>%
-    filter(NACCETPR %in% c(1, 88)) %>%
-    filter(NACCUDSD %nin% c(3)) %>%
+    filter(naccetpr %in% c(1, 88)) %>%
+    filter(naccudsd %nin% c(3)) %>%
     group_by(race) %>%
     nest() %>%
     mutate(
@@ -950,7 +966,7 @@ mcaide_diff_long <- full_join(
 
 mcaide_df_pval <- filter(mcaide_diff_long, p < 0.05) %>%
   rename(group1 = race1, group2 = race2) %>%
-  mutate(y.position = rep(0.4, 16), 
+  mutate(y.position = rep(0.4, 17), 
          group1 = case_when(
            group1 == "nhw" ~ "NHW", 
            group1 == "bla" ~ "Black", 
@@ -997,7 +1013,7 @@ ggsave("results/figures/nacc_apoe_race_all_bl.png", plot = apoe_geno_res_p, widt
 
 theme.size = 8
 
-nacc_mcaid_apoe_adrd_mci_bl_p <- ggplot(mcaide_res_df %>% filter(outcome == "ADRD + MCI"), aes(x = or, y = race, color = race)) + 
+joint_mcaid_apoe_adrd_mci_bl_p <- ggplot(mcaide_res_df %>% filter(outcome == "ADRD + MCI"), aes(x = or, y = race, color = race)) + 
     facet_grid(cols = vars(term), rows = vars(outcome), scales = 'free') + 
     geom_vline(xintercept = 1, linetype = 2) + 
     geom_point() + 
@@ -1020,7 +1036,7 @@ nacc_mcaid_apoe_adrd_mci_bl_p <- ggplot(mcaide_res_df %>% filter(outcome == "ADR
       strip.text = element_text(face = 'bold')
       )
 
-ggsave("results/figures/nacc_mcaid_apoe_adrd_mci_bl.png", plot = nacc_mcaid_apoe_adrd_mci_bl_p, width = 9, height = 3.5, units = 'in')
+ggsave("results/figures/joint_mcaid_apoe_adrd_mci_bl.png", plot = joint_mcaid_apoe_adrd_mci_bl_p, width = 9, height = 3.5, units = 'in')
 
 ```
 
@@ -1028,7 +1044,7 @@ ggsave("results/figures/nacc_mcaid_apoe_adrd_mci_bl.png", plot = nacc_mcaid_apoe
 
 ```{r}
 
-glm(dx ~ race + mcaide_apoe, data = dat, family = 'binomial') %>% 
+glm(dx ~ race + mcaide_apoe + cohort, data = dat, family = 'binomial') %>% 
   tidy()
 
 glm(dx_lv ~ race + mcaide_apoe, data = dat, family = 'binomial') %>% 
@@ -1055,7 +1071,7 @@ add_me <- tibble(
     )
 
 mcaide_apoe_cat_mod_fit <- function(data){
-  glm(dx ~ mcaide_apoe, data = data, family = 'binomial')
+  glm(dx ~ mcaide_apoe + cohort, data = data, family = 'binomial')
 }
 
 mcaide_apoe_cat_res <- bind_rows(
@@ -1069,7 +1085,7 @@ mcaide_apoe_cat_res <- bind_rows(
     select(-data), 
 
   dat %>%
-    filter(NACCUDSD %nin% c(3)) %>%
+    filter(naccudsd %nin% c(3)) %>%
     group_by(race) %>%
     nest() %>%
     mutate(
@@ -1079,7 +1095,7 @@ mcaide_apoe_cat_res <- bind_rows(
     select(-data), 
   
   dat %>%
-    filter(NACCETPR %in% c(1, 88)) %>%
+    filter(naccetpr %in% c(1, 88)) %>%
     group_by(race) %>%
     nest() %>%
     mutate(
@@ -1089,8 +1105,8 @@ mcaide_apoe_cat_res <- bind_rows(
     select(-data), 
 
   dat %>%
-    filter(NACCETPR %in% c(1, 88)) %>%
-    filter(NACCUDSD %nin% c(3)) %>%
+    filter(naccetpr %in% c(1, 88)) %>%
+    filter(naccudsd %nin% c(3)) %>%
     group_by(race) %>%
     nest() %>%
     mutate(
@@ -1163,7 +1179,7 @@ ggplot(mcaide_apoe_cat_df, aes(x = or, y = term, color = race)) +
     )
 
 
-ggsave("results/figures/nacc_apoe_race_all_bl.png", plot = apoe_geno_res_p, width = 9, height = 5, units = 'in')
+ggsave("results/figures/joint_apoe_mcaide_race_all_bl.png", width = 9, height = 5, units = 'in')
 
 ```
 
@@ -1225,7 +1241,7 @@ tidy(rf_all_lm_res)
 
 rf_mod_fit <- function(data){
   # glm(dx ~ apoe_geno + SEX + aoo, data = data, family = 'binomial')
-  glm(dx_lv ~ apoe + NACCAGE + SEX + i_EDUC + i_NACCBMI + i_BPSYS + i_hypchol, data = data, family = 'binomial')
+  glm(dx ~ apoe + age + gender + i_educ + i_bmi + i_bpsys + i_hypchol, data = data, family = 'binomial')
 }
 
 rf_res <- bind_rows(
@@ -1239,7 +1255,7 @@ rf_res <- bind_rows(
     select(-data), 
 
   dat %>%
-    filter(NACCUDSD %nin% c(3)) %>%
+    filter(naccudsd %nin% c(3)) %>%
     group_by(race) %>%
     nest() %>%
     mutate(
@@ -1249,7 +1265,7 @@ rf_res <- bind_rows(
     select(-data), 
   
   dat %>%
-    filter(NACCETPR %in% c(1, 88)) %>%
+    filter(naccetpr %in% c(1, 88)) %>%
     group_by(race) %>%
     nest() %>%
     mutate(
@@ -1259,8 +1275,8 @@ rf_res <- bind_rows(
     select(-data), 
 
   dat %>%
-    filter(NACCETPR %in% c(1, 88)) %>%
-    filter(NACCUDSD %nin% c(3)) %>%
+    filter(naccetpr %in% c(1, 88)) %>%
+    filter(naccudsd %nin% c(3)) %>%
     group_by(race) %>%
     nest() %>%
     mutate(
@@ -1286,9 +1302,9 @@ rf_res_df <- rf_res %>%
     or_lci = exp(lci),
     or_hci = exp(hci),
     term = str_replace(term, "apoe", ""), 
-    term = fct_recode(term, "Age" = "NACCAGE", "Female" = "SEX2", "Education" = 'i_EDUC', 
-                      "BMI" = "i_NACCBMI", 'SBP' = "i_BPSYS", "Hyprchol." = 'i_hypchol1'),
-    term = fct_relevel(term, 'e2+', 'e4+', 'Age', "Female", "Education", "BMI", "SBP", "Hyprchol."),    
+    term = fct_recode(term, "Age" = "age", "Male" = "genderMale", "Education" = 'i_educ', 
+                      "BMI" = "i_bmi", 'SBP' = "i_bpsys", "Hyprchol." = 'i_hypchol1'),
+    term = fct_relevel(term, 'e2+', 'e4+', 'Age', "Male", "Education", "BMI", "SBP", "Hyprchol."),    
     race = fct_relevel(race, 'Black', 'Hispanic', 'Asian',  'NHW'),
   )
 ```
@@ -1298,7 +1314,7 @@ rf_res_df <- rf_res %>%
 #| code-summary: APOE genotype plots
 
 
-ggplot(rf_res_df, aes(y = race, x = or, color = race)) + 
+rf_race_all_bl_p <- ggplot(rf_res_df, aes(y = race, x = or, color = race)) + 
   facet_grid(cols = vars(term), rows = vars(outcome), scales = 'free_x') + 
   geom_vline(xintercept = 1, linetype = 2) + 
   geom_point() + 
@@ -1319,7 +1335,7 @@ ggplot(rf_res_df, aes(y = race, x = or, color = race)) +
     )
 
 
-ggsave("results/figures/nacc_apoe_race_all_bl.png", plot = apoe_geno_res_p, width = 9, height = 5, units = 'in')
+ggsave("results/figures/joint_apoe_race_all_bl.png", plot = rf_race_all_bl_p, width = 9, height = 5, units = 'in')
 
 ```
 
@@ -1351,7 +1367,7 @@ rf_race_all_adrd_mci_bl_p <- ggplot(rf_res_df %>% filter(outcome == "ADRD + MCI"
     )
 
 
-ggsave("results/figures/nacc_rf_race_all_adrd_mci_bl.png", plot = rf_race_all_adrd_mci_bl_p, width = 9, height = 4, units = 'in')
+ggsave("results/figures/joint_rf_race_all_adrd_mci_bl.png", plot = rf_race_all_adrd_mci_bl_p, width = 9, height = 4, units = 'in')
 
 ```
 

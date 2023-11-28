@@ -70,7 +70,7 @@ merge <- merge.raw %>%
          ptraccat, ptethcat, age, ptgender, pteducat, apoe4, race)
 
 ## CI Age of Onset
-ptdemo.raw %>% count(VISCODE) %>% arrange(-n) %>% print(n = Inf)
+# ptdemo.raw %>% count(viscode) %>% arrange(-n) %>% print(n = Inf)
 aoo <- ptdemo.raw %>% 
   group_by(ptid) %>%
   slice_min(visdate) %>%
@@ -168,8 +168,6 @@ dxsum <- dxsum_raw %>%
     )
   ) %>%
   select(rid, ptid, phase, viscode, viscode2, examdate, naccudsd, naccetpr)
-
-write.csv(adni_novel, "adni_novel.csv")
 
 ### Vitals 
 vitals <- vitals.raw %>%
@@ -332,7 +330,7 @@ caide <- adni %>%
                         is.na(bmi), is.na(total_c), is.na(vsbpsys)),
   ) %>%
   ungroup() %>%
-  select(ptid, starts_with("caide"))
+  select(ptid, i_caide_chol, starts_with("caide"))
 
 ## mCAIDE
 mcaide <- adni %>%
@@ -384,7 +382,7 @@ mcaide <- adni %>%
                         is.na(bmi), is.na(total_c), is.na(vsbpsys)),
   ) %>%
   ungroup() %>%
-  select(ptid, starts_with("mcaide"))
+  select(ptid, i_mcaide_chol, starts_with("mcaide"))
 
 ## export datsets 
 adni_out <- adni %>%
