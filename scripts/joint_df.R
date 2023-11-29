@@ -97,7 +97,7 @@ write_tsv(joint, "data/joint_df.tsv.gz")
 ## Table
 tab_rf <- joint %>% 
   dplyr::select(race, cohort, gender, age, i_educ, i_bmi, i_hyperten, i_hypchol, 
-                caide, caide_cat, mcaide, mcaide_cat, apoe, naccudsd, naccetpr) %>%
+                caide, caide_cat, mcaide, mcaide_cat, apoe, apoe_geno, naccudsd, naccetpr) %>%
   mutate(
     naccudsd = fct_recode(as.factor(naccudsd), 'CU' = '1', "MCI" = "3", "ADRD" = "4"),
     naccetpr = fct_recode(as.factor(naccetpr), 

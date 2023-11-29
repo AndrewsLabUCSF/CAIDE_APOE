@@ -102,7 +102,7 @@ tab_rf <- dat %>%
 tab_rf
 
 as_gt(tab_rf) %>%
-  gtsave(., "~/results/table_rf.docx")
+  gt::gtsave(., "results/table_rf.docx")
 
 ```
 
@@ -121,7 +121,7 @@ tab_caide <- dat %>%
 tab_caide
 
 as_gt(tab_caide) %>%
-  gtsave(., "~/Downloads/table_caid.docx")
+  gt::gtsave(., "results/table_caid.docx")
 ```
 
 ```{r}
@@ -139,7 +139,7 @@ tab_mcaide <- dat %>%
 tab_mcaide
 
 as_gt(tab_mcaide) %>%
-  gtsave(., "~/Downloads/table_mcaid.docx")
+  gt::gtsave(., "results/table_mcaid.docx")
 
 ```
 
@@ -369,7 +369,7 @@ caide_mod_fit <- function(data){
   glm(dx ~ apoe + z_caide + cohort, data = data, family = 'binomial')
 }
 
-res <- bind_rows(
+caide_res <- bind_rows(
   dat %>%
     group_by(race) %>%
     nest() %>%
@@ -413,7 +413,7 @@ res <- bind_rows(
   ) %>%
   select(-data)
 
-caide_res <- res %>%
+caide_res.df <- caide_res %>%
   select(race, outcome, df) %>%
   unnest(cols = df) %>%
   ungroup() %>%
@@ -435,7 +435,7 @@ caide_res <- res %>%
 #| label: apoe_difference
 #| code-summary: APOE genotype differences
 
-caide_diff <- caide_res %>%
+caide_diff <- caide_res.df %>%
   select(race, outcome, term, b = estimate, se = std.error, p = p.value ) %>%
   pivot_wider(names_from = race, values_from = c(b, se, p)) %>%
   mutate(.,
@@ -513,6 +513,56 @@ caide_df_pval <- filter(caide_diff_long, p < 0.05) %>%
 ```
 
 ```{r}
+#| label: export_caide
+#| code-summary: CAIDE Regression export
+
+caide_res.df %>%
+  select(race, outcome, predictor = term, estimate, std.error, statistic, p.value) %>%
+  mutate(
+    estimate = round(estimate, digits = 2),
+    std.error = round(std.error, digits = 3),
+    statistic = round(statistic, digits = 2),
+    stars = case_when(
+      p.value > 0.05 ~ "", 
+      between(p.value,  0.01, 0.05) ~ "*",
+      between(p.value, 0.001, 0.01) ~ "**",
+      p.value < 0.001 ~ "***"
+    ), 
+    p.value = case_when(
+      p.value < 0.001 ~ format(p.value, scientific = TRUE, digits = 2),
+      p.value >= 0.001 ~ as.character(round(p.value, 3))
+    ), 
+    predictor = str_replace(predictor, "ε", "e")
+    ) %>%
+  write_csv(., "results/caide_res_all.csv")
+
+caide_diff_long %>%
+  select(race1, race2, predictor = term, outcome, z, p, significant = stars) %>%
+  mutate(
+         race1 = case_when(
+           race1 == "nhw" ~ "NHW", 
+           race1 == "bla" ~ "Black", 
+           race1 == "asi" ~ "Asian", 
+           race1 == "his" ~ "Hispanic"
+         ), 
+         race2 = case_when(
+           race2 == "nhw" ~ "NHW", 
+           race2 == "bla" ~ "Black", 
+           race2 == "asi" ~ "Asian", 
+           race2 == "his" ~ "Hispanic"
+         ),
+    z = round(z, digits = 2),
+    p = case_when(
+       p < 0.001 ~ format(p, scientific = TRUE, digits = 2),
+       p >= 0.001 ~ as.character(round(p, 3))
+    ), 
+    predictor = str_replace(predictor, "ε", "e")
+  ) %>% 
+  unite(race, c(race1, race2), sep = "-") %>%
+  write_csv(., "results/caide_diff_res_all.csv")
+```
+
+```{r}
 #| label: apoe_plots
 #| code-summary: APOE genotype plots
 
@@ -544,12 +594,12 @@ effect_plot <- function(x){
       )
   }
 
-caide_e2_res_p <- filter(caide_res, term == "ε2+") %>% effect_plot(.) 
-caide_e4_res_p <- filter(caide_res, term == "ε4+") %>% effect_plot(.) + 
+caide_e2_res_p <- filter(caide_res.df, term == "ε2+") %>% effect_plot(.) 
+caide_e4_res_p <- filter(caide_res.df, term == "ε4+") %>% effect_plot(.) + 
   ggprism::add_pvalue(caide_df_pval %>% filter(term == "ε4+")
                       , bracket.nudge.y = 3, label = "{stars}", colour = 'black', tip.length = 0.01, bracket.size = 0.2) 
 
-caide_res_p <- filter(caide_res, term == "CAIDE") %>% effect_plot(.) + 
+caide_res_p <- filter(caide_res.df, term == "CAIDE") %>% effect_plot(.) + 
   ggprism::add_pvalue(caide_df_pval %>% filter(term == "CAIDE")
                       , bracket.nudge.y = 3, label = "{stars}", colour = 'black', tip.length = 0.01, bracket.size = 0.2) 
 
@@ -620,19 +670,6 @@ joint_caid_apoe_adrd_mci_bl_p <- ggplot(caide_res %>% filter(outcome == "ADRD + 
       )
 
 ggsave("results/figures/joint_caid_apoe_adrd_mci_bl.png", plot = joint_caid_apoe_adrd_mci_bl_p, width = 9, height = 3.5, units = 'in')
-
-```
-
-```{r}
-test <- filter(res, race == "NHW", outcome == "ADRD + MCI") %>%
-  select(data, pred) %>%
-  unnest(c(data, pred)) %>%
-  ungroup()
-
-
-
-pROC::auc(test$dx, test$pred, plot = TRUE, print.auc = TRUE)
-
 
 ```
 
@@ -984,6 +1021,56 @@ mcaide_df_pval <- filter(mcaide_diff_long, p < 0.05) %>%
           term = fct_recode(term, "ε2+" = "e2+", "ε4+" = "e4+", "mCAIDE" = "z_mcaide"),
 
   )
+```
+
+```{r}
+#| label: export_caide
+#| code-summary: CAIDE Regression export
+
+mcaide_res_df %>%
+  select(race, outcome, predictor = term, estimate, std.error, statistic, p.value) %>%
+  mutate(
+    estimate = round(estimate, digits = 2),
+    std.error = round(std.error, digits = 3),
+    statistic = round(statistic, digits = 2),
+    stars = case_when(
+      p.value > 0.05 ~ "", 
+      between(p.value,  0.01, 0.05) ~ "*",
+      between(p.value, 0.001, 0.01) ~ "**",
+      p.value < 0.001 ~ "***"
+    ), 
+    p.value = case_when(
+      p.value < 0.001 ~ format(p.value, scientific = TRUE, digits = 2),
+      p.value >= 0.001 ~ as.character(round(p.value, 3))
+    ), 
+    predictor = str_replace(predictor, "ε", "e")
+    ) %>%
+  write_csv(., "results/mcaide_res_all.csv")
+
+mcaide_diff_long %>%
+  select(race1, race2, predictor = term, outcome, z, p, significant = stars) %>%
+  mutate(
+         race1 = case_when(
+           race1 == "nhw" ~ "NHW", 
+           race1 == "bla" ~ "Black", 
+           race1 == "asi" ~ "Asian", 
+           race1 == "his" ~ "Hispanic"
+         ), 
+         race2 = case_when(
+           race2 == "nhw" ~ "NHW", 
+           race2 == "bla" ~ "Black", 
+           race2 == "asi" ~ "Asian", 
+           race2 == "his" ~ "Hispanic"
+         ),
+    z = round(z, digits = 2),
+    p = case_when(
+       p < 0.001 ~ format(p, scientific = TRUE, digits = 2),
+       p >= 0.001 ~ as.character(round(p, 3))
+    ), 
+    predictor = str_replace(predictor, "ε", "e")
+  ) %>% 
+  unite(race, c(race1, race2), sep = "-") %>%
+  write_csv(., "results/mcaide_diff_res_all.csv")
 ```
 
 ```{r}
