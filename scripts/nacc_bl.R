@@ -5,7 +5,7 @@ library(missForest)
 
 `%nin%` = negate(`%in%`)
 
-setwd('~/Dropbox/Research/UCSF/ABA')
+setwd("~/gitcode/CAIDE_APOE")
 
 # NACC
 ## Import datasets
@@ -158,7 +158,7 @@ nacc_wrangle <- nacc_clean %>%
   filter(NACCNIHR %in% c(1,2,5)) %>%
   filter(NACCADMU == 0) %>%
   filter(NACCFTDM == 0) %>%
-  filter(NACCETPR %in% c(1, 2, 6, 7, 8, 88)) %>%
+  filter(NACCETPR %in% c(1, 2, 4, 5, 6, 7, 8, 88)) %>%
   filter(NACCUDSD %nin% c(2)) %>%
   filter(!is.na(race)) %>%
   filter(!is.na(apoe)) %>%

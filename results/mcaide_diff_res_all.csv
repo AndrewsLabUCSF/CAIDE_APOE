@@ -1,0 +1,73 @@
+race,predictor,outcome,z,p,significant
+NHW-Black,e2+,ADRD + MCI,0.51,0.611,
+NHW-Hispanic,e2+,ADRD + MCI,-0.39,0.699,
+NHW-Asian,e2+,ADRD + MCI,0.8,0.421,
+Black-Hispanic,e2+,ADRD + MCI,-0.6,0.549,
+Black-Asian,e2+,ADRD + MCI,0.46,0.642,
+Hispanic-Asian,e2+,ADRD + MCI,0.85,0.394,
+NHW-Black,e4+,ADRD + MCI,0.42,0.676,
+NHW-Hispanic,e4+,ADRD + MCI,2.06,0.039,*
+NHW-Asian,e4+,ADRD + MCI,-0.88,0.381,
+Black-Hispanic,e4+,ADRD + MCI,1.51,0.13,
+Black-Asian,e4+,ADRD + MCI,-0.99,0.321,
+Hispanic-Asian,e4+,ADRD + MCI,-1.93,0.054,
+NHW-Black,mCAIDE,ADRD + MCI,2.29,0.022,*
+NHW-Hispanic,mCAIDE,ADRD + MCI,-1.15,0.252,
+NHW-Asian,mCAIDE,ADRD + MCI,-2.8,0.005,**
+Black-Hispanic,mCAIDE,ADRD + MCI,-2.37,0.018,*
+Black-Asian,mCAIDE,ADRD + MCI,-3.6,3.1e-04,***
+Hispanic-Asian,mCAIDE,ADRD + MCI,-1.72,0.086,
+NHW-Black,e2+,ADRD,0.01,0.989,
+NHW-Hispanic,e2+,ADRD,-1.16,0.247,
+NHW-Asian,e2+,ADRD,0.15,0.879,
+Black-Hispanic,e2+,ADRD,-1.03,0.303,
+Black-Asian,e2+,ADRD,0.13,0.898,
+Hispanic-Asian,e2+,ADRD,0.95,0.345,
+NHW-Black,e4+,ADRD,-0.77,0.442,
+NHW-Hispanic,e4+,ADRD,1.05,0.295,
+NHW-Asian,e4+,ADRD,-0.84,0.402,
+Black-Hispanic,e4+,ADRD,1.35,0.178,
+Black-Asian,e4+,ADRD,-0.41,0.678,
+Hispanic-Asian,e4+,ADRD,-1.31,0.191,
+NHW-Black,mCAIDE,ADRD,1.08,0.281,
+NHW-Hispanic,mCAIDE,ADRD,-1.7,0.089,
+NHW-Asian,mCAIDE,ADRD,-2.31,0.021,*
+Black-Hispanic,mCAIDE,ADRD,-2.09,0.036,*
+Black-Asian,mCAIDE,ADRD,-2.6,0.009,**
+Hispanic-Asian,mCAIDE,ADRD,-0.99,0.322,
+NHW-Black,e2+,AD + MCI,0.56,0.576,
+NHW-Hispanic,e2+,AD + MCI,-0.7,0.484,
+NHW-Asian,e2+,AD + MCI,0.39,0.7,
+Black-Hispanic,e2+,AD + MCI,-0.92,0.359,
+Black-Asian,e2+,AD + MCI,0.06,0.951,
+Hispanic-Asian,e2+,AD + MCI,0.78,0.434,
+NHW-Black,e4+,AD + MCI,1.64,0.1,
+NHW-Hispanic,e4+,AD + MCI,2.82,0.005,**
+NHW-Asian,e4+,AD + MCI,-0.72,0.47,
+Black-Hispanic,e4+,AD + MCI,1.4,0.161,
+Black-Asian,e4+,AD + MCI,-1.39,0.165,
+Hispanic-Asian,e4+,AD + MCI,-2.21,0.027,*
+NHW-Black,mCAIDE,AD + MCI,2.88,0.004,**
+NHW-Hispanic,mCAIDE,AD + MCI,-0.01,0.996,
+NHW-Asian,mCAIDE,AD + MCI,-3.13,0.002,**
+Black-Hispanic,mCAIDE,AD + MCI,-1.79,0.073,
+Black-Asian,mCAIDE,AD + MCI,-4.14,3.5e-05,***
+Hispanic-Asian,mCAIDE,AD + MCI,-2.7,0.007,**
+NHW-Black,e2+,AD,0.09,0.928,
+NHW-Hispanic,e2+,AD,-1.55,0.122,
+NHW-Asian,e2+,AD,-0.15,0.881,
+Black-Hispanic,e2+,AD,-1.4,0.161,
+Black-Asian,e2+,AD,-0.18,0.856,
+Hispanic-Asian,e2+,AD,0.96,0.337,
+NHW-Black,e4+,AD,0.9,0.369,
+NHW-Hispanic,e4+,AD,2.08,0.037,*
+NHW-Asian,e4+,AD,-0.38,0.705,
+Black-Hispanic,e4+,AD,1.19,0.233,
+Black-Asian,e4+,AD,-0.75,0.454,
+Hispanic-Asian,e4+,AD,-1.49,0.136,
+NHW-Black,mCAIDE,AD,1.47,0.142,
+NHW-Hispanic,mCAIDE,AD,-0.3,0.764,
+NHW-Asian,mCAIDE,AD,-2.36,0.018,*
+Black-Hispanic,mCAIDE,AD,-1.16,0.244,
+Black-Asian,mCAIDE,AD,-2.82,0.005,**
+Hispanic-Asian,mCAIDE,AD,-1.88,0.06,

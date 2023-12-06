@@ -1,0 +1,129 @@
+race,outcome,predictor,estimate,std.error,statistic,p.value,stars
+NHW,ADRD + MCI,e2+,-0.32,0.06,-5.29, 1.2e-07,***
+NHW,ADRD + MCI,e4+,0.94,0.035,26.98,2.5e-160,***
+NHW,ADRD + MCI,Age,0.02,0.002,9.66, 4.6e-22,***
+NHW,ADRD + MCI,Male,0.85,0.034,24.87,1.6e-136,***
+NHW,ADRD + MCI,Education,-0.12,0.006,-19.8, 3.0e-87,***
+NHW,ADRD + MCI,BMI,-0.03,0.004,-7.94, 1.9e-15,***
+NHW,ADRD + MCI,SBP,0,0.001,5.07, 3.9e-07,***
+NHW,ADRD + MCI,Hypercholesterolemia,-0.06,0.033,-1.66,0.097,
+Hispanic,ADRD + MCI,e2+,-0.14,0.328,-0.43,0.664,
+Hispanic,ADRD + MCI,e4+,0.7,0.153,4.58, 4.6e-06,***
+Hispanic,ADRD + MCI,Age,0.07,0.01,7.51, 5.8e-14,***
+Hispanic,ADRD + MCI,Male,0.75,0.152,4.95, 7.3e-07,***
+Hispanic,ADRD + MCI,Education,-0.06,0.016,-4.04, 5.3e-05,***
+Hispanic,ADRD + MCI,BMI,-0.07,0.016,-4.17, 3.1e-05,***
+Hispanic,ADRD + MCI,SBP,-0,0.004,-1.05,0.296,
+Hispanic,ADRD + MCI,Hypercholesterolemia,0.19,0.145,1.28,0.2,
+Black,ADRD + MCI,e2+,-0.39,0.168,-2.33,0.02,*
+Black,ADRD + MCI,e4+,0.89,0.102,8.7, 3.4e-18,***
+Black,ADRD + MCI,Age,0.05,0.006,8.67, 4.5e-18,***
+Black,ADRD + MCI,Male,0.59,0.106,5.57, 2.6e-08,***
+Black,ADRD + MCI,Education,-0.1,0.015,-6.63, 3.3e-11,***
+Black,ADRD + MCI,BMI,-0.06,0.009,-7, 2.5e-12,***
+Black,ADRD + MCI,SBP,0.01,0.003,2.62,0.009,**
+Black,ADRD + MCI,Hypercholesterolemia,-0.15,0.096,-1.57,0.117,
+Asian,ADRD + MCI,e2+,-0.52,0.311,-1.67,0.095,
+Asian,ADRD + MCI,e4+,1.21,0.22,5.49, 3.9e-08,***
+Asian,ADRD + MCI,Age,0.08,0.012,6.33, 2.5e-10,***
+Asian,ADRD + MCI,Male,0.8,0.199,3.99, 6.6e-05,***
+Asian,ADRD + MCI,Education,-0.08,0.028,-2.93,0.003,**
+Asian,ADRD + MCI,BMI,-0.05,0.028,-1.96,0.05,
+Asian,ADRD + MCI,SBP,-0,0.005,-0.28,0.776,
+Asian,ADRD + MCI,Hypercholesterolemia,0.35,0.188,1.88,0.06,
+NHW,ADRD,e2+,-0.41,0.074,-5.49, 4.0e-08,***
+NHW,ADRD,e4+,1.02,0.04,25.77,1.8e-146,***
+NHW,ADRD,Age,0.02,0.002,8.68, 3.9e-18,***
+NHW,ADRD,Male,0.82,0.039,20.73, 2.0e-95,***
+NHW,ADRD,Education,-0.16,0.007,-23,4.2e-117,***
+NHW,ADRD,BMI,-0.04,0.004,-9.34, 9.7e-21,***
+NHW,ADRD,SBP,0,0.001,4.01, 6.0e-05,***
+NHW,ADRD,Hypercholesterolemia,0.03,0.038,0.73,0.465,
+Hispanic,ADRD,e2+,-0.01,0.393,-0.03,0.975,
+Hispanic,ADRD,e4+,0.92,0.181,5.08, 3.7e-07,***
+Hispanic,ADRD,Age,0.09,0.011,7.46, 9.0e-14,***
+Hispanic,ADRD,Male,0.72,0.181,3.96, 7.4e-05,***
+Hispanic,ADRD,Education,-0.12,0.018,-6.45, 1.1e-10,***
+Hispanic,ADRD,BMI,-0.06,0.019,-3.41, 6.6e-04,***
+Hispanic,ADRD,SBP,-0.01,0.005,-1.97,0.049,*
+Hispanic,ADRD,Hypercholesterolemia,0.02,0.174,0.1,0.918,
+Black,ADRD,e2+,-0.44,0.225,-1.98,0.048,*
+Black,ADRD,e4+,1.15,0.128,8.99, 2.5e-19,***
+Black,ADRD,Age,0.07,0.008,8.91, 4.9e-19,***
+Black,ADRD,Male,0.65,0.128,5.07, 4.0e-07,***
+Black,ADRD,Education,-0.15,0.018,-8.39, 4.9e-17,***
+Black,ADRD,BMI,-0.09,0.012,-7.89, 3.0e-15,***
+Black,ADRD,SBP,0.01,0.003,2.23,0.026,*
+Black,ADRD,Hypercholesterolemia,-0.12,0.119,-1.03,0.304,
+Asian,ADRD,e2+,-0.56,0.39,-1.43,0.153,
+Asian,ADRD,e4+,1.26,0.257,4.91, 9.3e-07,***
+Asian,ADRD,Age,0.07,0.015,5.03, 5.0e-07,***
+Asian,ADRD,Male,0.76,0.242,3.13,0.002,**
+Asian,ADRD,Education,-0.14,0.033,-4.09, 4.3e-05,***
+Asian,ADRD,BMI,-0.09,0.034,-2.47,0.014,*
+Asian,ADRD,SBP,-0.01,0.006,-0.87,0.387,
+Asian,ADRD,Hypercholesterolemia,0.3,0.229,1.3,0.193,
+NHW,AD + MCI,e2+,-0.39,0.068,-5.68, 1.4e-08,***
+NHW,AD + MCI,e4+,1.17,0.038,31.02,3.0e-211,***
+NHW,AD + MCI,Age,0.04,0.002,16.13, 1.6e-58,***
+NHW,AD + MCI,Male,0.75,0.037,20.23, 4.9e-91,***
+NHW,AD + MCI,Education,-0.12,0.007,-17.38, 1.2e-67,***
+NHW,AD + MCI,BMI,-0.03,0.004,-7.34, 2.2e-13,***
+NHW,AD + MCI,SBP,0.01,0.001,5.18, 2.2e-07,***
+NHW,AD + MCI,Hypercholesterolemia,-0.11,0.036,-3.07,0.002,**
+Hispanic,AD + MCI,e2+,-0.1,0.338,-0.29,0.769,
+Hispanic,AD + MCI,e4+,0.79,0.158,5, 5.9e-07,***
+Hispanic,AD + MCI,Age,0.08,0.01,7.42, 1.2e-13,***
+Hispanic,AD + MCI,Male,0.72,0.157,4.57, 4.9e-06,***
+Hispanic,AD + MCI,Education,-0.06,0.016,-3.93, 8.5e-05,***
+Hispanic,AD + MCI,BMI,-0.06,0.016,-3.9, 9.8e-05,***
+Hispanic,AD + MCI,SBP,-0.01,0.004,-1.37,0.169,
+Hispanic,AD + MCI,Hypercholesterolemia,0.09,0.149,0.6,0.547,
+Black,AD + MCI,e2+,-0.43,0.182,-2.38,0.017,*
+Black,AD + MCI,e4+,0.97,0.108,9.01, 2.1e-19,***
+Black,AD + MCI,Age,0.06,0.007,9.11, 7.9e-20,***
+Black,AD + MCI,Male,0.53,0.111,4.78, 1.8e-06,***
+Black,AD + MCI,Education,-0.09,0.016,-5.97, 2.4e-09,***
+Black,AD + MCI,BMI,-0.06,0.009,-6.31, 2.7e-10,***
+Black,AD + MCI,SBP,0.01,0.003,2.73,0.006,**
+Black,AD + MCI,Hypercholesterolemia,-0.17,0.101,-1.63,0.103,
+Asian,AD + MCI,e2+,-0.44,0.347,-1.26,0.208,
+Asian,AD + MCI,e4+,1.44,0.24,6.01, 1.8e-09,***
+Asian,AD + MCI,Age,0.09,0.014,6.74, 1.6e-11,***
+Asian,AD + MCI,Male,0.7,0.221,3.15,0.002,**
+Asian,AD + MCI,Education,-0.1,0.031,-3.28,0.001,**
+Asian,AD + MCI,BMI,-0.08,0.031,-2.58,0.01,**
+Asian,AD + MCI,SBP,0,0.006,0.41,0.681,
+Asian,AD + MCI,Hypercholesterolemia,0.42,0.207,2.01,0.045,*
+NHW,AD,e2+,-0.56,0.092,-6.04, 1.6e-09,***
+NHW,AD,e4+,1.33,0.045,29.55,7.2e-192,***
+NHW,AD,Age,0.04,0.003,15.88, 8.9e-57,***
+NHW,AD,Male,0.69,0.045,15.59, 9.0e-55,***
+NHW,AD,Education,-0.17,0.008,-20.78, 6.3e-96,***
+NHW,AD,BMI,-0.04,0.005,-8.97, 3.0e-19,***
+NHW,AD,SBP,0.01,0.001,4.58, 4.7e-06,***
+NHW,AD,Hypercholesterolemia,0.03,0.043,0.79,0.429,
+Hispanic,AD,e2+,0.01,0.404,0.03,0.976,
+Hispanic,AD,e4+,1,0.188,5.32, 1.0e-07,***
+Hispanic,AD,Age,0.09,0.012,7.39, 1.5e-13,***
+Hispanic,AD,Male,0.66,0.189,3.48, 5.0e-04,***
+Hispanic,AD,Education,-0.12,0.019,-6.29, 3.3e-10,***
+Hispanic,AD,BMI,-0.06,0.02,-3.13,0.002,**
+Hispanic,AD,SBP,-0.01,0.005,-1.88,0.06,
+Hispanic,AD,Hypercholesterolemia,-0.09,0.182,-0.5,0.617,
+Black,AD,e2+,-0.54,0.248,-2.16,0.031,*
+Black,AD,e4+,1.22,0.135,9.04, 1.5e-19,***
+Black,AD,Age,0.08,0.008,9.57, 1.0e-21,***
+Black,AD,Male,0.58,0.134,4.33, 1.5e-05,***
+Black,AD,Education,-0.16,0.019,-8.12, 4.6e-16,***
+Black,AD,BMI,-0.09,0.012,-7.11, 1.2e-12,***
+Black,AD,SBP,0.01,0.003,2.35,0.019,*
+Black,AD,Hypercholesterolemia,-0.06,0.124,-0.5,0.614,
+Asian,AD,e2+,-0.54,0.458,-1.18,0.237,
+Asian,AD,e4+,1.46,0.291,5.01, 5.4e-07,***
+Asian,AD,Age,0.1,0.017,5.89, 3.9e-09,***
+Asian,AD,Male,0.52,0.278,1.86,0.063,
+Asian,AD,Education,-0.15,0.037,-3.99, 6.7e-05,***
+Asian,AD,BMI,-0.11,0.04,-2.83,0.005,**
+Asian,AD,SBP,-0,0.007,-0.4,0.69,
+Asian,AD,Hypercholesterolemia,0.43,0.26,1.65,0.1,
