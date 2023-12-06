@@ -1,7 +1,7 @@
 # Filename: adni_ver2.R
 
 # setwd("/wynton/group/andrews/users/evelasquez/CAIDE_APOE/scripts/ADNI")
-setwd("/Users/elinorvelasquez/Desktop/ADNI/")
+setwd("~/gitcode/CAIDE_APOE")
 library("tidyverse")
 library("missForest")
 library("glue")
@@ -20,7 +20,7 @@ library("patchwork")
 # compute data_final (contains not-to-be-imputed variables)
 #####################################################
 
-data <- read_csv("ADNIMERGE_09Aug2023.csv") %>% 
+data <- read_csv("resources/ADNI/data/ADNIMERGE_09Aug2023.csv") %>% 
   janitor::clean_names()
 
 data_sc_bl <- dplyr::filter(data, viscode == "sc" | viscode == "bl")
@@ -87,8 +87,9 @@ summary(caide_basic) # age has 4 mv; all others have no mv
 
 # Construct a file with "sc" height, weight, and respective units & systbp. 
 # Compute bmi using these values.
-vitals <- read_csv("VITALS_14Aug2023.csv") %>% 
+vitals <- read_csv("resources/ADNI/data/VITALS_14Aug2023.csv") %>% 
   janitor::clean_names()
+
 data_bmi <- dplyr::select(vitals, rid, viscode, viscode2, 
                           vsweight, vswtunit, 
                           vsheight, vshtunit, vsbpsys)
@@ -115,7 +116,7 @@ bmi_computed <- data_bmi_sc2 %>%
                              vshtunit == 2 ~ vsheight,
                              TRUE ~ NA_real_
     ),
-    bmi = weight_in_kg/((height_in_cm)**2)*10000 # From CDC
+    bmi = weight_in_kg/((height_in_cm/100)^2) # From CDC
   )
 
 # 3. compute bmi_systbp:
@@ -123,7 +124,7 @@ bmi_systbp_imp <- dplyr::select(bmi_computed, rid, viscode2, bmi, vsbpsys)
 bmi_systbp_fa <- bmi_systbp_imp %>% 
   mutate(
     viscode_factor = as.factor(viscode2)
-  )
+  ) %>%
 bmi_systbp_fac <- dplyr::select(bmi_systbp_fa, -c(viscode2))
 bmi_systbp <- dplyr::rename(bmi_systbp_fac, viscode = viscode_factor)
 ##### BMI & systbp computed #######################
@@ -139,12 +140,14 @@ bmi_systbp_join <- dplyr::select(bmi_systbp, rid, bmi, vsbpsys)
 impute_wo_chol_list <- list(caide_basic_join, bmi_systbp_join)
 caide_wo_chol_joined <- impute_wo_chol_list %>% reduce(full_join, by='rid')
 
+full_join(caide_basic_join, bmi_systbp_join, by = "rid")
+
 # check:
 summary(caide_basic_join) # only age has missing values --4
 summary(bmi_systbp_join) # bmi na's: 44; bpsys na's: 32
 
-left_joined <- caide_basic_join %>% left_join(bmi_systbp_join, 
-                             by=c('rid'))
+left_joined <- caide_basic_join %>% 
+  left_join(bmi_systbp_join, by=c('rid'))
 summary(left_joined)
 str(left_joined) # 2430 rows # switch to 'left_joined'
 
@@ -177,7 +180,7 @@ write_csv(imputed_wo_chol, "imputed_wo_chol.csv")
 # COMPUTE CHOLESTEROL ("chol_final" dataset)
 ###################################################################
 
-chol_data <- read_csv("biospecimen_ADNINIGHTINGALE2_15Aug2023.csv") %>% 
+chol_data <- read_csv("resources/ADNI/data/ADNINIGHTINGALE2_20Sep2023.csv") %>% 
   janitor::clean_names()
 # Test if viscode1 == viscode2 in the dataset NIGHTINGALE
 chol_data %>% count(viscode == viscode2) # TRUE 928, FALSE 769
@@ -218,7 +221,7 @@ apoe_adsp_sc %>% count(!is.na(apoe4count)) # TRUE 0, FALSE 92
 # Conclusion: use "bl" only. See if we can merge the two apoe datasets
 
 # New dataset for apoe: (has viscode & rid)
-apoe_alt <- read_csv("APOERES_16Aug2023.csv") %>% 
+apoe_alt <- read_csv("resources/ADNI/data/APOERES_16Aug2023.csv") %>% 
   janitor::clean_names()
 
 apoe_alt %>% count(apgen1, phase)
@@ -402,6 +405,8 @@ caide_calc <- joined_w_chol_i %>%
   mutate(
     caide = sum(caide_age, caide_educ, caide_sex, caide_obesity, caide_sbp, 
                 caide_chol, na.rm = F),
+    caide_wo_chol = sum(caide_age, caide_educ, caide_sex, caide_obesity, caide_sbp, 
+                 na.rm = F),
     caide_missing = sum(is.na(i_age), is.na(i_education), is.na(sex_factor), 
                         is.na(i_bmi), is.na(i_systbp), is.na(hypchol))
   ) %>%
@@ -2451,7 +2456,8 @@ ggplot(data_facets, aes(x=or, y = factor(apoe, levels = c("Low, e2+",
 
 
 
-
+## ++++++++++++++++++++++++++++++++++++++++++++++++++
+## Deprecated sandbox
 
 
 

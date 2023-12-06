@@ -76,7 +76,6 @@ as_gt(tab_rf) %>%
   gtsave(., "~/Downloads/table_rf.docx")
 ```
 
-
 ```{r}
 #| label: table 1
 #| code-summary: Table 1
@@ -127,7 +126,9 @@ as_gt(tab_mcaide) %>%
 ```
 
 ## Baseline Regression Models
+
 ### APOE Genotype
+
 ```{r}
 #| label: apoe_regression_models
 #| code-summary: APOE genotype Regression Models
@@ -327,7 +328,8 @@ ggsave("results/figures/nacc_apoe_race_all_bl.png", plot = apoe_geno_res_p, widt
 
 ```
 
-### CAIDE 
+### CAIDE
+
 ```{r}
 glm(dx ~ race + apoe + z_caide, data = dat, family = 'binomial') %>% 
   tidy()
@@ -542,7 +544,6 @@ ggsave("results/figures/nacc_apoe_race_all_bl.png", plot = apoe_geno_res_p, widt
 
 ```
 
-
 ```{r}
 #| label: apoe_plots
 #| code-summary: APOE genotype plots
@@ -604,7 +605,6 @@ ggsave("results/figures/nacc_caid_apoe_adrd_mci_bl.png", plot = nacc_caid_apoe_a
 
 ```
 
-
 ```{r}
 test <- filter(res, race == "NHW", outcome == "ADRD + MCI") %>%
   select(data, pred) %>%
@@ -619,6 +619,7 @@ pROC::auc(test$dx, test$pred, plot = TRUE, print.auc = TRUE)
 ```
 
 #### Interaction
+
 ```{r}
 
 glm(dx ~ race + caide_apoe, data = dat, family = 'binomial') %>% 
@@ -800,7 +801,8 @@ ggsave("results/figures/caide_apoe_adrd_mci_bl.png", plot = caide_apoe_adrd_mci_
 
 ```
 
-### mCAIDE 
+### mCAIDE
+
 ```{r}
 glm(dx ~ race + apoe + z_mcaide, data = dat, family = 'binomial') %>% 
   tidy()
@@ -812,7 +814,6 @@ lm(ad_age_lv ~ race + apoe + z_mcaide, data = dat) %>%
   tidy()
 
 ```
-
 
 ```{r}
 #| label: regression_models
@@ -967,8 +968,6 @@ mcaide_df_pval <- filter(mcaide_diff_long, p < 0.05) %>%
   )
 ```
 
-
-
 ```{r}
 #| label: apoe_plots
 #| code-summary: APOE genotype plots
@@ -989,7 +988,6 @@ caide_e4_res_p
 ggsave("results/figures/nacc_apoe_race_all_bl.png", plot = apoe_geno_res_p, width = 9, height = 5, units = 'in')
 
 ```
-
 
 ```{r}
 #| label: adard_mci_apoe_plots
@@ -1025,6 +1023,7 @@ ggsave("results/figures/nacc_mcaid_apoe_adrd_mci_bl.png", plot = nacc_mcaid_apoe
 ```
 
 #### Interaction
+
 ```{r}
 
 glm(dx ~ race + mcaide_apoe, data = dat, family = 'binomial') %>% 
@@ -1204,7 +1203,8 @@ ggsave("results/figures/mcaide_apoe_adrd_mci_bl.png", plot = mcaide_apoe_adrd_mc
 
 ```
 
-### risk factors 
+### risk factors
+
 ```{r}
 rf_all_bl_res <- glm(dx ~ race + apoe + NACCAGE + SEX + i_EDUC + i_NACCBMI + i_BPSYS + i_hypchol, data = dat, family = 'binomial')
 tidy(rf_all_res)
@@ -1291,7 +1291,6 @@ rf_res_df <- rf_res %>%
   )
 ```
 
-
 ```{r}
 #| label: apoe_plots
 #| code-summary: APOE genotype plots
@@ -1354,7 +1353,8 @@ ggsave("results/figures/nacc_rf_race_all_adrd_mci_bl.png", plot = rf_race_all_ad
 
 ```
 
-## AD Age Score 
+## AD Age Score
+
 ```{r}
 dat_sdx <- dat %>%
   # select(NACCID, NACCAVST, DECAGE, SEX, NACCAGE, i_EDUC, i_NACCBMI, i_BPSYS, i_hypchol, race, apoe, aoo_lv, dx_lv, 
@@ -1365,8 +1365,8 @@ dat_sdx <- dat %>%
   filter(!is.na(sdx_lv)) 
 ```
 
-
 ### APOE Genotype
+
 ```{r}
 #| label: apoe_regression_models
 #| code-summary: APOE genotype Regression Models
@@ -1564,6 +1564,7 @@ ggsave("results/figures/nacc_apoe_race_all_bl.png", plot = apoe_geno_res_p, widt
 ```
 
 ### Risk Factors
+
 ```{r}
 lm_res <- lm(ad_age_lv ~ race + apoe + SEX + i_EDUC + i_NACCBMI + i_BPSYS + i_hypchol, data = dat) 
 lm_res <- lm(sdx_lv ~ race + apoe + SEX + i_EDUC + i_NACCBMI + i_BPSYS + i_hypchol, data = dat) 
@@ -1577,7 +1578,6 @@ ggplot(dat, aes(x = aoo, y = sdx_lv, color = as.factor(dx_lv))) +
   facet_wrap(vars(race))
 
 ```
-
 
 ```{r}
 #| label: regression_models
@@ -1653,7 +1653,8 @@ rf_res_df <- rf_lm_res %>%
   )
 ```
 
-### CAIDE 
+### CAIDE
+
 ```{r}
 glm(dx ~ race + apoe + z_caide, data = dat, family = 'binomial') %>% 
   tidy()
@@ -1735,8 +1736,8 @@ caide_sdx_df <- caide_sdx_res  %>%
 group_split(caide_sdx_df, outcome) 
 ```
 
-
 #### Interaction
+
 ```{r}
 #| label: regression_models
 #| code-summary: Regression Models
@@ -1857,7 +1858,8 @@ ggsave("results/figures/nacc_apoe_race_all_bl.png", plot = apoe_geno_res_p, widt
 
 ```
 
-### mCAIDE 
+### mCAIDE
+
 ```{r}
 glm(dx ~ race + apoe + z_mcaide, data = dat, family = 'binomial') %>% 
   tidy()
@@ -1869,7 +1871,6 @@ lm(ad_age_lv ~ race + apoe + z_mcaide, data = dat) %>%
   tidy()
 
 ```
-
 
 ```{r}
 #| label: regression_models
@@ -1945,6 +1946,7 @@ group_split(mcaide_sdx_df, outcome)
 ```
 
 #### Interaction
+
 ```{r}
 #| label: regression_models
 #| code-summary: Regression Models
@@ -2064,7 +2066,7 @@ ggplot(mcaide_apoe_cat_sdx_df, aes(x = estimate, y = term, color = race, shape =
 ggsave("results/figures/nacc_apoe_race_all_bl.png", plot = apoe_geno_res_p, width = 9, height = 5, units = 'in')
 ```
 
-## Cox Regression models 
+## Cox Regression models
 
 ```{r}
 ## last visit
@@ -2133,11 +2135,10 @@ ggsurvplot(dat.survfit2, data = dat_lv2, risk.table = TRUE,  pval = TRUE,
 
 ```
 
-
-
-
 ### CAIDE
+
 #### KM Curves
+
 ```{r}
 caide.survfit <- survfit(Surv(aoo, dx_aoo) ~ caide_cat, start.time=55, data = dat_lv)
 
@@ -2149,8 +2150,8 @@ all_cox_res <- coxph(dat.surv ~ z_caide + apoe + race, data=dat_lv)
 
 ```
 
-
 #### Cox Regression
+
 ```{r}
 ## Cox model
 caide_cox_fit <- function(surv, data){
@@ -2235,6 +2236,7 @@ group_split(caide_cox_res_df, race)
 ```
 
 #### Plots
+
 ```{r}
 
 
@@ -2280,6 +2282,7 @@ caide_cox_p
 ### mCAIDE
 
 #### KM Curves
+
 ```{r}
 mcaide.survfit <- survfit(Surv(aoo, dx_aoo) ~ mcaide_cat, start.time=55, data = dat_lv)
 
@@ -2292,6 +2295,7 @@ all_cox_res <- coxph(dat.surv ~ z_mcaide + apoe + race, data=dat_lv)
 ```
 
 #### Cox Regression
+
 ```{r}
 ## Cox model
 mcaide_cox_fit <- function(surv, data){
@@ -2362,6 +2366,7 @@ mcaide_cox_res_df <- mcaide_cox_res %>%
 ```
 
 #### Plots
+
 ```{r}
 
 mcaide_e2_cox_p <- filter(mcaide_cox_res_df, term == "e2+") %>% cox_coeff_plot(.) 
@@ -2375,9 +2380,10 @@ mcaide_cox_p
 
 ```
 
-
 ### Risk factors
+
 #### KM Curves
+
 ```{r}
 rf.survfit <- survfit(Surv(aoo, dx_aoo) ~ race, start.time=55, data = dat_lv)
 
@@ -2391,6 +2397,7 @@ rf_cox_interaction_res <- coxph(dat.surv ~ race * apoe + SEX + i_EDUC + i_NACCBM
 ```
 
 #### Cox Regression Models
+
 ```{r}
 ## Cox model
 rf_cox_fit <- function(surv, data){
@@ -2463,72 +2470,3 @@ rf_cox_res_df <- rf_cox_res %>%
 
 group_split(rf_cox_res_df, race)
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
