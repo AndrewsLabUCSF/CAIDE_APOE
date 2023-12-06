@@ -1,0 +1,49 @@
+race,outcome,predictor,estimate,std.error,statistic,p.value,stars
+NHW,ADRD + MCI,e2+,-0.28,0.058,-4.77, 1.8e-06,***
+NHW,ADRD + MCI,e4+,0.9,0.034,26.8,3.2e-158,***
+NHW,ADRD + MCI,CAIDE,0.15,0.017,9.16, 5.0e-20,***
+Hispanic,ADRD + MCI,e2+,-0.16,0.303,-0.53,0.595,
+Hispanic,ADRD + MCI,e4+,0.59,0.14,4.2, 2.7e-05,***
+Hispanic,ADRD + MCI,CAIDE,0.19,0.055,3.55, 3.8e-04,***
+Black,ADRD + MCI,e2+,-0.37,0.158,-2.36,0.019,*
+Black,ADRD + MCI,e4+,0.86,0.095,9.11, 8.1e-20,***
+Black,ADRD + MCI,CAIDE,-0.03,0.044,-0.63,0.529,
+Asian,ADRD + MCI,e2+,-0.51,0.29,-1.74,0.081,
+Asian,ADRD + MCI,e4+,1.06,0.203,5.2, 2.0e-07,***
+Asian,ADRD + MCI,CAIDE,0.37,0.097,3.81, 1.4e-04,***
+NHW,ADRD,e2+,-0.39,0.071,-5.46, 4.8e-08,***
+NHW,ADRD,e4+,0.99,0.038,26.31,1.5e-152,***
+NHW,ADRD,CAIDE,0.11,0.019,6.03, 1.6e-09,***
+Hispanic,ADRD,e2+,0.02,0.357,0.06,0.949,
+Hispanic,ADRD,e4+,0.8,0.161,4.98, 6.2e-07,***
+Hispanic,ADRD,CAIDE,0.24,0.062,3.93, 8.6e-05,***
+Black,ADRD,e2+,-0.42,0.206,-2.02,0.043,*
+Black,ADRD,e4+,1.08,0.114,9.54, 1.4e-21,***
+Black,ADRD,CAIDE,-0.04,0.051,-0.85,0.393,
+Asian,ADRD,e2+,-0.43,0.354,-1.21,0.228,
+Asian,ADRD,e4+,1.16,0.233,4.98, 6.3e-07,***
+Asian,ADRD,CAIDE,0.32,0.11,2.91,0.004,**
+NHW,AD + MCI,e2+,-0.32,0.066,-4.78, 1.7e-06,***
+NHW,AD + MCI,e4+,1.09,0.036,30.24,6.9e-201,***
+NHW,AD + MCI,CAIDE,0.15,0.018,8.06, 7.6e-16,***
+Hispanic,AD + MCI,e2+,-0.1,0.312,-0.31,0.756,
+Hispanic,AD + MCI,e4+,0.67,0.144,4.66, 3.1e-06,***
+Hispanic,AD + MCI,CAIDE,0.18,0.057,3.08,0.002,**
+Black,AD + MCI,e2+,-0.43,0.173,-2.49,0.013,*
+Black,AD + MCI,e4+,0.93,0.099,9.31, 1.3e-20,***
+Black,AD + MCI,CAIDE,-0.04,0.046,-0.78,0.437,
+Asian,AD + MCI,e2+,-0.42,0.314,-1.35,0.178,
+Asian,AD + MCI,e4+,1.22,0.214,5.68, 1.4e-08,***
+Asian,AD + MCI,CAIDE,0.41,0.105,3.95, 7.8e-05,***
+NHW,AD,e2+,-0.5,0.089,-5.66, 1.5e-08,***
+NHW,AD,e4+,1.22,0.042,29.13,1.6e-186,***
+NHW,AD,CAIDE,0.1,0.021,5.03, 4.9e-07,***
+Hispanic,AD,e2+,0.08,0.367,0.23,0.82,
+Hispanic,AD,e4+,0.87,0.166,5.21, 1.8e-07,***
+Hispanic,AD,CAIDE,0.21,0.065,3.27,0.001,**
+Black,AD,e2+,-0.55,0.229,-2.4,0.016,*
+Black,AD,e4+,1.11,0.119,9.38, 6.9e-21,***
+Black,AD,CAIDE,-0.03,0.053,-0.51,0.608,
+Asian,AD,e2+,-0.41,0.398,-1.04,0.297,
+Asian,AD,e4+,1.28,0.25,5.13, 2.9e-07,***
+Asian,AD,CAIDE,0.35,0.121,2.89,0.004,**
