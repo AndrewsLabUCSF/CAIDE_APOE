@@ -40,8 +40,8 @@ setwd("~/gitcode/CAIDE_APOE")
 ```{r}
 #| label: import
 #| code-summary: Import data 
-
-dat <- read_tsv("data/joint_df.tsv.gz") %>% 
+dat_path = "data/joint_df.tsv.gz"
+dat <- read_tsv(dat_path) %>% 
   # read_rds('data/nacc.rds') %>%
   # filter(NACCAVST >= 2) %>%
   mutate(
@@ -174,6 +174,7 @@ as_gt(tab_mcaide) %>%
 ```
 
 ## Descriptive statistics
+
 ```{r}
 #| label: descriptive_statistics
 #| code-summary: Descriptive Statistics
@@ -353,7 +354,6 @@ anova_res %>%
 
 
 ```
-
 
 ## Baseline Regression Models
 
@@ -561,8 +561,18 @@ ggsave("results/figures/joint_apoe_race_all_bl.png", plot = apoe_geno_res_p, wid
 ### CAIDE
 
 ```{r}
-glm(dx ~ race + apoe + z_caide, data = dat, family = 'binomial') %>% 
-  tidy()
+glm(dx ~ race + apoe + z_caide + cohort, data = dat, family = 'binomial') %>% 
+  tidy() %>%
+  mutate(
+    or = exp(estimate), 
+    or = round(or, 2),
+    lci = exp(estimate - std.error * 1.96), 
+    lci = round(lci, 2),
+    uci = exp(estimate + std.error * 1.96), 
+    uci = round(uci, 2),
+    p = format.pval(p.value, digits = 2, eps = 1e-100), 
+    out = glue("OR [95% CI] = {or} [{lci}, {uci}], p = {p}")
+  )
 
 glm(dx_lv ~ race + apoe + z_caide, data = dat, family = 'binomial') %>% 
   tidy()
@@ -735,9 +745,15 @@ caide_df_pval <- filter(caide_diff_long, p < 0.05) %>%
 #| label: export_caide
 #| code-summary: CAIDE Regression export
 
-caide_res.df %>%
+caide_res.df.out <- caide_res.df %>%
   select(race, outcome, predictor = term, estimate, std.error, statistic, p.value) %>%
   mutate(
+    or = exp(estimate), 
+    or = round(or, 2),
+    lci = exp(estimate - std.error * 1.96), 
+    lci = round(lci, 2),
+    uci = exp(estimate + std.error * 1.96), 
+    uci = round(uci, 2),
     estimate = round(estimate, digits = 2),
     std.error = round(std.error, digits = 3),
     statistic = round(statistic, digits = 2),
@@ -751,33 +767,22 @@ caide_res.df %>%
       p.value < 0.001 ~ format(p.value, scientific = TRUE, digits = 2),
       p.value >= 0.001 ~ as.character(round(p.value, 3))
     ), 
-    predictor = str_replace(predictor, "ε", "e")
-    ) %>%
+    predictor = str_replace(predictor, "ε", "e"),
+    out = glue("OR [95% CI] = {or} [{lci}, {uci}], p = {p.value}")
+    ) 
+
+caide_res.df.out %>% filter(predictor == 'CAIDE' & outcome == "ADRD + MCI")
+caide_res.df.out %>%
   write_csv(., "results/caide_res_all.csv")
 
-caide_diff_long %>%
-  select(race1, race2, predictor = term, outcome, z, p, significant = stars) %>%
+caide_diff_long <- caide_diff_long %>%
+  select(race, predictor, outcome, z, p, significant) %>%
   mutate(
-         race1 = case_when(
-           race1 == "nhw" ~ "NHW", 
-           race1 == "bla" ~ "Black", 
-           race1 == "asi" ~ "Asian", 
-           race1 == "his" ~ "Hispanic"
-         ), 
-         race2 = case_when(
-           race2 == "nhw" ~ "NHW", 
-           race2 == "bla" ~ "Black", 
-           race2 == "asi" ~ "Asian", 
-           race2 == "his" ~ "Hispanic"
-         ),
     z = round(z, digits = 2),
-    p = case_when(
-       p < 0.001 ~ format(p, scientific = TRUE, digits = 2),
-       p >= 0.001 ~ as.character(round(p, 3))
-    ), 
     predictor = str_replace(predictor, "ε", "e")
-  ) %>% 
-  unite(race, c(race1, race2), sep = "-") %>%
+  ) 
+
+caide_diff_long_out %>%
   write_csv(., "results/caide_diff_res_all.csv")
 ```
 
@@ -982,6 +987,7 @@ caide_apoe_cat_df <- caide_apoe_cat_res %>%
     lci = estimate - (std.error * 1.96),
     hci = estimate + (std.error * 1.96), 
     or = exp(estimate),
+    or = exp(estimate),
     or_lci = exp(lci),
     or_hci = exp(hci),
     term = str_replace(term, "caide_apoe", ""), 
@@ -997,8 +1003,22 @@ caide_apoe_cat_df <- caide_apoe_cat_res %>%
                       ),
     reference = ifelse(or == 1, TRUE, FALSE), 
     race = fct_relevel(race, "Black", "Hispanic", "Asian", "NHW"), 
-    race = fct_recode(race, "Latinx" = "Hispanic"), 
+    race = fct_recode(race, "Latinx" = "Hispanic")
   ) 
+
+```
+
+```{r}
+caide_apoe_cat_df.out <- caide_apoe_cat_df %>% 
+  mutate_at(vars(estimate, std.error, statistic, lci, hci, or, or_lci, or_hci), round, 2) %>%
+  mutate(
+    p = format.pval(p.value, digits = 2, eps = 1e-100),
+    out = glue("OR [95% CI] = {or} [{or_lci}, {or_hci}], p = {p}")
+  ) 
+
+write_csv(caide_apoe_cat_df.out, "results/caide_apoe_cat_res.csv")
+
+caide_apoe_cat_df.out %>% filter(outcome == "ADRD + MCI") %>% select(race, outcome, term, out) %>% print(n = Inf)
 
 ```
 
@@ -1079,7 +1099,18 @@ ggsave("results/figures/joint_caide_apoe_adrd_mci_bl.png", plot = joint_caide_ap
 
 ```{r}
 glm(dx ~ race + apoe + z_mcaide + cohort, data = dat, family = 'binomial') %>% 
-  tidy()
+  tidy() %>%
+  mutate(
+    or = exp(estimate), 
+    or = round(or, 2),
+    lci = exp(estimate - std.error * 1.96), 
+    lci = round(lci, 2),
+    uci = exp(estimate + std.error * 1.96), 
+    uci = round(uci, 2),
+    p = format.pval(p.value, digits = 2, eps = 1e-100), 
+    out = glue("OR [95% CI] = {or} [{lci}, {uci}], p = {p}")
+  )
+
 
 glm(dx_lv ~ race + apoe + z_mcaide, data = dat, family = 'binomial') %>% 
   tidy()
@@ -1253,9 +1284,15 @@ mcaide_df_pval <- filter(mcaide_diff_long, p < 0.05) %>%
 #| label: export_caide
 #| code-summary: CAIDE Regression export
 
-mcaide_res_df %>%
+mcaide_res_df.out <- mcaide_res_df %>%
   select(race, outcome, predictor = term, estimate, std.error, statistic, p.value) %>%
   mutate(
+    or = exp(estimate), 
+    or = round(or, 2),
+    lci = exp(estimate - std.error * 1.96), 
+    lci = round(lci, 2),
+    uci = exp(estimate + std.error * 1.96), 
+    uci = round(uci, 2),
     estimate = round(estimate, digits = 2),
     std.error = round(std.error, digits = 3),
     statistic = round(statistic, digits = 2),
@@ -1269,11 +1306,16 @@ mcaide_res_df %>%
       p.value < 0.001 ~ format(p.value, scientific = TRUE, digits = 2),
       p.value >= 0.001 ~ as.character(round(p.value, 3))
     ), 
-    predictor = str_replace(predictor, "ε", "e")
-    ) %>%
-  write_csv(., "results/mcaide_res_all.csv")
+    predictor = str_replace(predictor, "ε", "e"),
+    out = glue("OR [95% CI] = {or} [{lci}, {uci}], p = {p.value}")
+    ) 
 
-mcaide_diff_long %>%
+mcaide_res_df.out %>% filter(predictor == 'mCAIDE' & outcome == "ADRD + MCI")
+
+write_csv(mcaide_res_df.out, "results/mcaide_res_all.csv")
+
+
+mcaide_diff_long.out <- mcaide_diff_long %>%
   select(race1, race2, predictor = term, outcome, z, p, significant = stars) %>%
   mutate(
          race1 = case_when(
@@ -1295,7 +1337,11 @@ mcaide_diff_long %>%
     ), 
     predictor = str_replace(predictor, "ε", "e")
   ) %>% 
-  unite(race, c(race1, race2), sep = "-") %>%
+  unite(race, c(race1, race2), sep = "-") 
+
+mcaide_diff_long.out %>% filter(predictor == 'mCAIDE' & outcome == "ADRD + MCI")
+
+mcaide_diff_long %>%
   write_csv(., "results/mcaide_diff_res_all.csv")
 ```
 
@@ -1463,6 +1509,18 @@ mcaide_apoe_cat_df <- mcaide_apoe_cat_res %>%
   ) 
 
 group_split(mcaide_apoe_cat_df, outcome) %>% map(., print, n = Inf)
+
+```
+
+```{r}
+mcaide_apoe_cat_df.out <- mcaide_apoe_cat_df %>% 
+  mutate_at(vars(estimate, std.error, statistic, lci, hci, or, or_lci, or_hci), round, 2) %>%
+  mutate(
+    p = format.pval(p.value, digits = 2, eps = 1e-100),
+    out = glue("OR [95% CI] = {or} [{or_lci}, {or_hci}], p = {p}")
+  ) 
+
+write_csv(mcaide_apoe_cat_df.out, "results/mcaide_apoe_cat_res.csv")
 
 ```
 
@@ -1710,7 +1768,6 @@ ggsave("results/figures/joint_rf_race_all_adrd_mci_bl.png", plot = rf_race_all_a
 
 ```
 
-
 ```{r}
 ## Combined plot
 
@@ -1750,8 +1807,10 @@ dev.off()
 
 ```
 
-### Manuscript Figures 
+### Manuscript Figures
+
 #### Figure 1
+
 ```{r}
 #| label: adard_mci_apoe_plots
 #| code-summary: ADRD+MCI Main effect plots
@@ -1843,7 +1902,6 @@ joint_mcaid_apoe_adrd_mci_bl_p <- ggplot(mcaide_res_df %>% filter(outcome == "AD
 
 ```
 
-
 ```{r}
 ## Combined plot
 legend_f1 <- cowplot::get_legend(joint_caid_apoe_adrd_mci_bl_p)
@@ -1931,7 +1989,6 @@ figure2 <- f2.df  %>%
 ggsave("results/figures/figure2.png", plot = figure2, width = 6, height = 3.5, units = 'in')
 
 ```
-
 
 ## AD Age Score
 
