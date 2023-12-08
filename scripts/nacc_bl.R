@@ -406,6 +406,7 @@ caide <- nacc %>%
   rowwise() %>%
   mutate(
     caide = sum(caide_age, caide_educ, caide_sex, caide_bmi, caide_sbp, caide_chol, na.rm = F), 
+    caide_nosex = sum(caide_age, caide_educ, caide_bmi, caide_sbp, caide_chol, na.rm = F), 
     caide_missing = sum(is.na(NACCAGE), is.na(EDUC), is.na(SEX), 
                         is.na(NACCBMI), is.na(hypchol), is.na(BPSYS)),
   ) %>%
@@ -468,6 +469,7 @@ mcaide <- nacc %>%
   rowwise() %>%
   mutate(
     mcaide = sum(mcaide_age, mcaide_educ, mcaide_sex, mcaide_bmi, mcaide_sbp, mcaide_chol, na.rm = F), 
+    mcaide_nosex = sum(mcaide_age, mcaide_educ, mcaide_bmi, mcaide_sbp, mcaide_chol, na.rm = F), 
     mcaide_missing = sum(is.na(NACCAGE), is.na(EDUC), is.na(SEX), 
                         is.na(NACCBMI), is.na(hypchol), is.na(BPSYS)),
   ) %>%

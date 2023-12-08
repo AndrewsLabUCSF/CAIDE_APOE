@@ -139,6 +139,165 @@ as_gt(tab_rf) %>%
 ```{r}
 #| label: table 1
 #| code-summary: Table 1
+#| tbl-cap: Sex stratified
+
+tab_nhw_sex <- dat %>% 
+  # dplyr::select(race, SEX, NACCAGE, i_EDUC, i_NACCBMI, i_hyperten, i_diabetes, i_hypchol, apoe, CDRSUM, NACCUDSD, NACCETPR) %>%
+   dplyr::select(race, cohort, gender, age, i_educ, i_bmi, i_hyperten, i_hypchol, 
+                caide_nosex, mcaide_nosex, apoe, cdrsb, naccudsd) %>%
+  mutate(
+    naccudsd = fct_recode(as.factor(naccudsd), 'CU' = '1', "MCI" = "3", "ADRD" = "4"),
+    # naccetpr = fct_recode(as.factor(naccetpr), 
+    #                       'CU' = '88', "AD" = "1", "LBD" = "2", "PSP" = '4',  
+    #                       'CBD' = "5", "FTLD" = '6', "FTLD" = '7', 'VCID' = '8'),
+    # naccetpr = fct_relevel(naccetpr),
+    gender = as.factor(gender),
+    # gender = fct_recode(gender,  'Male' = '1', "Female" = "2")
+  ) %>%
+  filter(race == "NHW") %>%
+  tbl_summary(by = gender,
+              statistic = list(all_continuous() ~ "{mean} ({sd})"), 
+              type = list(caide_nosex ~ "continuous"),
+               label = list(gender ~ "Gender",
+                           age ~ "Age",
+                           i_educ ~ "Education",
+                           race ~ "Race",
+                           naccudsd ~ "Diagnosis",
+                           # naccetpr ~ "ADRD",
+                           i_bmi ~ "BMI",
+                           i_hyperten ~ "Hypertension",
+                           i_hypchol ~ "Hypercholesterolemia",
+                           caide_nosex ~ "CAIDE",
+                           mcaide_nosex ~ "mCAIDE",
+                           apoe ~ "APOE", 
+                           cohort ~ "Cohort") 
+              ) %>%
+  add_n() 
+
+tab_nhw_sex
+
+as_gt(tab_nhw_sex) %>%
+  gt::gtsave(., "results/table_sex_nhw.docx")
+
+tab_bla_sex <- dat %>% 
+  # dplyr::select(race, SEX, NACCAGE, i_EDUC, i_NACCBMI, i_hyperten, i_diabetes, i_hypchol, apoe, CDRSUM, NACCUDSD, NACCETPR) %>%
+   dplyr::select(race, cohort, gender, age, i_educ, i_bmi, i_hyperten, i_hypchol, 
+                caide_nosex, mcaide_nosex, apoe, cdrsb, naccudsd) %>%
+  mutate(
+    naccudsd = fct_recode(as.factor(naccudsd), 'CU' = '1', "MCI" = "3", "ADRD" = "4"),
+    # naccetpr = fct_recode(as.factor(naccetpr), 
+    #                       'CU' = '88', "AD" = "1", "LBD" = "2", "PSP" = '4',  
+    #                       'CBD' = "5", "FTLD" = '6', "FTLD" = '7', 'VCID' = '8'),
+    # naccetpr = fct_relevel(naccetpr),
+    gender = as.factor(gender),
+    # gender = fct_recode(gender,  'Male' = '1', "Female" = "2")
+  ) %>%
+  filter(race == "Black") %>%
+  tbl_summary(by = gender,
+              statistic = list(all_continuous() ~ "{mean} ({sd})"), 
+              type = list(caide_nosex ~ "continuous"),
+               label = list(gender ~ "Gender",
+                           age ~ "Age",
+                           i_educ ~ "Education",
+                           race ~ "Race",
+                           naccudsd ~ "Diagnosis",
+                           # naccetpr ~ "ADRD",
+                           i_bmi ~ "BMI",
+                           i_hyperten ~ "Hypertension",
+                           i_hypchol ~ "Hypercholesterolemia",
+                           caide_nosex ~ "CAIDE",
+                           mcaide_nosex ~ "mCAIDE",
+                           apoe ~ "APOE", 
+                           cohort ~ "Cohort") 
+              ) %>%
+  add_n()  
+
+tab_bla_sex
+
+as_gt(tab_bla_sex) %>%
+  gt::gtsave(., "results/table_sex_bla.docx")
+
+tab_asn_sex <- dat %>% 
+  # dplyr::select(race, SEX, NACCAGE, i_EDUC, i_NACCBMI, i_hyperten, i_diabetes, i_hypchol, apoe, CDRSUM, NACCUDSD, NACCETPR) %>%
+   dplyr::select(race, cohort, gender, age, i_educ, i_bmi, i_hyperten, i_hypchol, 
+                caide_nosex, mcaide_nosex, apoe, cdrsb, naccudsd) %>%
+  mutate(
+    naccudsd = fct_recode(as.factor(naccudsd), 'CU' = '1', "MCI" = "3", "ADRD" = "4"),
+    # naccetpr = fct_recode(as.factor(naccetpr), 
+    #                       'CU' = '88', "AD" = "1", "LBD" = "2", "PSP" = '4',  
+    #                       'CBD' = "5", "FTLD" = '6', "FTLD" = '7', 'VCID' = '8'),
+    # naccetpr = fct_relevel(naccetpr),
+    gender = as.factor(gender),
+    # gender = fct_recode(gender,  'Male' = '1', "Female" = "2")
+  ) %>%
+  filter(race == "Asian") %>%
+  tbl_summary(by = gender,
+              statistic = list(all_continuous() ~ "{mean} ({sd})"), 
+              type = list(caide_nosex ~ "continuous"),
+               label = list(gender ~ "Gender",
+                           age ~ "Age",
+                           i_educ ~ "Education",
+                           race ~ "Race",
+                           naccudsd ~ "Diagnosis",
+                           # naccetpr ~ "ADRD",
+                           i_bmi ~ "BMI",
+                           i_hyperten ~ "Hypertension",
+                           i_hypchol ~ "Hypercholesterolemia",
+                           caide_nosex ~ "CAIDE",
+                           mcaide_nosex ~ "mCAIDE",
+                           apoe ~ "APOE", 
+                           cohort ~ "Cohort") 
+              ) %>%
+  add_n()  
+
+tab_asn_sex
+
+as_gt(tab_asn_sex) %>%
+  gt::gtsave(., "results/table_sex_asn.docx")
+
+tab_his_sex <- dat %>% 
+  # dplyr::select(race, SEX, NACCAGE, i_EDUC, i_NACCBMI, i_hyperten, i_diabetes, i_hypchol, apoe, CDRSUM, NACCUDSD, NACCETPR) %>%
+   dplyr::select(race, cohort, gender, age, i_educ, i_bmi, i_hyperten, i_hypchol, 
+                caide_nosex, mcaide_nosex, apoe, cdrsb, naccudsd) %>%
+  mutate(
+    naccudsd = fct_recode(as.factor(naccudsd), 'CU' = '1', "MCI" = "3", "ADRD" = "4"),
+    # naccetpr = fct_recode(as.factor(naccetpr), 
+    #                       'CU' = '88', "AD" = "1", "LBD" = "2", "PSP" = '4',  
+    #                       'CBD' = "5", "FTLD" = '6', "FTLD" = '7', 'VCID' = '8'),
+    # naccetpr = fct_relevel(naccetpr),
+    gender = as.factor(gender),
+    # gender = fct_recode(gender,  'Male' = '1', "Female" = "2")
+  ) %>%
+  filter(race == "Hispanic") %>%
+  tbl_summary(by = gender,
+              statistic = list(all_continuous() ~ "{mean} ({sd})"), 
+              type = list(caide_nosex ~ "continuous"),
+               label = list(gender ~ "Gender",
+                           age ~ "Age",
+                           i_educ ~ "Education",
+                           race ~ "Race",
+                           naccudsd ~ "Diagnosis",
+                           # naccetpr ~ "ADRD",
+                           i_bmi ~ "BMI",
+                           i_hyperten ~ "Hypertension",
+                           i_hypchol ~ "Hypercholesterolemia",
+                           caide_nosex ~ "CAIDE",
+                           mcaide_nosex ~ "mCAIDE",
+                           apoe ~ "APOE", 
+                           cohort ~ "Cohort") 
+              ) %>%
+  add_n()  
+
+tab_his_sex
+
+as_gt(tab_his_sex) %>%
+  gt::gtsave(., "results/table_sex_his.docx")
+
+```
+
+```{r}
+#| label: table 1
+#| code-summary: Table 1
 #| tbl-cap: Table 1 NACC Cohort Characteristics
 
 tab_caide <- dat %>% 
@@ -352,7 +511,24 @@ anova_res <- bind_rows(
 anova_res %>%
   write_csv("results/anova_descriptives.csv")
 
+## Sample size differences 
+nhw_ss <- filter(dat, race == "NHW") %>% nrow()
+asn_ss <- filter(dat, race == "Asian")  %>% nrow()
+bla_ss <- filter(dat, race == "Black") %>% nrow()
+his_ss <- filter(dat, race == "Hispanic") %>% nrow()
 
+# Calculate the orders of magnitude
+order_of_magnitude_nhw <- floor(log10(nhw_ss))
+order_of_magnitude_asn <- floor(log10(asn_ss))
+order_of_magnitude_bla <- floor(log10(bla_ss))
+order_of_magnitude_his <- floor(log10(his_ss))
+
+# Calculate the difference in orders of magnitude
+abs(order_of_magnitude_nhw - order_of_magnitude_bla)
+abs(order_of_magnitude_nhw - order_of_magnitude_asn)
+abs(order_of_magnitude_nhw - order_of_magnitude_his)
+
+print(difference_in_orders)
 ```
 
 ## Baseline Regression Models
@@ -1095,6 +1271,120 @@ ggsave("results/figures/joint_caide_apoe_adrd_mci_bl.png", plot = joint_caide_ap
 
 ```
 
+#### Sex stratified 
+
+```{r}
+caide_sex_mod_fit <- function(data){
+  # glm(dx ~ apoe_geno + SEX + aoo, data = data, family = 'binomial')
+  glm(dx ~ apoe + z_caide_nosex + cohort, data = data, family = 'binomial')
+}
+
+caide_sex_res <- bind_rows(
+  dat %>%
+    filter(gender == "Male") %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "Males",
+      res = map(data, caide_sex_mod_fit), 
+    ), 
+  
+  dat %>%
+    filter(gender == "Female") %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "Females",
+      res = map(data, caide_sex_mod_fit), 
+    ), 
+  
+) %>%
+  mutate(
+    fit = map(res, glance),
+    df = map(res, tidy),
+    pred = map2(res, data, predict, type = 'response'), 
+  ) %>%
+  select(-data)
+
+caide_sex_res.df <- caide_sex_res %>%
+  select(race, outcome, df) %>%
+  unnest(cols = df) %>%
+  ungroup() %>%
+  filter(str_detect(term, 'apoe|caide')) %>%
+  mutate(
+    lci = estimate - (std.error * 1.96),
+    hci = estimate + (std.error * 1.96), 
+    or = exp(estimate),
+    or_lci = exp(lci),
+    or_hci = exp(hci),
+    term = str_replace(term, "apoe", ""), 
+    term = fct_relevel(term, 'e2+', 'e4+', 'z_caide_nosex'),    
+    race = fct_relevel(race, "Black", "Hispanic", "Asian", "NHW"), 
+    term = fct_recode(term, "ε2+" = "e2+", "ε4+" = "e4+", "CAIDE" = "z_caide_nosex")
+  )
+
+caide_sex_res.df %>% filter(term == "CAIDE")
+```
+
+```{r}
+#| label: export_caide
+#| code-summary: CAIDE Regression export
+
+caide_sex_res.df.out <- caide_sex_res.df %>%
+  select(race, outcome, predictor = term, estimate, std.error, statistic, p.value) %>%
+  mutate(
+    or = exp(estimate), 
+    or = round(or, 2),
+    lci = exp(estimate - std.error * 1.96), 
+    lci = round(lci, 2),
+    uci = exp(estimate + std.error * 1.96), 
+    uci = round(uci, 2),
+    estimate = round(estimate, digits = 2),
+    std.error = round(std.error, digits = 3),
+    statistic = round(statistic, digits = 2),
+    stars = case_when(
+      p.value > 0.05 ~ "", 
+      between(p.value,  0.01, 0.05) ~ "*",
+      between(p.value, 0.001, 0.01) ~ "**",
+      p.value < 0.001 ~ "***"
+    ), 
+    p.value = case_when(
+      p.value < 0.001 ~ format(p.value, scientific = TRUE, digits = 2),
+      p.value >= 0.001 ~ as.character(round(p.value, 3))
+    ), 
+    predictor = str_replace(predictor, "ε", "e"),
+    out = glue("OR [95% CI] = {or} [{lci}, {uci}], p = {p.value}")
+    ) 
+
+caide_sex_res.df.out %>%
+  write_csv(., "results/caide_res_sex.csv")
+
+```
+
+
+```{r}
+ggplot(caide_sex_res.df, aes(x = or, y = race, color = race)) + 
+  facet_grid(cols = vars(term), rows = vars(outcome)) + 
+  geom_vline(xintercept = 1, linetype = 2) + 
+  geom_point() + 
+  geom_linerange(aes(xmin = or_lci, xmax = or_hci), linewidth = 0.75) + 
+  scale_x_continuous("Odds Ratio", trans = 'log', 
+                     breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 
+                     labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32)
+  ) + 
+  scale_color_manual(values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
+  theme_bw() + 
+  theme(
+    text = element_text(size = theme.size),
+    axis.text.x = element_text(angle = 315, vjust = 0.5, hjust=0), 
+    axis.title.x = element_blank(),
+    legend.position = "bottom", 
+    strip.background = element_blank(), 
+    strip.text = element_text(face = 'bold')
+  )
+
+```
+
 ### mCAIDE
 
 ```{r}
@@ -1592,6 +1882,120 @@ ggsave("results/figures/mcaide_apoe_adrd_mci_bl.png", plot = mcaide_apoe_adrd_mc
 
 ```
 
+#### Sex stratified 
+
+```{r}
+mcaide_sex_mod_fit <- function(data){
+  # glm(dx ~ apoe_geno + SEX + aoo, data = data, family = 'binomial')
+  glm(dx ~ apoe + z_mcaide_nosex + cohort, data = data, family = 'binomial')
+}
+
+mcaide_sex_res <- bind_rows(
+  dat %>%
+    group_by(race) %>%
+    filter(gender == "Male") %>%
+    nest() %>%
+    mutate(
+      outcome = "Males",
+      res = map(data, mcaide_sex_mod_fit), 
+    ), 
+  
+  dat %>%
+    group_by(race) %>%
+    filter(gender == "Female") %>%
+    nest() %>%
+    mutate(
+      outcome = "Females",
+      res = map(data, mcaide_sex_mod_fit), 
+    ), 
+
+) %>%
+  mutate(
+    fit = map(res, glance),
+    df = map(res, tidy), 
+    pred = map2(res, data, predict, type = 'response'), 
+  ) %>% 
+  select(-data)
+
+mcaide_sex_res_df <- mcaide_sex_res %>%
+  select(race, outcome, df) %>%
+  unnest(cols = df) %>%
+  ungroup() %>%
+  filter(str_detect(term, 'apoe|mcaide')) %>%
+  mutate(
+    lci = estimate - (std.error * 1.96),
+    hci = estimate + (std.error * 1.96), 
+    or = exp(estimate),
+    or_lci = exp(lci),
+    or_hci = exp(hci),
+    term = str_replace(term, "apoe", ""), 
+    term = fct_relevel(term, 'e2+', 'e4+', 'z_mcaide_nosex'),    
+    race = fct_relevel(race, "Black", "Hispanic", "Asian", "NHW"), 
+    term = fct_recode(term, "ε2+" = "e2+", "ε4+" = "e4+", "mCAIDE" = "z_mcaide_nosex")
+  )
+
+mcaide_sex_res_df %>% filter(term == "mCAIDE")
+```
+
+```{r}
+#| label: export_caide
+#| code-summary: CAIDE Regression export
+
+mcaide_sex_res.df.out <- mcaide_sex_res_df %>%
+  select(race, outcome, predictor = term, estimate, std.error, statistic, p.value) %>%
+  mutate(
+    or = exp(estimate), 
+    or = round(or, 2),
+    lci = exp(estimate - std.error * 1.96), 
+    lci = round(lci, 2),
+    uci = exp(estimate + std.error * 1.96), 
+    uci = round(uci, 2),
+    estimate = round(estimate, digits = 2),
+    std.error = round(std.error, digits = 3),
+    statistic = round(statistic, digits = 2),
+    stars = case_when(
+      p.value > 0.05 ~ "", 
+      between(p.value,  0.01, 0.05) ~ "*",
+      between(p.value, 0.001, 0.01) ~ "**",
+      p.value < 0.001 ~ "***"
+    ), 
+    p.value = case_when(
+      p.value < 0.001 ~ format(p.value, scientific = TRUE, digits = 2),
+      p.value >= 0.001 ~ as.character(round(p.value, 3))
+    ), 
+    predictor = str_replace(predictor, "ε", "e"),
+    out = glue("OR [95% CI] = {or} [{lci}, {uci}], p = {p.value}")
+    ) 
+
+mcaide_sex_res.df.out %>%
+  write_csv(., "results/mcaide_res_sex.csv")
+
+```
+
+
+```{r}
+ggplot(mcaide_sex_res_df, aes(x = or, y = race, color = race)) + 
+  facet_grid(cols = vars(term), rows = vars(outcome)) + 
+  geom_vline(xintercept = 1, linetype = 2) + 
+  geom_point() + 
+  geom_linerange(aes(xmin = or_lci, xmax = or_hci), linewidth = 0.75) + 
+  scale_x_continuous("Odds Ratio", trans = 'log', 
+                     breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 
+                     labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32)
+  ) + 
+  scale_color_manual(values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
+  theme_bw() + 
+  theme(
+    text = element_text(size = theme.size),
+    axis.text.x = element_text(angle = 315, vjust = 0.5, hjust=0), 
+    axis.title.x = element_blank(),
+    legend.position = "bottom", 
+    strip.background = element_blank(), 
+    strip.text = element_text(face = 'bold')
+  )
+
+```
+
 ### risk factors
 
 ```{r}
@@ -1987,6 +2391,39 @@ figure2 <- f2.df  %>%
       )
 
 ggsave("results/figures/figure2.png", plot = figure2, width = 6, height = 3.5, units = 'in')
+
+```
+
+#### Figure 3
+
+```{r}
+sex_df <- bind_rows(
+  caide_sex_res.df,
+  mcaide_sex_res_df
+) %>%
+  filter(str_detect(term, 'CAIDE'))
+
+figure3 <- ggplot(sex_df, aes(x = or, y = race, color = race)) + 
+  facet_grid(cols = vars(term), rows = vars(outcome)) + 
+  geom_vline(xintercept = 1, linetype = 2) + 
+  geom_point() + 
+  geom_linerange(aes(xmin = or_lci, xmax = or_hci), linewidth = 0.75) + 
+  scale_x_continuous("Odds Ratio", trans = 'log', 
+                     breaks = c(0.75, 1, 1.5, 2), 
+                     labels = c(0.75, 1, 1.5, 2)
+  ) + 
+  scale_color_manual(values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
+  theme_bw() + 
+  theme(
+    text = element_text(size = theme.size),
+    axis.title.y = element_blank(),
+    legend.position = "none", 
+    strip.background = element_blank(), 
+    strip.text = element_text(face = 'bold')
+  )
+
+ggsave("results/figures/figure3.png", plot = figure3, width = 6, height = 3.5, units = 'in')
+
 
 ```
 

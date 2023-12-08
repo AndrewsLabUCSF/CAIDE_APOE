@@ -25,7 +25,7 @@ adni <- adni.raw %>%
     i_educ = i_pteducat, 
     i_bpsys = i_vsbpsys, 
     i_hyperten = i_htn, 
-    i_hypchol = i_hld
+    i_hypchol = i_hld, 
   )
   
 ## NACC 
@@ -65,6 +65,7 @@ joint <- bind_rows(
   mutate(
     ## CAIDE
     z_caide = scale(caide)[,1],
+    z_caide_nosex = scale(caide_nosex)[,1],
     caide_cat = case_when(
       between(caide, 0, (mean(caide, na.rm = T) - sd(caide, na.rm = T))) ~ 'low',
       between(caide, (mean(caide, na.rm = T) - sd(caide, na.rm = T)), (mean(caide, na.rm = T) + sd(caide, na.rm = T))) ~ 'mid', 
@@ -79,6 +80,7 @@ joint <- bind_rows(
   mutate(
     ## mCAIDE
     z_mcaide = scale(mcaide)[,1],
+    z_mcaide_nosex = scale(mcaide_nosex)[,1],
     mcaide_cat = case_when(
       between(mcaide, 0, (mean(mcaide, na.rm = T) - sd(mcaide, na.rm = T))) ~ 'low',
       between(mcaide, (mean(mcaide, na.rm = T) - sd(mcaide, na.rm = T)), (mean(mcaide, na.rm = T) + sd(mcaide, na.rm = T))) ~ 'mid', 
