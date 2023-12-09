@@ -1274,6 +1274,72 @@ ggsave("results/figures/joint_caide_apoe_adrd_mci_bl.png", plot = joint_caide_ap
 #### Sex stratified 
 
 ```{r}
+
+## Males
+caide_all_male_res <- glm(dx ~ race + apoe + z_caide_nosex + race + cohort, family = 'binomial', 
+    data = dat %>% filter(gender == "Male")) %>% 
+  tidy() %>%
+  mutate(
+    model = "Male",
+    or = exp(estimate), 
+    or = round(or, 2),
+    lci = exp(estimate - std.error * 1.96), 
+    lci = round(lci, 2),
+    uci = exp(estimate + std.error * 1.96), 
+    uci = round(uci, 2),
+    p = format.pval(p.value, digits = 2, eps = 1e-100), 
+    out = glue("OR [95% CI] = {or} [{lci}, {uci}], p = {p}")
+  )
+
+## Females
+caide_all_female_res <- glm(dx ~ race + apoe + z_caide_nosex + race + cohort, family = 'binomial', 
+    data = dat %>% filter(gender == "Female")) %>% 
+  tidy() %>%
+  mutate(
+    model = "Female",
+    or = exp(estimate), 
+    or = round(or, 2),
+    lci = exp(estimate - std.error * 1.96), 
+    lci = round(lci, 2),
+    uci = exp(estimate + std.error * 1.96), 
+    uci = round(uci, 2),
+    p = format.pval(p.value, digits = 2, eps = 1e-100), 
+    out = glue("OR [95% CI] = {or} [{lci}, {uci}], p = {p}")
+  )
+
+caide_all_sex_diff <- left_join(
+  select(caide_all_male_res, term, estimate, std.error, p.value), 
+  select(caide_all_female_res, term, estimate, std.error, p.value), 
+  by = 'term', 
+  suffix = c(".m", ".f")
+) %>%
+  # filter(str_detect(term, 'apoe|caide')) %>%
+  mutate(
+    diff = fzscore(estimate.m, estimate.f, std.error.m, std.error.f), 
+    diff.p = 2*pnorm(q=abs(diff), lower.tail=FALSE)
+  )
+
+bind_rows(
+  caide_all_male_res, caide_all_female_res
+) %>%
+  mutate(
+    estimate = round(estimate, 2), 
+    std.error = round(std.error, 2), 
+    statistic = round(statistic, 2), 
+    p.value = format.pval(p.value, digits = 2, eps = 1e-100)
+  ) %>%
+  write_csv(., "results/caide_all_sex.csv")
+
+caide_all_sex_diff %>%
+  mutate(
+    diff = round(diff, 2), 
+    diff.p = format.pval(diff.p, digits = 2, eps = 1e-100)
+  ) %>%
+  write_csv(., "results/caide_all_diff_sex.csv")
+
+```
+
+```{r}
 caide_sex_mod_fit <- function(data){
   # glm(dx ~ apoe_geno + SEX + aoo, data = data, family = 'binomial')
   glm(dx ~ apoe + z_caide_nosex + cohort, data = data, family = 'binomial')
@@ -1885,6 +1951,73 @@ ggsave("results/figures/mcaide_apoe_adrd_mci_bl.png", plot = mcaide_apoe_adrd_mc
 #### Sex stratified 
 
 ```{r}
+
+## Males
+mcaide_all_male_res <- glm(dx ~ race + apoe + z_mcaide_nosex + race + cohort, family = 'binomial', 
+    data = dat %>% filter(gender == "Male")) %>% 
+  tidy() %>%
+  mutate(
+    model = "Male",
+    or = exp(estimate), 
+    or = round(or, 2),
+    lci = exp(estimate - std.error * 1.96), 
+    lci = round(lci, 2),
+    uci = exp(estimate + std.error * 1.96), 
+    uci = round(uci, 2),
+    p = format.pval(p.value, digits = 2, eps = 1e-100), 
+    out = glue("OR [95% CI] = {or} [{lci}, {uci}], p = {p}")
+  )
+
+## Females
+mcaide_all_female_res <- glm(dx ~ race + apoe + z_mcaide_nosex + race + cohort, family = 'binomial', 
+    data = dat %>% filter(gender == "Female")) %>% 
+  tidy() %>%
+  mutate(
+    model = "Female",
+    or = exp(estimate), 
+    or = round(or, 2),
+    lci = exp(estimate - std.error * 1.96), 
+    lci = round(lci, 2),
+    uci = exp(estimate + std.error * 1.96), 
+    uci = round(uci, 2),
+    p = format.pval(p.value, digits = 2, eps = 1e-100), 
+    out = glue("OR [95% CI] = {or} [{lci}, {uci}], p = {p}")
+  )
+
+mcaide_all_sex_diff <- left_join(
+  select(mcaide_all_male_res, term, estimate, std.error, p.value), 
+  select(mcaide_all_female_res, term, estimate, std.error, p.value), 
+  by = 'term', 
+  suffix = c(".m", ".f")
+) %>%
+  # filter(str_detect(term, 'apoe|caide')) %>%
+  mutate(
+    diff = fzscore(estimate.m, estimate.f, std.error.m, std.error.f), 
+    diff.p = 2*pnorm(q=abs(diff), lower.tail=FALSE)
+  )
+
+bind_rows(
+  mcaide_all_male_res, mcaide_all_female_res
+) %>%
+  mutate(
+    estimate = round(estimate, 2), 
+    std.error = round(std.error, 2), 
+    statistic = round(statistic, 2), 
+    p.value = format.pval(p.value, digits = 2, eps = 1e-100)
+  ) %>%
+  write_csv(., "results/mcaide_all_sex.csv")
+
+mcaide_all_sex_diff %>%
+  mutate(
+    diff = round(diff, 2), 
+    diff.p = format.pval(diff.p, digits = 2, eps = 1e-100)
+  ) %>%
+  write_csv(., "results/mcaide_all_diff_sex.csv")
+
+
+```
+
+```{r}
 mcaide_sex_mod_fit <- function(data){
   # glm(dx ~ apoe_geno + SEX + aoo, data = data, family = 'binomial')
   glm(dx ~ apoe + z_mcaide_nosex + cohort, data = data, family = 'binomial')
@@ -1970,6 +2103,7 @@ mcaide_sex_res.df.out <- mcaide_sex_res_df %>%
 mcaide_sex_res.df.out %>%
   write_csv(., "results/mcaide_res_sex.csv")
 
+mcaide_sex_res.df.out %>% filter(predictor == "mCAIDE")
 ```
 
 
