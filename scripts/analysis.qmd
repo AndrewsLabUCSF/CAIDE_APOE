@@ -108,9 +108,10 @@ tab_rf <- dat %>%
     gender = as.factor(gender),
     # gender = fct_recode(gender,  'Male' = '1', "Female" = "2")
   ) %>%
-  tbl_summary(by = race,
-              statistic = list(all_continuous() ~ "{mean} ({sd})"), 
-               label = list(gender ~ "Gender",
+  tbl_summary(
+    by = race,
+    statistic = list(all_continuous() ~ "{mean} ({sd})"),
+    label = list(gender ~ "Gender",
                            age ~ "Age",
                            i_educ ~ "Education",
                            race ~ "Race",
@@ -755,6 +756,23 @@ glm(dx_lv ~ race + apoe + z_caide, data = dat, family = 'binomial') %>%
 
 lm(ad_age_lv ~ race + apoe + z_caide, data = dat) %>% 
   tidy()
+
+
+# Fit the logistic regression model
+dat.test <- dat %>% filter(race == "Hispanic") %>%
+    filter(naccetpr %in% c(1, 88)) %>%
+    filter(naccudsd %nin% c(3))
+model <- glm(dx ~ apoe + age + gender + i_educ + i_bmi + i_bpsys + i_hypchol, data = dat.test, family = 'binomial')
+
+# Predict probabilities on the original data set
+probabilities <- predict(model, type = "response")
+
+# Actual outcomes
+actuals <- dat.test$dx
+
+# Calculate the AUC
+roc_curve <- roc(actuals, probabilities)
+auc(roc_curve)
 
 ```
 
