@@ -302,16 +302,37 @@ as_gt(tab_his_sex) %>%
 #| tbl-cap: Table 1 NACC Cohort Characteristics
 
 tab_caide <- dat %>% 
-  dplyr::select(race, apoe, caide_age, caide_sex, caide_educ, caide_bmi, caide_sbp, i_caide_chol, 
-                caide, caide_missing, caide_cat, caide_apoe) %>%
+  dplyr::select(race, apoe, caide_age, caide_sex, caide_educ, caide_bmi, caide_sbp,
+                i_caide_chol, caide, caide_missing, caide_cat, caide_apoe) %>%
   tbl_summary(by = race,
               statistic = list(all_continuous() ~ "{mean} ({sd})")) %>%
   add_n() 
+
+# naccudsd = fct_recode(as.factor(naccudsd), 'CU' = '1', "MCI" = "3", "ADRD" = "4"),
 
 tab_caide
 
 as_gt(tab_caide) %>%
   gt::gtsave(., "results/table_caid.docx")
+
+dat %>% 
+  dplyr::select(race, apoe, caide_age, caide_sex, caide_educ, caide_bmi, caide_sbp,
+                i_caide_chol, caide, caide_missing, caide_cat, caide_apoe,naccudsd) %>%
+  filter(naccudsd == 1 | naccudsd == 3) %>% 
+  mutate(naccudsd = case_when(
+         naccudsd == 1 ~ "CU",
+          naccudsd== 3 ~ "MCI"
+  )) %>% 
+  tbl_strata(
+    strata = naccudsd,
+    ~.x %>%
+      tbl_summary(
+        by = race,
+        statistic = list(all_continuous() ~ "{mean} ({sd})")
+      ) %>% 
+      modify_header(all_stat_cols() ~ "**{level}**")
+      #.header = "**CU:{level}**, N = {n}"
+    )
 ```
 
 ```{r}
@@ -603,7 +624,7 @@ apoe_geno_res <- res %>%
     or_lci = exp(lci),
     or_hci = exp(hci),
     term = str_replace(term, "apoe_geno", ""), 
-    term = fct_relevel(term, 'e3/e3', 'e2+', 'e2/e4', 'e3/e4', 'e4/e4'),    
+    term = fct_relevel(term, 'e2+', 'e2/e4', 'e3/e4', 'e4/e4'),    
   )
 ```
 
@@ -758,21 +779,26 @@ lm(ad_age_lv ~ race + apoe + z_caide, data = dat) %>%
   tidy()
 
 
-# Fit the logistic regression model
-dat.test <- dat %>% filter(race == "Hispanic") %>%
-    filter(naccetpr %in% c(1, 88)) %>%
-    filter(naccudsd %nin% c(3))
-model <- glm(dx ~ apoe + age + gender + i_educ + i_bmi + i_bpsys + i_hypchol, data = dat.test, family = 'binomial')
+get_AUC_vals_by_race = function(df, r){
+  
+  new_df <- df %>% filter(race == r) %>%
+            filter(naccetpr %in% c(1, 88)) %>%
+            filter(naccudsd %nin% c(3))
+  
+  glm_model <- glm(dx ~ apoe + age + gender + i_educ + i_bmi + i_bpsys + i_hypchol, 
+                   data = new_df, family = 'binomial')
+  
+  probabilities <- predict(glm_model, type = "response")
+  actuals <- new_df[["dx"]]
+    
+  auc_val <- auc(roc(actuals, probabilities))
+  return(auc_val)
+}
 
-# Predict probabilities on the original data set
-probabilities <- predict(model, type = "response")
-
-# Actual outcomes
-actuals <- dat.test$dx
-
-# Calculate the AUC
-roc_curve <- roc(actuals, probabilities)
-auc(roc_curve)
+get_AUC_vals_by_race(dat, "Hispanic")
+get_AUC_vals_by_race(dat, "Asian")
+get_AUC_vals_by_race(dat, "Black")
+get_AUC_vals_by_race(dat, "NHW")
 
 ```
 
@@ -1289,7 +1315,7 @@ ggsave("results/figures/joint_caide_apoe_adrd_mci_bl.png", plot = joint_caide_ap
 
 ```
 
-#### Sex stratified 
+#### Sex stratified
 
 ```{r}
 
@@ -1444,7 +1470,6 @@ caide_sex_res.df.out %>%
   write_csv(., "results/caide_res_sex.csv")
 
 ```
-
 
 ```{r}
 ggplot(caide_sex_res.df, aes(x = or, y = race, color = race)) + 
@@ -1966,7 +1991,7 @@ ggsave("results/figures/mcaide_apoe_adrd_mci_bl.png", plot = mcaide_apoe_adrd_mc
 
 ```
 
-#### Sex stratified 
+#### Sex stratified
 
 ```{r}
 
@@ -2123,7 +2148,6 @@ mcaide_sex_res.df.out %>%
 
 mcaide_sex_res.df.out %>% filter(predictor == "mCAIDE")
 ```
-
 
 ```{r}
 ggplot(mcaide_sex_res_df, aes(x = or, y = race, color = race)) + 
