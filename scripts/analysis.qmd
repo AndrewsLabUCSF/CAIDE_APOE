@@ -62,7 +62,29 @@ dat <- read_tsv(dat_path) %>%
   )
 
 ```
+## Percent NAs
 
+```{r}
+get_na_by_cols <- function(df){
+  #calculate number of missing values as a %
+  result <- data.frame(unclass(apply(X = is.na(df), MARGIN = 2, FUN = mean, simplify = TRUE) *100))
+  df_na <- cbind("name" = 0,result)
+  df_na["name"] <- rownames(df_na)
+  rownames(df_na) <- NULL
+  names(df_na)[2] <- c("percentNA")
+  result <- df_na %>% arrange(desc(percentNA))
+  result["percentNA"] <- round(result["percentNA"],3)
+  return(result)
+}
+get_na_by_cols(dat)[c(1:13),] %>% gt() 
+
+dat %>% select(total_c, caide_u_chol, mcaide_u_chol, origprot, i_total_c,
+               caide_wo_chol, mcaide_wo_chol, bmi, bpsys, hypchol, 
+               caide_chol, mcaide_chol, educ) %>%
+  tbl_summary() %>% 
+  add_n(statistic = "{n_miss} ({p_miss}%)") %>%
+  modify_header(n = "**Missing**")
+```
 ## Cohort Description
 
 ```{r}
@@ -353,7 +375,6 @@ as_gt(tab_mcaide) %>%
   gt::gtsave(., "results/table_mcaid.docx")
 
 ```
-
 ## Descriptive statistics
 
 ```{r}
