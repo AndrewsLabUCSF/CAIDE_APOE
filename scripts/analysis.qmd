@@ -10,7 +10,7 @@ knitr:
     message: false
     echo: false
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
 ```{r}
@@ -33,14 +33,18 @@ theme_gtsummary_compact()
 
 # Compares b/se using z score method - doi: 10.1038/s41380-019-0596-9
 fzscore <- function(b1, b2, se1, se2){(b1 - b2)/sqrt(se1^2 + se2^2)}
-
-setwd("~/gitcode/CAIDE_APOE")
+getwd()
 ```
+
+# Read in Data
 
 ```{r}
 #| label: import
 #| code-summary: Import data 
-dat_path = "data/joint_df.tsv.gz"
+
+library(here)
+
+dat_path = here("data/joint_df.tsv.gz")
 dat <- read_tsv(dat_path) %>% 
   # read_rds('data/nacc.rds') %>%
   # filter(NACCAVST >= 2) %>%
@@ -61,10 +65,15 @@ dat <- read_tsv(dat_path) %>%
     mcaide_apoe = fct_relevel(mcaide_apoe, "mid_e3/e3") 
   )
 
+
 ```
-## Percent NAs
+
+# Missingness
 
 ```{r}
+#| label: function
+#| code-summary: Function
+#| echo: false
 get_na_by_cols <- function(df){
   #calculate number of missing values as a %
   result <- data.frame(unclass(apply(X = is.na(df), MARGIN = 2, FUN = mean, simplify = TRUE) *100))
@@ -76,15 +85,22 @@ get_na_by_cols <- function(df){
   result["percentNA"] <- round(result["percentNA"],3)
   return(result)
 }
-get_na_by_cols(dat)[c(1:13),] %>% gt() 
 
-dat %>% select(total_c, caide_u_chol, mcaide_u_chol, origprot, i_total_c,
-               caide_wo_chol, mcaide_wo_chol, bmi, bpsys, hypchol, 
-               caide_chol, mcaide_chol, educ) %>%
-  tbl_summary() %>% 
-  add_n(statistic = "{n_miss} ({p_miss}%)") %>%
-  modify_header(n = "**Missing**")
+get_na_by_cols(dat)[c(1:14),] %>% gt() 
+
+get_na_by_cols(nacc)
+# get_na_by_cols(adni)
+# 
+# dat %>% select(total_c, caide_u_chol, mcaide_u_chol, origprot,
+#                caide_wo_chol, mcaide_wo_chol, bmi, bpsys, hypchol, 
+#                caide_chol, mcaide_chol, educ) %>%
+#   tbl_summary() %>% 
+#   add_n(statistic = "{n_miss} ({p_miss}%)") %>%
+#   modify_header(n = "**Missing**")
 ```
+
+
+
 ## Cohort Description
 
 ```{r}
@@ -102,13 +118,12 @@ tab_demo <- dat %>%
                label = list(gender ~ "Gender",
                            age ~ "Age",
                            race ~ "Race") 
-              ) %>%
-  add_n() 
+              ) %>% add_n() 
 
 tab_demo
 
-as_gt(tab_rf) %>%
-  gt::gtsave(., "results/table_rf.docx")
+# as_gt(tab_rf) %>%
+#   gt::gtsave(., "results/table_rf.docx")
 
 ```
 
@@ -155,8 +170,6 @@ tab_rf
 
 as_gt(tab_rf) %>%
   gt::gtsave(., "results/table_rf.docx")
-
-
 ```
 
 ```{r}
@@ -165,14 +178,15 @@ as_gt(tab_rf) %>%
 #| tbl-cap: Sex stratified
 
 tab_nhw_sex <- dat %>% 
-  # dplyr::select(race, SEX, NACCAGE, i_EDUC, i_NACCBMI, i_hyperten, i_diabetes, i_hypchol, apoe, CDRSUM, NACCUDSD, NACCETPR) %>%
    dplyr::select(race, cohort, gender, age, i_educ, i_bmi, i_hyperten, i_hypchol, 
                 caide_nosex, mcaide_nosex, apoe, cdrsb, naccudsd) %>%
   mutate(
-    naccudsd = fct_recode(as.factor(naccudsd), 'CU' = '1', "MCI" = "3", "ADRD" = "4"),
+    naccudsd = fct_recode(as.factor(naccudsd), 'CU' = '1', "MCI" = "3", 
+                          "ADRD" = "4"),
     # naccetpr = fct_recode(as.factor(naccetpr), 
     #                       'CU' = '88', "AD" = "1", "LBD" = "2", "PSP" = '4',  
-    #                       'CBD' = "5", "FTLD" = '6', "FTLD" = '7', 'VCID' = '8'),
+    #                       'CBD' = "5", "FTLD" = '6', "FTLD" = '7', 
+    #                         'VCID' = '8'),
     # naccetpr = fct_relevel(naccetpr),
     gender = as.factor(gender),
     # gender = fct_recode(gender,  'Male' = '1', "Female" = "2")
@@ -318,32 +332,31 @@ as_gt(tab_his_sex) %>%
 
 ```
 
+## Table 1 with MCI, Dementia etc
+
 ```{r}
 #| label: table 1
 #| code-summary: Table 1
 #| tbl-cap: Table 1 NACC Cohort Characteristics
 
-tab_caide <- dat %>% 
-  dplyr::select(race, apoe, caide_age, caide_sex, caide_educ, caide_bmi, caide_sbp,
-                i_caide_chol, caide, caide_missing, caide_cat, caide_apoe) %>%
-  tbl_summary(by = race,
-              statistic = list(all_continuous() ~ "{mean} ({sd})")) %>%
-  add_n() 
+# tab_caide <- dat %>% 
+#   dplyr::select(race, apoe, caide_age, caide_sex, caide_educ, caide_bmi, caide_sbp, i_caide_chol, caide, caide_missing, caide_cat, caide_apoe) %>%
+#   tbl_summary(by = race,
+#               statistic = list(all_continuous() ~ "{mean} ({sd})")) %>%
+#   add_n() 
 
-# naccudsd = fct_recode(as.factor(naccudsd), 'CU' = '1', "MCI" = "3", "ADRD" = "4"),
+#naccudsd = fct_recode(as.factor(naccudsd), 'CU' = '1', "MCI" = "3", "ADRD" = "4")
 
-tab_caide
-
-as_gt(tab_caide) %>%
-  gt::gtsave(., "results/table_caid.docx")
 
 dat %>% 
-  dplyr::select(race, apoe, caide_age, caide_sex, caide_educ, caide_bmi, caide_sbp,
-                i_caide_chol, caide, caide_missing, caide_cat, caide_apoe,naccudsd) %>%
-  filter(naccudsd == 1 | naccudsd == 3) %>% 
+  dplyr::select(race, apoe, caide_age, caide_sex, caide_educ, caide_bmi,
+                caide_sbp,i_caide_chol, caide, caide_missing, caide_cat,
+                caide_apoe,naccudsd) %>%
+  #filter(naccudsd == 1 | naccudsd == 3) %>% 
   mutate(naccudsd = case_when(
          naccudsd == 1 ~ "CU",
-          naccudsd== 3 ~ "MCI"
+         naccudsd== 3 ~ "MCI",
+         naccudsd == 4 ~ "ADRD"
   )) %>% 
   tbl_strata(
     strata = naccudsd,
@@ -355,6 +368,9 @@ dat %>%
       modify_header(all_stat_cols() ~ "**{level}**")
       #.header = "**CU:{level}**, N = {n}"
     )
+
+
+#gtsave(., "results/table_caid.docx")
 ```
 
 ```{r}
@@ -375,6 +391,7 @@ as_gt(tab_mcaide) %>%
   gt::gtsave(., "results/table_mcaid.docx")
 
 ```
+
 ## Descriptive statistics
 
 ```{r}
@@ -778,7 +795,6 @@ ggsave("results/figures/joint_apoe_race_all_bl.png", plot = apoe_geno_res_p, wid
 ```
 
 ### CAIDE
-
 ```{r}
 glm(dx ~ race + apoe + z_caide + cohort, data = dat, family = 'binomial') %>% 
   tidy() %>%
@@ -793,42 +809,34 @@ glm(dx ~ race + apoe + z_caide + cohort, data = dat, family = 'binomial') %>%
     out = glue("OR [95% CI] = {or} [{lci}, {uci}], p = {p}")
   )
 
-glm(dx_lv ~ race + apoe + z_caide, data = dat, family = 'binomial') %>% 
-  tidy()
+# glm(dx_lv ~ race + apoe + z_caide, data = dat, family = 'binomial') %>% 
+#   tidy()
+# 
+# lm(ad_age_lv ~ race + apoe + z_caide, data = dat) %>% 
+#   tidy()
 
-lm(ad_age_lv ~ race + apoe + z_caide, data = dat) %>% 
-  tidy()
-
-
-get_AUC_vals_by_race = function(df, r){
-  
-  new_df <- df %>% filter(race == r) %>%
-            filter(naccetpr %in% c(1, 88)) %>%
-            filter(naccudsd %nin% c(3))
-  
-  glm_model <- glm(dx ~ apoe + age + gender + i_educ + i_bmi + i_bpsys + i_hypchol, 
-                   data = new_df, family = 'binomial')
-  
-  probabilities <- predict(glm_model, type = "response")
-  actuals <- new_df[["dx"]]
-    
-  auc_val <- auc(roc(actuals, probabilities))
-  return(auc_val)
-}
-
-get_AUC_vals_by_race(dat, "Hispanic")
-get_AUC_vals_by_race(dat, "Asian")
-get_AUC_vals_by_race(dat, "Black")
-get_AUC_vals_by_race(dat, "NHW")
-
+# Fit the logistic regression model
+dat.test <- dat %>% filter(race == "Hispanic") %>%
+    filter(naccetpr %in% c(1, 88)) %>%
+    filter(naccudsd %nin% c(3))
+model <- glm(dx ~ apoe + age + gender + i_educ + i_bmi + i_bpsys + 
+                  i_hypchol, data = dat.test, family = 'binomial')
+# Predict probabilities on the original data set
+probabilities <- predict(model, type = "response")
+# Actual outcomes
+actuals <- dat.test$dx
+# Calculate the AUC
+roc_curve <- roc(actuals, probabilities)
+auc(roc_curve)
 ```
+
+#### Regresion
 
 ```{r}
 #| label: regression_models
 #| code-summary: Regression Models
 
 caide_mod_fit <- function(data){
-  # glm(dx ~ apoe_geno + SEX + aoo, data = data, family = 'binomial')
   glm(dx ~ apoe + z_caide + cohort, data = data, family = 'binomial')
 }
 
@@ -893,6 +901,8 @@ caide_res.df <- caide_res %>%
     term = fct_recode(term, "ε2+" = "e2+", "ε4+" = "e4+", "CAIDE" = "z_caide")
   )
 ```
+
+#### APOE
 
 ```{r}
 #| label: apoe_difference
@@ -981,6 +991,8 @@ caide_df_pval <- filter(caide_diff_long, p < 0.05) %>%
 
   )
 ```
+
+#### export
 
 ```{r}
 #| label: export_caide
@@ -1150,9 +1162,9 @@ glm(dx_lv ~ race + caide_apoe, data = dat, family = 'binomial') %>%
 
 lm(ad_age_lv ~ race + caide_apoe, data = dat) %>% 
   tidy()
-
-
 ```
+
+# Regression Models
 
 ```{r}
 #| label: regression_models
@@ -1517,6 +1529,8 @@ ggplot(caide_sex_res.df, aes(x = or, y = race, color = race)) +
 
 ### mCAIDE
 
+## get AUCs for this model
+
 ```{r}
 glm(dx ~ race + apoe + z_mcaide + cohort, data = dat, family = 'binomial') %>% 
   tidy() %>%
@@ -1611,6 +1625,8 @@ mcaide_res_df <- mcaide_res %>%
   )
 
 ```
+
+
 
 ```{r}
 #| label: apoe_difference
@@ -2194,6 +2210,14 @@ ggplot(mcaide_sex_res_df, aes(x = or, y = race, color = race)) +
 ```
 
 ### risk factors
+
+get AUC for all baseline models
+
+lv = last visit
+
+ada_age_lv weighted scoring for AD
+
+get AUC for rf_mod_fit
 
 ```{r}
 rf_all_bl_res <- glm(dx ~ race + apoe + NACCAGE + SEX + i_EDUC + i_NACCBMI + i_BPSYS + i_hypchol, data = dat, family = 'binomial')
