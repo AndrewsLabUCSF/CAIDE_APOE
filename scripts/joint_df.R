@@ -7,7 +7,8 @@ adni.raw <- read_tsv('data/adni.csv')
 
 
 ## ADNI 
-adni.raw %>% count(adrd)
+#adni.raw %>% count(adrd)
+
 adni <- adni.raw %>%
   select(ptid, origprot, age, ptgender, race, apoe, apoe_geno, pteducat, bmi, vsbpsys, total_c, htn, hld,
          i_bmi, i_vsbpsys, i_pteducat, i_total_c, i_htn, i_hld,
@@ -54,6 +55,9 @@ nacc <- nacc.raw %>%
   mutate(
     gender = ifelse(gender == 1, "Male", "Female")
   )  
+
+setdiff(names(adni), names(nacc))
+get_na_by_cols(adni)
 
 ## Joint dataset
 joint <- bind_rows(

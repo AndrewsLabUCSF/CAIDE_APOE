@@ -1,4 +1,3 @@
-
 library("tidyverse")
 library("missForest")
 library("glue")
@@ -7,8 +6,8 @@ library("broom")
 library("ggplot2")
 library("gtsummary")
 library("rmarkdown")
-library(lubridate)
-library(vcfR)
+library("lubridate")
+library("vcfR")
 
 setwd("~/gitcode/CAIDE_APOE")
 

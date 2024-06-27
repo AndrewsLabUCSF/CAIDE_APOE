@@ -796,6 +796,7 @@ ggsave("results/figures/joint_apoe_race_all_bl.png", plot = apoe_geno_res_p, wid
 
 ### CAIDE
 ```{r}
+library(pROC)
 glm(dx ~ race + apoe + z_caide + cohort, data = dat, family = 'binomial') %>% 
   tidy() %>%
   mutate(
@@ -1529,8 +1530,6 @@ ggplot(caide_sex_res.df, aes(x = or, y = race, color = race)) +
 
 ### mCAIDE
 
-## get AUCs for this model
-
 ```{r}
 glm(dx ~ race + apoe + z_mcaide + cohort, data = dat, family = 'binomial') %>% 
   tidy() %>%
@@ -1554,12 +1553,12 @@ lm(ad_age_lv ~ race + apoe + z_mcaide, data = dat) %>%
 
 ```
 
+added actual values
 ```{r}
 #| label: regression_models
 #| code-summary: Regression Models
 
 mcaide_mod_fit <- function(data){
-  # glm(dx ~ apoe_geno + SEX + aoo, data = data, family = 'binomial')
   glm(dx ~ apoe + z_mcaide + cohort, data = data, family = 'binomial')
 }
 
@@ -1569,7 +1568,8 @@ mcaide_res <- bind_rows(
     nest() %>%
     mutate(
       outcome = "ADRD + MCI",
-      res = map(data, mcaide_mod_fit), 
+      res = map(data, mcaide_mod_fit),
+      #actual_vals = map(data, ~.x$dx)
     ), 
 
   dat %>%
@@ -1579,6 +1579,7 @@ mcaide_res <- bind_rows(
     mutate(
       outcome = "ADRD",
       res = map(data, mcaide_mod_fit), 
+      #actual_vals = map(data, ~.x$dx)
     ), 
   
   dat %>%
@@ -1588,8 +1589,8 @@ mcaide_res <- bind_rows(
     mutate(
       outcome = "AD + MCI",
       res = map(data, mcaide_mod_fit), 
+      #actual_vals = map(data, ~.x$dx)
     ),
-
   dat %>%
     filter(naccetpr %in% c(1, 88)) %>%
     filter(naccudsd %nin% c(3)) %>%
@@ -1598,17 +1599,20 @@ mcaide_res <- bind_rows(
     mutate(
       outcome = "AD",
       res = map(data, mcaide_mod_fit), 
+      #actual_vals = map(data, ~.x$dx)
     ), 
 ) %>%
   mutate(
     fit = map(res, glance),
     df = map(res, tidy), 
-    pred = map2(res, data, predict, type = 'response'), 
+    pred = map2(res, data, predict, type = 'response'),
+    actual_vals = map(data, ~.x$dx),
+    auc_value = map2_dbl(actual_vals, pred, ~ auc(roc(.x, .y)))
   ) %>% 
   select(-data)
 
 mcaide_res_df <- mcaide_res %>%
-  select(race, outcome, df) %>%
+  select(race, outcome, df,auc_value) %>%
   unnest(cols = df) %>%
   ungroup() %>%
   filter(str_detect(term, 'apoe|mcaide')) %>%
@@ -1624,8 +1628,19 @@ mcaide_res_df <- mcaide_res %>%
     term = fct_recode(term, "ε2+" = "e2+", "ε4+" = "e4+", "mCAIDE" = "z_mcaide")
   )
 
+mcaide_res_df %>% select(race, outcome,auc_value) %>% 
+  group_by(race, outcome) %>% 
+  mutate(auc_value = round(auc_value,2)) %>% distinct()
+
 ```
 
+
+# AUC values
+get auc values
+compare redcuced to full  reduced take out zmcaide 
+AUC cohort 
+AUC cohort apoe
+AUC cohort mcaide apoe
 
 
 ```{r}
