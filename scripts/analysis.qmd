@@ -1528,7 +1528,7 @@ ggplot(caide_sex_res.df, aes(x = or, y = race, color = race)) +
 
 ```
 
-### mCAIDE
+# mCAIDE
 
 ```{r}
 glm(dx ~ race + apoe + z_mcaide + cohort, data = dat, family = 'binomial') %>% 
@@ -1553,7 +1553,15 @@ lm(ad_age_lv ~ race + apoe + z_mcaide, data = dat) %>%
 
 ```
 
-added actual values
+## AUC mCAIDE values
+
+get auc values
+compare redcuced to full  reduced take out zmcaide 
+AUC cohort 
+AUC cohort apoe
+AUC cohort mcaide apoe
+
+
 ```{r}
 #| label: regression_models
 #| code-summary: Regression Models
@@ -1569,7 +1577,6 @@ mcaide_res <- bind_rows(
     mutate(
       outcome = "ADRD + MCI",
       res = map(data, mcaide_mod_fit),
-      #actual_vals = map(data, ~.x$dx)
     ), 
 
   dat %>%
@@ -1579,7 +1586,6 @@ mcaide_res <- bind_rows(
     mutate(
       outcome = "ADRD",
       res = map(data, mcaide_mod_fit), 
-      #actual_vals = map(data, ~.x$dx)
     ), 
   
   dat %>%
@@ -1589,7 +1595,6 @@ mcaide_res <- bind_rows(
     mutate(
       outcome = "AD + MCI",
       res = map(data, mcaide_mod_fit), 
-      #actual_vals = map(data, ~.x$dx)
     ),
   dat %>%
     filter(naccetpr %in% c(1, 88)) %>%
@@ -1598,8 +1603,8 @@ mcaide_res <- bind_rows(
     nest() %>%
     mutate(
       outcome = "AD",
-      res = map(data, mcaide_mod_fit), 
-      #actual_vals = map(data, ~.x$dx)
+      res = map(data, mcaide_mod_fit),
+      actual_vals = map(data, ~.x$dx)
     ), 
 ) %>%
   mutate(
@@ -1628,19 +1633,107 @@ mcaide_res_df <- mcaide_res %>%
     term = fct_recode(term, "ε2+" = "e2+", "ε4+" = "e4+", "mCAIDE" = "z_mcaide")
   )
 
-mcaide_res_df %>% select(race, outcome,auc_value) %>% 
+library(gtsummary)
+library(gt)
+full_model_auc = mcaide_res_df %>% select(race, outcome,auc_value) %>% 
   group_by(race, outcome) %>% 
   mutate(auc_value = round(auc_value,2)) %>% distinct()
 
+data.frame(full_model_auc) %>% gt()
+ 
 ```
-
-
-# AUC values
-get auc values
-compare redcuced to full  reduced take out zmcaide 
+## function
 AUC cohort 
 AUC cohort apoe
 AUC cohort mcaide apoe
+
+put above into a function with a full reduced and intermediate model. 
+```{r}
+mcaide_mod_fits <- function(data,i){
+  
+  fullModel <- glm(dx ~ apoe + z_mcaide + cohort, data = data,
+                                  family = 'binomial')
+  apoe_cohort_model <- glm(dx ~ apoe  + cohort, data = data, family = 'binomial')
+  apoe_model <- glm(dx~apoe, data = data, family = 'binomial')
+  
+  allM <- list(fullModel, apoe_cohort_model, apoe_model)
+  
+  return(allM[[i]])
+}
+
+mcaide_res_AUC <- bind_rows(
+  dat %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD + MCI",
+      resFull = map(data, mcaide_mod_fits,1),
+      res_apoe_c = map(data, mcaide_mod_fits, 2),
+      res_apoe = map(data, mcaide_mod_fits,3),
+    ), 
+  dat %>%
+    filter(naccudsd %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD",
+      resFull = map(data, mcaide_mod_fits,1),
+      res_apoe_c = map(data, mcaide_mod_fits, 2),
+      res_apoe = map(data, mcaide_mod_fits,3),
+    ), 
+  
+  dat %>%
+    filter(naccetpr %in% c(1, 88)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD + MCI",
+      resFull = map(data, mcaide_mod_fits,1),
+      res_apoe_c = map(data, mcaide_mod_fits, 2),
+      res_apoe = map(data, mcaide_mod_fits,3), 
+    ),
+  dat %>%
+    filter(naccetpr %in% c(1, 88)) %>%
+    filter(naccudsd %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD",
+      resFull = map(data, mcaide_mod_fits,1),
+      res_apoe_c = map(data, mcaide_mod_fits, 2),
+      res_apoe = map(data, mcaide_mod_fits,3),
+    ), 
+) %>% mutate(fit_full = map(resFull, glance),
+             df_full = map(resFull, tidy), 
+             pred_full = map2(resFull, data, predict, type = 'response'),
+             actual_vals_full = map(data, ~.x$dx),
+             auc_value_full = map2_dbl(actual_vals_full, pred_full, ~ auc(roc(.x, .y))),
+            #model 2 
+            fit_apoe_c = map(res_apoe_c, glance),
+            df_apoe_c = map(res_apoe_c, tidy), 
+            pred_apoe_c = map2(res_apoe_c, data, predict, type = 'response'),
+            actual_vals_apoe_c = map(data, ~.x$dx),
+            auc_value_apoe_c = map2_dbl(actual_vals_apoe_c, pred_apoe_c, ~ auc(roc(.x,.y))),
+            #model3
+            fit_apoe = map(res_apoe, glance),
+            df_apoe= map(res_apoe, tidy), 
+            pred_apoe = map2(res_apoe, data, predict, type = 'response'),
+            actual_vals_apoe = map(data, ~.x$dx),
+            auc_value_apoe = map2_dbl(actual_vals_apoe, pred_apoe, ~ auc(roc(.x, .y)))
+          ) %>% 
+          select(-data)
+
+
+all_mcaide_AUC <- mcaide_res_AUC %>%
+  select(race, outcome,
+         auc_value_full, auc_value_apoe_c,auc_value_apoe) %>%
+  ungroup() %>% 
+  mutate(across(where(is.numeric), ~ round(.x, digits = 2)))
+
+
+data.frame(all_mcaide_AUC) %>% gt()
+```
+
 
 
 ```{r}
