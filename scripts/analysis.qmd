@@ -75,25 +75,23 @@ dat <- read_tsv(dat_path) %>%
 #| code-summary: Function
 #| echo: false
 
-
-nacc %>% select(everything()) %>%  # replace to your needs
+get_nas = function(df, d, title){
+  tbl_nas = df %>% select(everything()) %>%  
   summarise(across(everything(), ~sum(is.na(.)/length(.) *100))) %>% 
-  mutate(across(where(is.numeric), ~ round(.x, digits = 3))) %>% rowwise() %>% 
+  mutate(across(where(is.numeric), ~ round(.x, digits = d))) %>% rowwise() %>% 
   pivot_longer(cols = everything(), names_to = "names", values_to = "values") %>% 
-  arrange(desc(values)) %>% gt() %>% cols_label(names~"Variable", values~"Percent NA")
+  filter(values>0) %>% 
+  arrange(desc(values)) %>% gt() %>% 
+  cols_label(names~"Variable", values~"Percent NA") %>%   
+  tab_header(title)
+  
+  return(tbl_nas)
+}
+get_nas(nacc, 2, "NACC missing Values")
+get_nas(adni, 2, "ADNI missing Values")
+get_nas(dat, 2, "Combined missing Values")
 
-adni %>% select(everything()) %>%  # replace to your needs
-  summarise(across(everything(), ~sum(is.na(.)/length(.) *100))) %>% 
-  mutate(across(where(is.numeric), ~ round(.x, digits = 3))) %>% rowwise() %>% 
-  pivot_longer(cols = everything(), names_to = "names", values_to = "values") %>% 
-  arrange(desc(values)) %>% gt() %>% cols_label(names~"Variable", values~"Percent NA")
-
-
-dat %>% select(everything()) %>%  # replace to your needs
-  summarise(across(everything(), ~sum(is.na(.)/length(.) *100))) %>% 
-  mutate(across(where(is.numeric), ~ round(.x, digits = 3))) %>% rowwise() %>% 
-  pivot_longer(cols = everything(), names_to = "names", values_to = "values") %>% 
-  arrange(desc(values)) %>% gt() %>% cols_label(names~"Variable", values~"Percent NA")
+ 
 ```
 
 
@@ -964,7 +962,7 @@ caide_res_w_AUC <- bind_rows(
          df_caide = map(res_caide_full, tidy),
          pred_caide_full = map2(res_caide_full, data, predict, type = 'response'),
          actual_caide_vals_full = map(data, ~.x$dx),
-        auc_caide_full = map2_dbl(actual_caide_vals_full, pred_caide_full, ~ auc(roc(.x, .y))),
+  auc_caide_full = map2_dbl(actual_caide_vals_full, pred_caide_full, ~ auc(roc(.x, .y))),
         
         #model2
         fit_caide_ac_model = map(res_caide_apoe_c, glance),
@@ -996,10 +994,39 @@ all_caide_AUCs <- caide_res_w_AUC %>%
 
 data.frame(all_caide_AUCs)
 
-library(openxlsx)
-write.xlsx(data.frame(all_caide_AUCs), "/Users/anaboeriu/Downloads/caide.xlsx",asTable = TRUE, overwrite = TRUE)
+# library(openxlsx)
+# write.xlsx(data.frame(all_caide_AUCs), "/Users/anaboeriu/Downloads/caide.xlsx",asTable = TRUE, overwrite = TRUE)
 
 ```
+##### tables
+```{r}
+auc_mcaide_table = all_caide_AUCs %>% gt() %>% 
+  cols_label(auc_caide_ac	~ html("AUC M2"),
+             auc_caide_full~ html("AUC M1"),
+             auc_caide_apoe~ html("AUC M3"),
+             
+             auc_diff_full_ac	 ~ html("AUC: <br> M1 - M2"),
+             
+             auc_diff_full_apoe~ html("AUC: <br> M1 - M3"),
+             
+             auc_diff_ac_apoe ~ html("AUC: <br> M2 - M3")
+             ) %>% 
+    tab_footnote(footnote = html( "M1: Y<sub>dx</sub> ~ &beta;<sub> APOE</sub>+ 
+                                  &beta;<sub> zcaide</sub>+ &beta;<sub> cohort</sub>"),
+               locations = cells_column_labels(columns = c(auc_caide_full))
+               ) %>% 
+    tab_footnote(footnote = html( "M2: Y<sub>dx</sub> ~  &beta;<sub> zcaide</sub>+
+                                   &beta;<sub> cohort</sub>"),
+               locations = cells_column_labels(columns = c(auc_caide_ac))
+               ) %>% 
+    tab_footnote(footnote = html( "M3: Y<sub>dx</sub> ~ &beta;<sub>APOE</sub>"),
+               locations = cells_column_labels(columns = c(auc_caide_apoe))
+               ) %>% tab_header("AUC for CAIDE")
+
+auc_mcaide_table
+```
+
+
 
 #### APOE
 
@@ -1648,7 +1675,6 @@ glm(dx_lv ~ race + apoe + z_mcaide, data = dat, family = 'binomial') %>%
 
 lm(ad_age_lv ~ race + apoe + z_mcaide, data = dat) %>% 
   tidy()
-
 ```
 
 ### AUC mCAIDE values
@@ -1797,7 +1823,7 @@ mcaide_res_AUC <- bind_rows(
              df_mcaide_full = map(res_mcaide_full, tidy), 
              pred_mcaide_full = map2(res_mcaide_full, data, predict, type = 'response'),
              actual_mcaide_full = map(data, ~.x$dx),
-          auc_mcaide_full = map2_dbl(actual_mcaide_full, pred_mcaide_full, ~ auc(roc(.x, .y))),
+    auc_mcaide_full = map2_dbl(actual_mcaide_full, pred_mcaide_full, ~ auc(roc(.x, .y))),
             #model 2 
             fit_apoe_c = map(res_macaide_ac, glance),
             df_apoe_c = map(res_macaide_ac, tidy), 
@@ -1819,9 +1845,9 @@ mcaide_res_AUC <- bind_rows(
                   group_by(race, outcome) %>% 
                   ungroup() %>% 
                   rowwise() %>%
-                  mutate(auc_diff_full_ac = auc_mcaide_full- auc_mcaide_ac,
-                         auc_diff_full_apoe = auc_mcaide_full -auc_mcaide_apoe,
-                         auc_diff_ac_apoe = auc_mcaide_ac - auc_mcaide_apoe
+                  mutate(auc_diff_full_ac_m = auc_mcaide_full- auc_mcaide_ac,
+                         auc_diff_full_apoe_m = auc_mcaide_full -auc_mcaide_apoe,
+                         auc_diff_ac_apoe_m = auc_mcaide_ac - auc_mcaide_apoe
                   ) %>%
                   ungroup() %>%
                   mutate(across(where(is.numeric), ~ round(.x, digits = 4)))
@@ -1833,27 +1859,27 @@ auc_mcaide_table = all_mcaide_AUC %>% gt() %>%
   cols_label(auc_mcaide_ac	~ html("AUC M2"),
              auc_mcaide_full~ html("AUC M1"),
              auc_mcaide_apoe~ html("AUC M3"),
-             auc_diff_full_ac	 ~ html("AUC: <br> M1 - M2"),
              
-             auc_diff_full_apoe~ html("AUC: <br> M1 - M3"),
-             
-             auc_diff_ac_apoe ~ html("AUC: <br> M2 - M3")
+             auc_diff_full_ac_m	 ~ html("AUC: <br> M1 - M2"),
+             auc_diff_full_apoe_m~ html("AUC: <br> M1 - M3"),
+             auc_diff_ac_apoe_m ~ html("AUC: <br> M2 - M3")
              ) %>% 
     tab_footnote(footnote = html( "M1: Y<sub>dx</sub> ~ &beta;<sub> APOE</sub>+ 
-                                  &beta;<sub> mcaide</sub>+ &beta;<sub> cohort</sub>"),
+                                  &beta;<sub> z_mcaide</sub>+ &beta;<sub> cohort</sub>"),
                locations = cells_column_labels(columns = c(auc_mcaide_full))
                ) %>% 
-    tab_footnote(footnote = html( "M2: Y<sub>dx</sub> ~  &beta;<sub> mcaide</sub>+
+    tab_footnote(footnote = html( "M2: Y<sub>dx</sub> ~  &beta;<sub> z_mcaide</sub>+
                                    &beta;<sub> cohort</sub>"),
                locations = cells_column_labels(columns = c(auc_mcaide_ac))
                ) %>% 
     tab_footnote(footnote = html( "M3: Y<sub>dx</sub> ~ &beta;<sub>APOE</sub>"),
                locations = cells_column_labels(columns = c(auc_mcaide_apoe))
-               ) 
+               ) %>% tab_header("AUC for mcaide")
 
-gtsave(auc_mcaide_table, "/Users/anaboeriu/Downloads/mcaide.docx")
+auc_mcaide_table
+#gtsave(auc_mcaide_table, "/Users/anaboeriu/Downloads/mcaide.docx")
 
-write.xlsx(auc_mcaide_table, "/Users/anaboeriu/Downloads/mcaide.xlsx",asTable = TRUE, overwrite = TRUE)
+# write.xlsx(auc_mcaide_table, "/Users/anaboeriu/Downloads/mcaide.xlsx",asTable = TRUE, overwrite = TRUE)
 ```
 
 
