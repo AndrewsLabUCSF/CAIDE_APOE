@@ -410,6 +410,8 @@ run_chi_square <- function(data, comparison, groups, adjust_p = FALSE, n_tests =
 
   tidy_result %>% relocate(comparison)
 }
+apoe4.xtab <- xtabs(~ apoe4 + race, data = dat)
+
 
 #### Gender
 gender.xtab <- xtabs(~ gender + race, data = dat)
@@ -478,7 +480,6 @@ dx.res <- map_dfr(dx.comparisons, ~run_chi_square(dx.xtab, .x$comparison, .x$gro
 apoe.xtab <- xtabs(~ apoe + race, data = dat)
 chisq.test(apoe.xtab, correct = F) %>% tidy() %>% mutate(p = format.pval(p.value, digits = 2, eps = 1e-100))
 
-apoe4.xtab <- xtabs(~ apoe4 + race, data = dat)
 
 apoe4.comparisons <- list(
   list(comparison = "APOE e4", groups = colnames(apoe4.xtab)),
@@ -501,8 +502,8 @@ chisqr_res <- bind_rows(
     method = ifelse(str_detect(comparison, "-"), "partitioned", "full")) %>%
   select(-p.value)
 
-chisqr_res %>%
-  write_csv("results/chisqr_descriptives.csv")
+# chisqr_res %>%
+#   write_csv("results/chisqr_descriptives.csv")
 
 ## ANOVA
 ### Age
@@ -563,8 +564,8 @@ anova_res <- bind_rows(
   ) %>%
     select(-term, -null.value) 
 
-anova_res %>%
-  write_csv("results/anova_descriptives.csv")
+# anova_res %>%
+#   write_csv("results/anova_descriptives.csv")
 
 ## Sample size differences 
 nhw_ss <- filter(dat, race == "NHW") %>% nrow()
@@ -1675,6 +1676,7 @@ glm(dx_lv ~ race + apoe + z_mcaide, data = dat, family = 'binomial') %>%
 
 lm(ad_age_lv ~ race + apoe + z_mcaide, data = dat) %>% 
   tidy()
+
 ```
 
 ### AUC mCAIDE values
