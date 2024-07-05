@@ -829,7 +829,6 @@ auc(roc_curve)
 
 ```{r}
 caide_mod_fit <- function(data){
-  # glm(dx ~ apoe_geno + SEX + aoo, data = data, family = 'binomial')
   glm(dx ~ apoe + z_caide + cohort, data = data, family = 'binomial')
 }
 
@@ -896,7 +895,7 @@ caide_res.df <- caide_res %>%
   )
 ```
 
-#### AUC
+#### AUC nested
 All Models
 ```{r}
 #| label: regression_models
@@ -905,13 +904,9 @@ All Models
 caide_mod_fit <- function(data,i){
   
   fullModel <-  glm(dx ~ apoe + z_caide + cohort, data = data, family = 'binomial')
-  
   apoe_cohort_model <- glm(dx ~ apoe  + cohort, data = data, family = 'binomial')
-  
   apoe_model <- glm(dx~apoe, data = data, family = 'binomial')
-  
   all_caide_models <- list(fullModel, apoe_cohort_model, apoe_model)
-  
   return(all_caide_models[[i]])
 }
 
@@ -970,14 +965,14 @@ caide_res_w_AUC <- bind_rows(
         df_caide_ac_model = map(res_caide_apoe_c,tidy),
         pred_caide_ac_model = map2(res_caide_apoe_c, data, predict,type="response"),
         true_caide_ac_vals = map(data, ~.x$dx),
-        auc_caide_ac = map2_dbl(true_caide_ac_vals, pred_caide_ac_model, ~auc(roc(.x,.y))),
+    auc_caide_ac = map2_dbl(true_caide_ac_vals, pred_caide_ac_model, ~auc(roc(.x,.y))),
         
         #model3
         fit_caide_apoe_model = map(res_caide_apoe, glance),
         df_caide_apoe_model = map(res_caide_apoe,tidy),
         pred_caide_apoe_model = map2(res_caide_apoe, data, predict,type="response"),
         true_caide_apoe_vals = map(data, ~.x$dx),
-      auc_caide_apoe = map2_dbl(true_caide_apoe_vals, pred_caide_apoe_model, ~auc(roc(.x,.y))),
+auc_caide_apoe = map2_dbl(true_caide_apoe_vals, pred_caide_apoe_model, ~auc(roc(.x,.y))),
   ) %>% 
   select(-data)
 
@@ -994,10 +989,6 @@ all_caide_AUCs <- caide_res_w_AUC %>%
   mutate(across(where(is.numeric), ~ round(.x, digits = 4)))
 
 data.frame(all_caide_AUCs)
-
-# library(openxlsx)
-# write.xlsx(data.frame(all_caide_AUCs), "/Users/anaboeriu/Downloads/caide.xlsx",asTable = TRUE, overwrite = TRUE)
-
 ```
 ##### tables
 ```{r}
@@ -1679,7 +1670,9 @@ lm(ad_age_lv ~ race + apoe + z_mcaide, data = dat) %>%
 
 ```
 
-### AUC mCAIDE values
+### AUC mCAIDE 
+
+all nested models 
 ```{r}
 #| label: regression_models
 #| code-summary: Regression Models
@@ -1734,22 +1727,22 @@ mcaide_res <- bind_rows(
   ) %>% 
   select(-data)
 
-mcaide_res_df <- mcaide_res %>%
-  select(race, outcome, df,auc_value) %>%
-  unnest(cols = df) %>%
-  ungroup() %>%
-  filter(str_detect(term, 'apoe|mcaide')) %>%
-  mutate(
-    lci = estimate - (std.error * 1.96),
-    hci = estimate + (std.error * 1.96), 
-    or = exp(estimate),
-    or_lci = exp(lci),
-    or_hci = exp(hci),
-    term = str_replace(term, "apoe", ""), 
-    term = fct_relevel(term, 'e2+', 'e4+', 'z_mcaide'),    
-    race = fct_relevel(race, "Black", "Hispanic", "Asian", "NHW"), 
-    term = fct_recode(term, "ε2+" = "e2+", "ε4+" = "e4+", "mCAIDE" = "z_mcaide")
-  )
+# mcaide_res_df <- mcaide_res %>%
+#   select(race, outcome, df,auc_value) %>%
+#   unnest(cols = df) %>%
+#   ungroup() %>%
+#   filter(str_detect(term, 'apoe|mcaide')) %>%
+#   mutate(
+#     lci = estimate - (std.error * 1.96),
+#     hci = estimate + (std.error * 1.96), 
+#     or = exp(estimate),
+#     or_lci = exp(lci),
+#     or_hci = exp(hci),
+#     term = str_replace(term, "apoe", ""), 
+#     term = fct_relevel(term, 'e2+', 'e4+', 'z_mcaide'),    
+#     race = fct_relevel(race, "Black", "Hispanic", "Asian", "NHW"), 
+#     term = fct_recode(term, "ε2+" = "e2+", "ε4+" = "e4+", "mCAIDE" = "z_mcaide")
+#   )
 
 mcaide_res_df %>% select(race, outcome,auc_value) %>% 
   group_by(race, outcome) %>% 
@@ -1757,37 +1750,34 @@ mcaide_res_df %>% select(race, outcome,auc_value) %>%
   mutate(auc_value = round(auc_value,2)) %>% distinct() %>% gt()
 ```
 
-### All AUC
+## All AUCs
 
 Obtain AUC for the following models:
  m1) dx ~ cohort + z_mcaide+ apoe
- m2) dx ~ cohort + apoe
- m3) dx ~ apoe
-and calculate the AUC difference ie m1-m2 etc
-
+ m2) dx ~ cohort + z_caide+ apoe
+ 
+use Delong method
 
 ```{r}
-mcaide_mod_fits <- function(data,i){
+mod_fits <- function(data,i){
+  # glm(dx ~ apoe_geno + SEX + aoo, data = data, family = 'binomial')
+  mcaide_full = glm(dx ~ apoe + z_caide + cohort, data = data, family = 'binomial')
+  caide_full  = glm(dx ~ apoe + z_mcaide + cohort, data = data, family = 'binomial')
   
-  fullModel <- glm(dx ~ apoe + z_mcaide + cohort, data = data,
-                                  family = 'binomial')
-  apoe_cohort_model <- glm(dx ~ apoe  + cohort, data = data, family = 'binomial')
-  apoe_model <- glm(dx~apoe, data = data, family = 'binomial')
-  
-  allM <- list(fullModel, apoe_cohort_model, apoe_model)
+  allM = list(caide_full, mcaide_full)
   
   return(allM[[i]])
 }
 
-mcaide_res_AUC <- bind_rows(
+
+all_res_AUC <- bind_rows(
   dat %>%
     group_by(race) %>%
     nest() %>%
     mutate(
       outcome = "ADRD + MCI",
-      res_mcaide_full = map(data, mcaide_mod_fits,1),
-      res_macaide_ac = map(data, mcaide_mod_fits, 2),
-      res_mcaide_apoe = map(data, mcaide_mod_fits,3),
+      res_mcaide_full = map(data, mod_fits,1),
+      res_caide_full = map(data, mod_fits, 2),
     ), 
   dat %>%
     filter(naccudsd %nin% c(3)) %>%
@@ -1795,9 +1785,8 @@ mcaide_res_AUC <- bind_rows(
     nest() %>%
     mutate(
       outcome = "ADRD",
-      res_mcaide_full = map(data, mcaide_mod_fits,1),
-      res_macaide_ac = map(data, mcaide_mod_fits, 2),
-      res_mcaide_apoe = map(data, mcaide_mod_fits,3),
+      res_mcaide_full = map(data, mod_fits,1),
+      res_caide_full = map(data, mod_fits, 2),
     ), 
   
   dat %>%
@@ -1806,9 +1795,8 @@ mcaide_res_AUC <- bind_rows(
     nest() %>%
     mutate(
       outcome = "AD + MCI",
-      res_mcaide_full = map(data, mcaide_mod_fits,1),
-      res_macaide_ac = map(data, mcaide_mod_fits, 2),
-      res_mcaide_apoe = map(data, mcaide_mod_fits,3), 
+      res_mcaide_full = map(data, mod_fits,1),
+      res_caide_full = map(data, mod_fits, 2),
     ),
   dat %>%
     filter(naccetpr %in% c(1, 88)) %>%
@@ -1817,72 +1805,71 @@ mcaide_res_AUC <- bind_rows(
     nest() %>%
     mutate(
       outcome = "AD",
-      res_mcaide_full = map(data, mcaide_mod_fits,1),
-      res_macaide_ac = map(data, mcaide_mod_fits, 2),
-      res_mcaide_apoe = map(data, mcaide_mod_fits,3),
+      res_mcaide_full = map(data, mod_fits,1),
+      res_caide_full = map(data, mod_fits, 2),
     ), 
 ) %>% mutate(fit_mcaide_full = map(res_mcaide_full, glance),
              df_mcaide_full = map(res_mcaide_full, tidy), 
              pred_mcaide_full = map2(res_mcaide_full, data, predict, type = 'response'),
              actual_mcaide_full = map(data, ~.x$dx),
-    auc_mcaide_full = map2_dbl(actual_mcaide_full, pred_mcaide_full, ~ auc(roc(.x, .y))),
-            #model 2 
-            fit_apoe_c = map(res_macaide_ac, glance),
-            df_apoe_c = map(res_macaide_ac, tidy), 
-            pred_apoe_c = map2(res_macaide_ac, data, predict, type = 'response'),
-            actual_mcaide_ac = map(data, ~.x$dx),
-            auc_mcaide_ac = map2_dbl(actual_mcaide_ac, pred_apoe_c, ~ auc(roc(.x,.y))),
-            #model3
-            fit_apoe = map(res_mcaide_apoe, glance),
-            df_apoe= map(res_mcaide_apoe, tidy), 
-            pred_apoe = map2(res_mcaide_apoe, data, predict, type = 'response'),
-            actual_vals_apoe = map(data, ~.x$dx),
-            auc_mcaide_apoe = map2_dbl(actual_vals_apoe, pred_apoe, ~ auc(roc(.x, .y)))
-          ) %>% 
-          select(-data)
-
- all_mcaide_AUC = mcaide_res_AUC %>% 
-                  select(race, outcome,
-                         auc_mcaide_full,auc_mcaide_ac, auc_mcaide_apoe) %>% 
-                  group_by(race, outcome) %>% 
-                  ungroup() %>% 
-                  rowwise() %>%
-                  mutate(auc_diff_full_ac_m = auc_mcaide_full- auc_mcaide_ac,
-                         auc_diff_full_apoe_m = auc_mcaide_full -auc_mcaide_apoe,
-                         auc_diff_ac_apoe_m = auc_mcaide_ac - auc_mcaide_apoe
-                  ) %>%
-                  ungroup() %>%
-                  mutate(across(where(is.numeric), ~ round(.x, digits = 4)))
+        auc_mcaide = map2_dbl(actual_mcaide_full, pred_mcaide_full, ~ auc(roc(.x, .y))),
+             roc_mcaide = map2(actual_mcaide_full, pred_mcaide_full, ~roc(.x, .y)),
+            
+             #model2
+             fit_caide = map(res_caide_full, glance),
+             df_caide= map(res_caide_full, tidy), 
+             pred_caide = map2(res_caide_full, data, predict, type = 'response'),
+             caide_actual_vals = map(data, ~.x$dx),
+             auc_caide = map2_dbl(caide_actual_vals, pred_caide, ~ auc(roc(.x, .y))),
+             roc_caide = map2(caide_actual_vals, pred_caide, ~roc(.x,.y)),
+             
+             #auc diff
+        deLong_pval = map2(roc_mcaide, roc_caide, ~roc.test(.x,.y,method =
+                                                              "delong")[["p.value"]]),
+        deLong_stat = map2(roc_mcaide, roc_caide, ~roc.test(.x,.y,method =  
+                                                        "delong")[["statistic"]][[1]]),
+       ) %>% 
+    select(-data)
 ```
 
-#### tables
+### tables
 ```{r}
-auc_mcaide_table = all_mcaide_AUC %>% gt() %>% 
-  cols_label(auc_mcaide_ac	~ html("AUC M2"),
-             auc_mcaide_full~ html("AUC M1"),
-             auc_mcaide_apoe~ html("AUC M3"),
-             
-             auc_diff_full_ac_m	 ~ html("AUC: <br> M1 - M2"),
-             auc_diff_full_apoe_m~ html("AUC: <br> M1 - M3"),
-             auc_diff_ac_apoe_m ~ html("AUC: <br> M2 - M3")
-             ) %>% 
-    tab_footnote(footnote = html( "M1: Y<sub>dx</sub> ~ &beta;<sub> APOE</sub>+ 
+all_AUC = all_res_AUC %>% 
+  select(race, outcome,auc_caide, auc_mcaide, deLong_stat,deLong_pval
+         ) %>% 
+  group_by(race, outcome) %>% 
+  ungroup() %>% 
+  mutate(across(where(is.numeric), ~ round(.x, digits = 4)),
+         deLong_pval = format(deLong_pval, scientific = TRUE, digits = 3),
+         #deLong_stat = round(deLong_stat, 3)
+         ) %>% 
+  gt() %>% 
+  cols_label(auc_caide ~ "AUC M1",
+             auc_mcaide ~ "AUC M2",
+             deLong_stat ~ "Statistic",
+             deLong_pval~ "p.value") %>% 
+  tab_footnote(footnote = html( "M2: Y<sub>dx</sub> ~ &beta;<sub> APOE</sub>+ 
                                   &beta;<sub> z_mcaide</sub>+ &beta;<sub> cohort</sub>"),
-               locations = cells_column_labels(columns = c(auc_mcaide_full))
+               locations = cells_column_labels(columns = c(auc_mcaide))
                ) %>% 
-    tab_footnote(footnote = html( "M2: Y<sub>dx</sub> ~  &beta;<sub> z_mcaide</sub>+
-                                   &beta;<sub> cohort</sub>"),
-               locations = cells_column_labels(columns = c(auc_mcaide_ac))
+  tab_footnote(footnote = html( "M1: Y<sub>dx</sub> ~ &beta;<sub> APOE</sub>+ 
+                                  &beta; <sub>z_caide</sub>+ &beta;<sub> cohort</sub>"),
+               locations = cells_column_labels(columns = c(auc_caide))
                ) %>% 
-    tab_footnote(footnote = html( "M3: Y<sub>dx</sub> ~ &beta;<sub>APOE</sub>"),
-               locations = cells_column_labels(columns = c(auc_mcaide_apoe))
-               ) %>% tab_header("AUC for mcaide")
+  tab_footnote(footnote = html("Based on DeLong's method"),
+               locations = cells_column_labels(columns = c(deLong_stat, deLong_pval))
+               ) 
 
-auc_mcaide_table
+all_AUC
+
 #gtsave(auc_mcaide_table, "/Users/anaboeriu/Downloads/mcaide.docx")
 
 # write.xlsx(auc_mcaide_table, "/Users/anaboeriu/Downloads/mcaide.xlsx",asTable = TRUE, overwrite = TRUE)
+
 ```
+
+
+
 
 
 ```{r}
@@ -4020,3 +4007,11 @@ rf_cox_res_df <- rf_cox_res %>%
 
 group_split(rf_cox_res_df, race)
 ```
+
+
+
+
+
+
+
+
