@@ -343,7 +343,7 @@ as_gt(tab_his_sex) %>%
 #naccudsd = fct_recode(as.factor(naccudsd), 'CU' = '1', "MCI" = "3", "ADRD" = "4")
 
 
-dat %>% 
+tble1 = dat %>% 
   dplyr::select(race, apoe, caide_age, caide_sex, caide_educ, caide_bmi,
                 caide_sbp,i_caide_chol, caide, caide_missing, caide_cat,
                 caide_apoe,naccudsd) %>%
@@ -362,10 +362,8 @@ dat %>%
       ) %>% 
       modify_header(all_stat_cols() ~ "**{level}**")
       #.header = "**CU:{level}**, N = {n}"
-    )
-
-
-#gtsave(., "results/table_caid.docx")
+    ) %>% as_gt() %>% 
+  gt::gtsave("/Users/anaboeriu/Downloads/tble1.docx")
 ```
 
 ```{r}
