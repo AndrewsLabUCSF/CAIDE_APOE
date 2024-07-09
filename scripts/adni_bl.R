@@ -381,6 +381,7 @@ mcaide <- adni %>%
     mcaide_wo_chol = sum(mcaide_age, mcaide_educ, mcaide_sex, mcaide_bmi, mcaide_sbp, na.rm = F), 
     mcaide_missing = sum(is.na(age), is.na(pteducat), is.na(ptgender), 
                         is.na(bmi), is.na(total_c), is.na(vsbpsys)),
+    m2caide = sum(mcaide_educ, mcaide_bmi, mcaide_sbp, i_mcaide_chol, na.rm = F), 
   ) %>%
   ungroup() %>%
   select(ptid, i_mcaide_chol, starts_with("mcaide"))

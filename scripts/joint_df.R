@@ -13,6 +13,7 @@ adni <- adni.raw %>%
   select(ptid, origprot, age, ptgender, race, apoe, apoe_geno, pteducat, bmi, vsbpsys, total_c, htn, hld,
          i_bmi, i_vsbpsys, i_pteducat, i_total_c, i_htn, i_hld,
          i_caide_chol, starts_with('caide'), i_mcaide_chol, starts_with('mcaide'), 
+         starts_with("m2caide")
          cdrsb, dx, naccudsd, naccetpr) %>%
   mutate(
     cohort = "ADNI", 
@@ -34,6 +35,7 @@ nacc <- nacc.raw %>%
   select(NACCID, NACCAGE, SEX, race, apoe, apoe_geno, EDUC,  NACCBMI, BPSYS, hypchol, hyperten, 
          i_NACCBMI, i_BPSYS, i_EDUC, i_hypchol, i_hyperten, 
          starts_with('caide'), starts_with('mcaide'), 
+         
          CDRSUM, dx, NACCUDSD, NACCETPR
          ) %>%
   select(-mcaide_cat, -mcaide_apoe, -caide_cat, -caide_apoe) %>%
