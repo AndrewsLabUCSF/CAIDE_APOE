@@ -7,13 +7,11 @@ adni.raw <- read_tsv('data/adni.csv')
 
 
 ## ADNI 
-#adni.raw %>% count(adrd)
-
 adni <- adni.raw %>%
   select(ptid, origprot, age, ptgender, race, apoe, apoe_geno, pteducat, bmi, vsbpsys, total_c, htn, hld,
          i_bmi, i_vsbpsys, i_pteducat, i_total_c, i_htn, i_hld,
          i_caide_chol, starts_with('caide'), i_mcaide_chol, starts_with('mcaide'), 
-         starts_with("m2caide")
+         starts_with("m2caide"),
          cdrsb, dx, naccudsd, naccetpr) %>%
   mutate(
     cohort = "ADNI", 
@@ -35,7 +33,7 @@ nacc <- nacc.raw %>%
   select(NACCID, NACCAGE, SEX, race, apoe, apoe_geno, EDUC,  NACCBMI, BPSYS, hypchol, hyperten, 
          i_NACCBMI, i_BPSYS, i_EDUC, i_hypchol, i_hyperten, 
          starts_with('caide'), starts_with('mcaide'), 
-         
+         starts_with('m2caide'),
          CDRSUM, dx, NACCUDSD, NACCETPR
          ) %>%
   select(-mcaide_cat, -mcaide_apoe, -caide_cat, -caide_apoe) %>%
@@ -57,9 +55,6 @@ nacc <- nacc.raw %>%
   mutate(
     gender = ifelse(gender == 1, "Male", "Female")
   )  
-
-setdiff(names(adni), names(nacc))
-get_na_by_cols(adni)
 
 ## Joint dataset
 joint <- bind_rows(
@@ -86,6 +81,9 @@ joint <- bind_rows(
   mutate(
     ## mCAIDE
     z_mcaide = scale(mcaide)[,1],
+    #create zscore for caide
+    z_m2caide = scale(m2caide)[,1],
+    
     z_mcaide_nosex = scale(mcaide_nosex)[,1],
     mcaide_cat = case_when(
       between(mcaide, 0, (mean(mcaide, na.rm = T) - sd(mcaide, na.rm = T))) ~ 'low',

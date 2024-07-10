@@ -33,7 +33,7 @@ theme_gtsummary_compact()
 
 # Compares b/se using z score method - doi: 10.1038/s41380-019-0596-9
 fzscore <- function(b1, b2, se1, se2){(b1 - b2)/sqrt(se1^2 + se2^2)}
-getwd()
+
 ```
 
 # Read in Data
@@ -1553,24 +1553,17 @@ lm(ad_age_lv ~ race + apoe + z_mcaide, data = dat) %>%
   tidy()
 
 ```
-
-## m2CAIDE
-```{r}
-glm(dx ~ apoe + z_caide + cohort, data = data, family = 'binomial')
-```
-
-
 ## All AUCs
 
 Obtain AUC for the following models:
  m1) dx ~ cohort + z_mcaide+ apoe
  m2) dx ~ cohort + z_caide+ apoe
  
- use Delong method
+use Delong method
  
 ```{r}
+library(pROC)
 mod_fits <- function(data,i){
-  # glm(dx ~ apoe_geno + SEX + aoo, data = data, family = 'binomial')
   mcaide_full = glm(dx ~ apoe + z_caide + cohort, data = data, family = 'binomial')
   caide_full  = glm(dx ~ apoe + z_mcaide + cohort, data = data, family = 'binomial')
   reduced_model = glm(dx ~ apoe  + cohort, data = data, family = 'binomial')
@@ -1695,9 +1688,97 @@ all_AUC
 
 ```
 
+## m2CAIDE
+```{r}
+mod_fits <- function(data,i){
+  mcaide_full = glm(dx ~ apoe + z_mcaide + cohort, data = data, family = 'binomial')
+  m2caide_full  = glm(dx ~ apoe + z_m2caide + cohort, data = data, family = 'binomial')
+  allM = list(mcaide_full,m2caide_full)
+  
+  return(allM[[i]])
+}
 
+all_res <- bind_rows(
+  dat %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD + MCI",
+      res_mcaide_full = map(data, mod_fits,1),
+      res_m2caide_full = map(data, mod_fits, 2),
+    ), 
+  dat %>%
+    filter(naccudsd %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD",
+      res_mcaide_full = map(data, mod_fits,1),
+      res_m2caide_full = map(data, mod_fits, 2),
+    ), 
+  
+  dat %>%
+    filter(naccetpr %in% c(1, 88)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD + MCI",
+      res_mcaide_full = map(data, mod_fits,1),
+      res_m2caide_full = map(data, mod_fits, 2),
+    ),
+  dat %>%
+    filter(naccetpr %in% c(1, 88)) %>%
+    filter(naccudsd %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD",
+      res_mcaide_full = map(data, mod_fits,1),
+      res_m2caide_full = map(data, mod_fits, 2),
+    ), 
+) %>% mutate(fit_mcaide_full = map(res_mcaide_full, glance),
+             df_mcaide_full = map(res_mcaide_full, tidy), 
+             #model2
+             fit_m2caide = map(res_m2caide_full, glance),
+             df_m2caide= map(res_m2caide_full, tidy), 
+       ) %>% 
+    select(-data)
 
+f = all_res %>% select(race, outcome, df_mcaide_full) %>% 
+  unnest(cols = df_mcaide_full) %>%
+  ungroup() %>%
+  filter(str_detect(term, 'apoe|mcaide')) %>%
+  mutate(
+    lci = estimate - (std.error * 1.96),
+    hci = estimate + (std.error * 1.96), 
+    or = exp(estimate),
+    or_lci = exp(lci),
+    or_hci = exp(hci),
+    term = str_replace(term, "apoe", ""), 
+    term = fct_relevel(term, 'e2+', 'e4+', 'z_mcaide'),    
+    race = fct_relevel(race, "Black", "Hispanic", "Asian", "NHW"), 
+    term = fct_recode(term, "ε2+" = "e2+", "ε4+" = "e4+", "CAIDE" = "z_caide")
+  )
 
+f2 = all_res %>% select(race, outcome, df_m2caide) %>% 
+  unnest(cols = df_m2caide) %>%
+  ungroup() %>%
+  filter(str_detect(term, 'apoe|m2caide')) %>%
+  mutate(
+    lci = estimate - (std.error * 1.96),
+    hci = estimate + (std.error * 1.96), 
+    or = exp(estimate),
+    or_lci = exp(lci),
+    or_hci = exp(hci),
+    term = str_replace(term, "apoe", ""), 
+    term = fct_relevel(term, 'e2+', 'e4+', 'z_caide'),    
+    race = fct_relevel(race, "Black", "Hispanic", "Asian", "NHW"), 
+    term = fct_recode(term, "ε2+" = "e2+", "ε4+" = "e4+", "CAIDE" = "z_caide")
+  )
+
+f
+f2
+```
 
 ```{r}
 #| label: apoe_difference

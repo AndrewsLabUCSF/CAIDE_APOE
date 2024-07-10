@@ -384,7 +384,7 @@ mcaide <- adni %>%
     m2caide = sum(mcaide_educ, mcaide_bmi, mcaide_sbp, i_mcaide_chol, na.rm = F), 
   ) %>%
   ungroup() %>%
-  select(ptid, i_mcaide_chol, starts_with("mcaide"))
+  select(ptid, i_mcaide_chol, starts_with("mcaide"),m2caide)
 
 ## export datsets 
 adni_out <- adni %>%
