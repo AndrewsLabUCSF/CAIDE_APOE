@@ -787,6 +787,88 @@ apoe_geno_res_p
 ggsave("results/figures/joint_apoe_race_all_bl.png", plot = apoe_geno_res_p, width = 9, height = 5, units = 'in')
 
 ```
+# indiv model for caide
+- run the components of ciade seperatley. Example
+y~ bp + chol + apoe4 + cohor etc report model results. 
+mcaide = sum(mcaide_age, mcaide_educ, mcaide_sex, mcaide_bmi, mcaide_sbp, mcaide_chol, na.rm = F), 
+
+```{r}
+individ_mod_fit <- function(data){
+  glm(dx ~ apoe + cohort + age + educ + gender +
+        bmi + caide_sbp+ i_hypchol , data = data, family = 'binomial')
+  
+}
+indiv_mod_res <- bind_rows(
+  dat %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD + MCI",
+      res = map(data, individ_mod_fit), 
+    ), 
+  dat %>%
+    filter(naccudsd %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD",
+      res = map(data, individ_mod_fit), 
+    ), 
+  
+  dat %>%
+    filter(naccetpr %in% c(1, 88)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD + MCI",
+      res = map(data, individ_mod_fit), 
+    ), 
+  dat %>%
+    filter(naccetpr %in% c(1, 88)) %>%
+    filter(naccudsd %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD",
+      res = map(data, individ_mod_fit), 
+    ), 
+) %>%
+  mutate(
+    fit = map(res, glance),
+    df = map(res, tidy), 
+  ) %>%
+  select(-data)
+
+indiv_mod_res_table <- indiv_mod_res %>%
+  select(race, outcome, df) %>%
+  unnest(cols = df) %>%
+  ungroup() %>%
+  #filter(str_detect(term, 'apoe|caide')) %>%
+  mutate(
+    p.value = format(p.value, scientific = TRUE, digits = 3),
+    lci = estimate - (std.error * 1.96),
+    hci = estimate + (std.error * 1.96), 
+    or = exp(estimate),
+    or_lci = exp(lci),
+    or_hci = exp(hci),
+    # term = str_replace(term, "apoe", ""), 
+    # term = fct_relevel(term, 'e2+', 'e4+', ""),    
+    # race = fct_relevel(race, "Black", "Hispanic", "Asian", "NHW"), 
+    # term = fct_recode(term, "ε2+" = "e2+", "ε4+" = "e4+"),
+     term = str_replace(term, "apoe", ""), 
+    term = fct_relevel(term, 'e2+', 'e4+', 'z_caide'),    
+    race = fct_relevel(race, "Black", "Hispanic", "Asian", "NHW"), 
+    term = fct_recode(term, "ε2+" = "e2+", "ε4+" = "e4+", "CAIDE" = "z_caide"),
+    
+
+    
+  ) %>% 
+  rowwise() %>% 
+  mutate_at(vars(-race, -outcome, -term,-p.value), ~ round(.x, digits = 3))
+
+indiv_mod_res_table
+```
+
 
 ### CAIDE
 ```{r}
@@ -895,7 +977,8 @@ caide_res.df <- caide_res %>%
   rowwise() %>% 
   mutate_at(vars(-race, -outcome, -term,-p.value), ~ round(.x, digits = 3))
 
-caide_res.df
+caide_res.df nrdasfsd
+
 ```
 
 #### APOE
@@ -1529,6 +1612,8 @@ ggplot(caide_sex_res.df, aes(x = or, y = race, color = race)) +
   )
 
 ```
+
+
 
 ## mCAIDE
 
