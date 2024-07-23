@@ -478,8 +478,6 @@ mcaide <- nacc %>%
   ungroup() %>%
   mutate(
     z_mcaide = scale(mcaide)[,1],
-    z_m2caide = scale(m2caide)[,1],
-    
     mcaide_cat = case_when(
       between(mcaide, 0, (mean(mcaide, na.rm = T) - sd(mcaide, na.rm = T))) ~ 'low',
       between(mcaide, (mean(mcaide, na.rm = T) - sd(mcaide, na.rm = T)), (mean(mcaide, na.rm = T) + sd(mcaide, na.rm = T))) ~ 'mid', 
@@ -489,12 +487,26 @@ mcaide <- nacc %>%
     mcaide_cat = fct_relevel(mcaide_cat, 'low', "mid",  'high'),
     mcaide_apoe = glue("{mcaide_cat}_{apoe}"), 
     mcaide_apoe = fct_relevel(mcaide_apoe, "mid_e3/e3", "low_e2+", "low_e3/e3", "low_e4+", 
-                             "mid_e2+", "mid_e4+", "high_e2+", "high_e3/e3", "high_e4+")
+                             "mid_e2+", "mid_e4+", "high_e2+", "high_e3/e3", "high_e4+"),
+    #make m2apoe 
+    z_m2caide = scale(m2caide)[,1],
+    m2caide_cat = case_when(
+      between(m2caide, 0, (mean(m2caide, na.rm = T) - sd(m2caide, na.rm = T))) ~ 'low',
+      between(m2caide, (mean(m2caide, na.rm = T) - sd(m2caide, na.rm = T)), (mean(m2caide, na.rm = T) + sd(m2caide, na.rm = T))) ~ 'mid', 
+      between(mcaide, (mean(m2caide, na.rm = T) + sd(m2caide, na.rm = T)), 14) ~ 'high',
+      TRUE ~ NA_character_
+    ),
+    m2caide_cat = fct_relevel(m2caide_cat, 'low', "mid",  'high'),
+    m2caide_apoe = glue("{m2caide_cat}_{apoe}"), 
+    m2caide_apoe = fct_relevel(m2caide_apoe, "mid_e3/e3", "low_e2+", "low_e3/e3", "low_e4+", 
+                              "mid_e2+", "mid_e4+", "high_e2+", "high_e3/e3", "high_e4+")
+    
   ) %>%
   mutate_at(
     vars(mcaide_age, mcaide_educ, mcaide_sex, mcaide_bmi, mcaide_sbp, mcaide_chol), as_factor
   ) %>%
-  select(NACCID, starts_with('mcaide'), z_mcaide, mcaide_cat,m2caide)
+  select(NACCID, starts_with('mcaide'), z_mcaide, mcaide_cat, 
+                  starts_with('m2caide'), z_m2caide, m2caide_cat)
 
 ## CogDrisk Score 
 cogdrisk <- nacc %>%

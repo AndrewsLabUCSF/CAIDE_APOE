@@ -417,7 +417,6 @@ adni_out <- adni %>%
       naccudsd == 4 ~ 1
     )
   )
-    
 
 write_tsv(adni_out, "data/adni.csv")
 
