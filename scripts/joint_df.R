@@ -108,7 +108,7 @@ joint <- bind_rows(
     
     m2caide_cat = case_when(
       between(m2caide, 0, (mean(m2caide, na.rm = T) - sd(m2caide, na.rm = T))) ~ 'low',
-      between(m2caide, (mean(m2caide, na.rm = T) - sd(m2caide, na.rm = T)), (mean(m2caide, na.rm = T) + sd(mcaide, na.rm = T))) ~ 'mid', 
+      between(m2caide, (mean(m2caide, na.rm = T) - sd(m2caide, na.rm = T)), (mean(m2caide, na.rm = T) + sd(m2caide, na.rm = T))) ~ 'mid', 
       between(m2caide, (mean(m2caide, na.rm = T) + sd(m2caide, na.rm = T)), 14) ~ 'high',
       TRUE ~ NA_character_
     ),
