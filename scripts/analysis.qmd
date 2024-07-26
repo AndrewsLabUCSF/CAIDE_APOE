@@ -132,8 +132,7 @@ tab_rf <- dat %>%
                            cohort ~ "Cohort", 
                            caide_cat ~ "CAIDE",
                            mcaide_cat ~ "mCAIDE") 
-              ) %>%
-  add_n() 
+              ) %>% add_n() 
 
 tab_rf
 
@@ -1899,7 +1898,6 @@ mcaide_apoe_cat_df <- mcaide_apoe_cat_res %>%
     reference = ifelse(or == 1, TRUE, FALSE), 
     race = fct_relevel(race, "Black", "Hispanic", "Asian", "NHW"), 
     race = fct_recode(race, "Latinx" = "Hispanic"), 
-
   ) 
 
 group_split(mcaide_apoe_cat_df, outcome) %>% map(., print, n = Inf)
@@ -3883,12 +3881,9 @@ mcaide = sum(mcaide_age, mcaide_educ, mcaide_sex, mcaide_bmi, mcaide_sbp, mcaide
 
 ```{r}
 individ_mod_fit <- function(data){
-  # glm(dx ~ apoe + cohort + age + educ + gender +
-  #       bmi + caide_sbp+ i_hypchol , data = data, family = 'binomial')
-  
   glm(dx ~ apoe + cohort + age + educ + gender +
         bmi + i_bpsys + i_hypchol , data = data, family = 'binomial')
-  
+
 }
 indiv_mod_res <- bind_rows(
   dat %>%
@@ -3922,20 +3917,41 @@ indiv_mod_res <- bind_rows(
     nest() %>%
     mutate(
       outcome = "AD",
-      res = map(data, individ_mod_fit), 
-    ), 
+      res = map(data, individ_mod_fit)
+    )
 ) %>%
   mutate(
     fit = map(res, glance),
     df = map(res, tidy), 
+    pred = map2(res, data, predict, type ='response'),
+    actual = map(data, ~.x$dx),
+    auc= map2_dbl(actual, pred, ~auc(roc(.x, .y))),
+    roc = map2(actual, pred, ~roc(.x,.y)),
   ) %>%
   select(-data)
+
+
+auc_indiv = indiv_mod_res %>%  select(race, outcome, auc) %>% 
+  group_by(race, outcome) %>% 
+  ungroup() %>% 
+  mutate(across(where(is.numeric), ~ round(.x, digits = 4))) %>% 
+  gt() %>%cols_label(auc ~"AUC") %>% 
+  tab_footnote(footnote = html( "Y<sub>dx</sub> ~ &beta;<sub> APOE</sub>+ 
+                                &beta;<sub> cohort</sub> + &beta;<sub>age</sub>+
+                                &beta;<sub> education </sub> +
+                                &beta;<sub> gender </sub> + 
+                                &beta;<sub> BMI </sub> + 
+                                &beta;<sub> hypercholesteremia</sub> + 
+                                &beta;<sub> systolic BP </sub>
+                                "),
+               locations = cells_column_labels(columns = c(auc)) )
+
 
 indiv_mod_res_table <- indiv_mod_res %>%
   select(race, outcome, df) %>%
   unnest(cols = df) %>%
   ungroup() %>%
-  #filter(str_detect(term, 'apoe|caide')) %>%
+  filter(!str_detect(term, 'Intercept')) %>%
   mutate(
     p.value = format(p.value, scientific = TRUE, digits = 3),
     lci = estimate - (std.error * 1.96),
@@ -3955,8 +3971,118 @@ indiv_mod_res_table <- indiv_mod_res %>%
   rowwise() %>% 
   mutate_at(vars(-race, -outcome, -term,-p.value), ~ round(.x, digits = 3))
 
-indiv_mod_res_table
+indiv_mod_res_table %>% gt()
 ```
+## delong indiv model
+```{r}
+individ_mods <- function(data,i){
+  m1 = glm(dx ~ apoe + cohort + age + educ + gender +bmi + i_bpsys + i_hypchol , data = data, family = 'binomial')
+  m2 = glm(dx ~ apoe + z_caide + cohort, data = data, family = 'binomial')
+  
+  allMs = list(m1,m2)
+  
+  return(allMs[[i]])
+}
+
+indiv_mod_res <- bind_rows(
+  dat %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD + MCI",
+      res_ind = map(data, individ_mods,1),
+      res_caide = map(data,individ_mods,2),
+    ), 
+  dat %>%
+    filter(naccudsd %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD",
+      res_ind = map(data, individ_mods,1),
+      res_caide = map(data,individ_mods,2)
+    ), 
+  
+  dat %>%
+    filter(naccetpr %in% c(1, 88)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD + MCI",
+      res_ind = map(data, individ_mods,1),
+      res_caide = map(data,individ_mods,2)
+    ), 
+  dat %>%
+    filter(naccetpr %in% c(1, 88)) %>%
+    filter(naccudsd %nin% c(3)) %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "AD",
+      res_ind = map(data, individ_mods,1),
+      res_caide = map(data,individ_mods,2),
+    )
+) %>%
+  mutate(
+    fit_indiv = map(res_ind, glance),
+    df_indiv = map(res_ind, tidy), 
+    pred_indiv = map2(res_ind, data, predict, type ='response'),
+    actual_indiv = map(data, ~.x$dx),
+    auc_indiv = map2_dbl(actual_indiv, pred_indiv, ~ auc(roc(.x, .y))),
+    roc_indiv = map2(actual_indiv, pred_indiv, ~roc(.x, .y)),
+    
+    #model2
+    fit_caide = map(res_caide, glance),
+    df_caide= map(res_caide, tidy), 
+    pred_caide = map2(res_caide, data, predict, type = 'response'),
+    caide_actual_vals = map(data, ~.x$dx),
+    auc_caide = map2_dbl(caide_actual_vals, pred_caide, ~ auc(roc(.x, .y))),
+    roc_caide = map2(caide_actual_vals, pred_caide, ~roc(.x,.y)),
+    
+    
+    deLong_pval = map2(roc_indiv, roc_caide, ~roc.test(.x,.y,method =
+                                                          "delong")[["p.value"]]),
+    deLong_stat = map2(roc_indiv, roc_caide, ~roc.test(.x,.y,method =  
+                                                          "delong")[["statistic"]][[1]]),
+  ) %>%
+  select(-data)
+
+auc_i_c = indiv_mod_res %>% 
+  select(race, outcome,auc_indiv, 
+         auc_caide, deLong_stat,deLong_pval
+  ) %>% 
+  group_by(race, outcome) %>% 
+  ungroup() %>% 
+  mutate(across(where(is.numeric), ~ round(.x, digits = 4)),
+         deLong_pval = format(deLong_pval, scientific = TRUE, digits = 3),
+         #deLong_stat = round(deLong_stat, 3)
+  ) %>% 
+  gt() %>% 
+  cols_label(auc_indiv ~"AUC M1",
+             auc_caide ~ "AUC M2",
+             deLong_stat ~ "Statistic",
+             deLong_pval~ "p.value") %>% 
+  tab_footnote(footnote = html("M1: Y<sub>dx</sub> ~ &beta;<sub> APOE</sub>+ 
+                                &beta;<sub> cohort</sub> + &beta;<sub>age</sub>+
+                                &beta;<sub> education </sub> +
+                                &beta;<sub> gender </sub> + 
+                                &beta;<sub> BMI </sub> + 
+                                &beta;<sub> hypercholesteremia</sub> + 
+                                &beta;<sub> systolic BP </sub>
+                                "),
+               locations = cells_column_labels(columns = c(auc_indiv))
+  ) %>% 
+  tab_footnote(footnote = html( "M2: Y<sub>dx</sub> ~ &beta;<sub> APOE</sub>+ 
+                                  &beta; <sub>z_caide</sub>+ &beta;<sub> cohort</sub>"),
+               locations = cells_column_labels(columns = c(auc_caide))
+  ) %>% 
+  tab_footnote(footnote = html("Based on DeLong's method"),
+               locations = cells_column_labels(columns = c(deLong_stat, deLong_pval))
+  ) 
+auc_i_c
+```
+
+
 
 ## multiplicative model
 ```{r}
@@ -4013,7 +4139,7 @@ caide_intera_res.df <- caide_interaction_res %>%
   select(race, outcome, df) %>%
   unnest(cols = df) %>%
   ungroup() %>%
-  filter(str_detect(term, 'apoe|caide')) %>%
+  filter(str_detect(term, 'apoe|caide|cohort')) %>%
   mutate(
     p.value = format(p.value, scientific = TRUE, digits = 3),
     lci = estimate - (std.error * 1.96),
@@ -4029,7 +4155,7 @@ caide_intera_res.df <- caide_interaction_res %>%
   rowwise() %>% 
   mutate_at(vars(-race, -outcome, -term,-p.value), ~ round(.x, digits = 3))
 
-caide_intera_res.df 
+caide_intera_res.df %>% gt()
 
 ```
 
@@ -4162,11 +4288,6 @@ all_AUC = all_res_AUC %>%
                ) 
 
 all_AUC
-
-#gtsave(auc_mcaide_table, "/Users/anaboeriu/Downloads/mcaide.docx")
-
-# write.xlsx(auc_mcaide_table, "/Users/anaboeriu/Downloads/mcaide.xlsx",asTable = TRUE, overwrite = TRUE)
-
 ```
 ## m2CAIDE
 ```{r}
