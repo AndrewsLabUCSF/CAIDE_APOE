@@ -1,4 +1,3 @@
-
 library("tidyverse")
 library("missForest")
 library("glue")
@@ -7,8 +6,8 @@ library("broom")
 library("ggplot2")
 library("gtsummary")
 library("rmarkdown")
-library(lubridate)
-library(vcfR)
+library("lubridate")
+library("vcfR")
 
 setwd("~/gitcode/CAIDE_APOE")
 
@@ -382,9 +381,10 @@ mcaide <- adni %>%
     mcaide_wo_chol = sum(mcaide_age, mcaide_educ, mcaide_sex, mcaide_bmi, mcaide_sbp, na.rm = F), 
     mcaide_missing = sum(is.na(age), is.na(pteducat), is.na(ptgender), 
                         is.na(bmi), is.na(total_c), is.na(vsbpsys)),
+    m2caide = sum(mcaide_educ, mcaide_bmi, mcaide_sbp, i_mcaide_chol, na.rm = F), 
   ) %>%
   ungroup() %>%
-  select(ptid, i_mcaide_chol, starts_with("mcaide"))
+  select(ptid, i_mcaide_chol, starts_with("mcaide"),m2caide)
 
 ## export datsets 
 adni_out <- adni %>%
@@ -417,7 +417,6 @@ adni_out <- adni %>%
       naccudsd == 4 ~ 1
     )
   )
-    
 
 write_tsv(adni_out, "data/adni.csv")
 

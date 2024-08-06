@@ -24,12 +24,16 @@ filter(test, str_detect(iid, "NACC"))
 filter(prs, str_detect(iid, "NACC"))
 
 ## ADNI 
-adni.raw %>% count(adrd)
 adni <- adni.raw %>%
-  select(ptid, origprot, age, ptgender, race, apoe, apoe_geno, pteducat, bmi, vsbpsys, total_c, htn, hld,
-         i_bmi, i_vsbpsys, i_pteducat, i_total_c, i_htn, i_hld,
-         i_caide_chol, starts_with('caide'), i_mcaide_chol, starts_with('mcaide'), 
-         cdrsb, dx, naccudsd, naccetpr) %>%
+  select(ptid, origprot, age, ptgender, race, apoe, apoe_geno, pteducat, bmi, 
+         vsbpsys, total_c, htn, hld,
+         i_pteducat, i_bmi, i_vsbpsys, i_total_c, i_htn, i_hld, i_caide_chol,
+         starts_with('caide'), i_mcaide_chol, starts_with('mcaide'), 
+         starts_with("m2caide"),
+         cdrsb, dx, naccudsd, naccetpr,
+         #add in unimputed, dichotimize the adni cholesterol variable
+         caide_chol, mcaide_chol
+         ) %>%
   mutate(
     cohort = "ADNI", 
   ) %>%
@@ -47,9 +51,11 @@ adni <- adni.raw %>%
   
 ## NACC 
 nacc <- nacc.raw %>% 
-  select(NACCID, NACCAGE, SEX, race, apoe, apoe_geno, EDUC,  NACCBMI, BPSYS, hypchol, hyperten, 
-         i_NACCBMI, i_BPSYS, i_EDUC, i_hypchol, i_hyperten, 
+  select(NACCID, NACCAGE, SEX, race, apoe, apoe_geno,   
+         EDUC, NACCBMI, BPSYS, hypchol, hyperten, 
+         i_EDUC, i_NACCBMI, i_BPSYS,  i_hypchol, i_hyperten, 
          starts_with('caide'), starts_with('mcaide'), 
+         starts_with('m2caide'),
          CDRSUM, dx, NACCUDSD, NACCETPR
          ) %>%
   select(-mcaide_cat, -mcaide_apoe, -caide_cat, -caide_apoe) %>%
@@ -93,12 +99,15 @@ joint <- bind_rows(
     caide_cat = fct_relevel(caide_cat, 'low', "mid",  'high'),
     caide_apoe = glue("{caide_cat}_{apoe}"), 
     caide_apoe = fct_relevel(caide_apoe, "mid_e3/e3", "low_e2+", "low_e3/e3", "low_e4+", 
-                             "mid_e2+", "mid_e4+", "high_e2+", "high_e3/e3", "high_e4+")
+                             "mid_e2+", "mid_e4+", "high_e2+", "high_e3/e3", "high_e4+"),
+    
   ) %>%
   mutate(
     ## mCAIDE
     z_mcaide = scale(mcaide)[,1],
+    
     z_mcaide_nosex = scale(mcaide_nosex)[,1],
+    
     mcaide_cat = case_when(
       between(mcaide, 0, (mean(mcaide, na.rm = T) - sd(mcaide, na.rm = T))) ~ 'low',
       between(mcaide, (mean(mcaide, na.rm = T) - sd(mcaide, na.rm = T)), (mean(mcaide, na.rm = T) + sd(mcaide, na.rm = T))) ~ 'mid', 
@@ -127,7 +136,23 @@ joint <- bind_rows(
                               "mid_low", "mid_high", "high_low", "high_mid", "high_high")
     
   ) %>%
-  ungroup()
+  ungroup() %>% 
+  mutate(
+    #m2CAIDE
+    #create zscore for caide
+    z_m2caide = scale(m2caide)[,1],
+    
+    m2caide_cat = case_when(
+      between(m2caide, 0, (mean(m2caide, na.rm = T) - sd(m2caide, na.rm = T))) ~ 'low',
+      between(m2caide, (mean(m2caide, na.rm = T) - sd(m2caide, na.rm = T)), (mean(m2caide, na.rm = T) + sd(m2caide, na.rm = T))) ~ 'mid', 
+      between(m2caide, (mean(m2caide, na.rm = T) + sd(m2caide, na.rm = T)), 14) ~ 'high',
+      TRUE ~ NA_character_
+    ),
+    m2caide_cat = fct_relevel(m2caide_cat, 'low', "mid",  'high'),
+    m2caide_apoe = glue("{m2caide_cat}_{apoe}"), 
+    m2caide_apoe = fct_relevel(m2caide_apoe, "mid_e3/e3", "low_e2+", "low_e3/e3", "low_e4+", 
+                              "mid_e2+", "mid_e4+", "high_e2+", "high_e3/e3", "high_e4+")
+  )
 
 ## Export 
 write_tsv(joint, "data/joint_df.tsv.gz")

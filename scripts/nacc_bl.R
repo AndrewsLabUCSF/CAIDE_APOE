@@ -229,7 +229,7 @@ nacc_wrangle <- nacc_clean %>%
   
 
 ### impute missing data 
-require(doParallel)
+library(doParallel)
 registerDoParallel(cores=3) 
 getDoParWorkers()
 require(doRNG)
@@ -239,7 +239,8 @@ nacc_ximp <- nacc_wrangle %>%
   select(NACCAGE, race, CDRSUM, apoe_geno, SEX, HEIGHT, WEIGHT, NACCBMI, BPSYS, NACCTBI, NACCGDS, 
          BPDIAS, EDUC, hypchol, diabetes, stroke, hyperten, insomnia, afib, smk) %>%
   as.data.frame() %>%
-  missForest(xmis = ., variablewise = TRUE, verbose = TRUE, xtrue = filter(., complete.cases(.)), parallelize = 'forests')
+  missForest(xmis = ., variablewise = TRUE, verbose = TRUE, 
+             xtrue = filter(., complete.cases(.)), parallelize = 'forests')
 
 nacc_imp <- nacc_ximp %>%
   magrittr::extract2(1) %>%
@@ -467,11 +468,12 @@ mcaide <- nacc %>%
     ), 
   ) %>%
   rowwise() %>%
-  mutate(
+  mutate( 
     mcaide = sum(mcaide_age, mcaide_educ, mcaide_sex, mcaide_bmi, mcaide_sbp, mcaide_chol, na.rm = F), 
     mcaide_nosex = sum(mcaide_age, mcaide_educ, mcaide_bmi, mcaide_sbp, mcaide_chol, na.rm = F), 
     mcaide_missing = sum(is.na(NACCAGE), is.na(EDUC), is.na(SEX), 
                         is.na(NACCBMI), is.na(hypchol), is.na(BPSYS)),
+    m2caide = sum(mcaide_educ, mcaide_bmi, mcaide_sbp, mcaide_chol, na.rm = F)
   ) %>%
   ungroup() %>%
   mutate(
@@ -485,12 +487,26 @@ mcaide <- nacc %>%
     mcaide_cat = fct_relevel(mcaide_cat, 'low', "mid",  'high'),
     mcaide_apoe = glue("{mcaide_cat}_{apoe}"), 
     mcaide_apoe = fct_relevel(mcaide_apoe, "mid_e3/e3", "low_e2+", "low_e3/e3", "low_e4+", 
-                             "mid_e2+", "mid_e4+", "high_e2+", "high_e3/e3", "high_e4+")
+                             "mid_e2+", "mid_e4+", "high_e2+", "high_e3/e3", "high_e4+"),
+    #make m2apoe 
+    z_m2caide = scale(m2caide)[,1],
+    m2caide_cat = case_when(
+      between(m2caide, 0, (mean(m2caide, na.rm = T) - sd(m2caide, na.rm = T))) ~ 'low',
+      between(m2caide, (mean(m2caide, na.rm = T) - sd(m2caide, na.rm = T)), (mean(m2caide, na.rm = T) + sd(m2caide, na.rm = T))) ~ 'mid', 
+      between(m2caide, (mean(m2caide, na.rm = T) + sd(m2caide, na.rm = T)), 14) ~ 'high',
+      TRUE ~ NA_character_
+    ),
+    m2caide_cat = fct_relevel(m2caide_cat, 'low', "mid",  'high'),
+    m2caide_apoe = glue("{m2caide_cat}_{apoe}"), 
+    m2caide_apoe = fct_relevel(m2caide_apoe, "mid_e3/e3", "low_e2+", "low_e3/e3", "low_e4+", 
+                              "mid_e2+", "mid_e4+", "high_e2+", "high_e3/e3", "high_e4+")
+    
   ) %>%
   mutate_at(
     vars(mcaide_age, mcaide_educ, mcaide_sex, mcaide_bmi, mcaide_sbp, mcaide_chol), as_factor
   ) %>%
-  select(NACCID, starts_with('mcaide'), z_mcaide, mcaide_cat)
+  select(NACCID, starts_with('mcaide'), z_mcaide, mcaide_cat, 
+                  starts_with('m2caide'), z_m2caide, m2caide_cat)
 
 ## CogDrisk Score 
 cogdrisk <- nacc %>%
@@ -624,7 +640,7 @@ nacc_out <- nacc %>%
 
 ## Export
 write_csv(nacc_out, 'data/nacc.csv')
-write_rds(nacc_out, 'data/nacc.rds', compress = 'gz')
+#write_rds(nacc_out, 'data/nacc.rds', compress = 'gz')
 
 
 
