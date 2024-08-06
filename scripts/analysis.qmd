@@ -58,7 +58,8 @@ dat <- read_tsv(dat_path) %>%
     race = fct_relevel(race, "NHW"), 
     cohort = fct_relevel(cohort, "NACC"), 
     caide_apoe = fct_relevel(caide_apoe, "mid_e3/e3"), 
-    mcaide_apoe = fct_relevel(mcaide_apoe, "mid_e3/e3") 
+    mcaide_apoe = fct_relevel(mcaide_apoe, "mid_e3/e3"), 
+    mcaide_prs = fct_relevel(mcaide_prs, "mid_mid") 
   )
 
 ```
@@ -1271,7 +1272,7 @@ ggsave("results/figures/joint_caide_apoe_adrd_mci_bl.png", plot = joint_caide_ap
 
 ```
 
-#### Sex stratified 
+#### Sex stratified
 
 ```{r}
 
@@ -1426,7 +1427,6 @@ caide_sex_res.df.out %>%
   write_csv(., "results/caide_res_sex.csv")
 
 ```
-
 
 ```{r}
 ggplot(caide_sex_res.df, aes(x = or, y = race, color = race)) + 
@@ -1948,7 +1948,7 @@ ggsave("results/figures/mcaide_apoe_adrd_mci_bl.png", plot = mcaide_apoe_adrd_mc
 
 ```
 
-#### Sex stratified 
+#### Sex stratified
 
 ```{r}
 
@@ -2105,7 +2105,6 @@ mcaide_sex_res.df.out %>%
 
 mcaide_sex_res.df.out %>% filter(predictor == "mCAIDE")
 ```
-
 
 ```{r}
 ggplot(mcaide_sex_res_df, aes(x = or, y = race, color = race)) + 
@@ -2345,6 +2344,7 @@ dev.off()
 
 ```
 
+### PRS 
 ### Manuscript Figures
 
 #### Figure 1
@@ -2442,11 +2442,14 @@ joint_mcaid_apoe_adrd_mci_bl_p <- ggplot(mcaide_res_df %>% filter(outcome == "AD
 
 ```{r}
 ## Combined plot
-legend_f1 <- cowplot::get_legend(joint_caid_apoe_adrd_mci_bl_p)
+legend_f1 <- cowplot::get_legend(joint_mcaid_apoe_adrd_mci_bl_p + theme(strip.text = element_blank()))
+
+legend_f1 <- get_plot_component(joint_mcaid_apoe_adrd_mci_bl_p + theme(strip.text = element_blank()), 'guide-box-bottom', return_all = TRUE)
 
 outfile_poster.path = '~/Downloads/joint_caide_mcaide_adrd_mci.png'
 # tiff(outfile_neuron.path, width = 9, height = 4.5, units = "in", res = 300)
 png(outfile_poster.path, width = 5, height = 3, units = "in", res = 600)
+png("results/figures/figure1.png", width = 3.5, height = 3.5, units = "in", res = 600)
 pageCreate(width = 3.5, height = 3.5, default.units = "inches")
 
 plotGG(
@@ -2470,6 +2473,60 @@ plotGG(
 pageGuideHide()
 dev.off()
 
+
+```
+
+```{r}
+#| label: adard_mci_apoe_plots
+#| code-summary: ADRD+MCI Main effect plots
+
+fig1_diff <- bind_rows(
+  caide_df_pval %>% filter(outcome == "ADRD + MCI"), 
+  mcaide_df_pval %>% filter(outcome == "ADRD + MCI") %>% filter(term == "mCAIDE")
+)
+
+fig1.df <- bind_rows(
+  caide_res.df %>% filter(outcome == "ADRD + MCI"),
+  mcaide_res_df %>% filter(outcome == "ADRD + MCI") %>% filter(term == "mCAIDE")
+)
+
+theme.size = 8
+
+figure1.p <- ggplot(fig1.df, aes(y = or, x = race, color = race)) + 
+    facet_grid(cols = vars(term), rows = vars(outcome), scales = 'fixed') + 
+    coord_cartesian(ylim=c(0.5, 5.3)) + 
+    geom_hline(yintercept = 1, linetype = 2) + 
+    geom_linerange(aes(ymin = or_lci, ymax = or_hci), linewidth = 0.5) + 
+    geom_point(size = 0.75) + 
+    ggprism::add_pvalue(fig1_diff,
+                        bracket.nudge.y = 4.2,
+                        label = "{stars}", colour = 'black',
+                        tip.length = 0.01, bracket.size = 0.2) +
+    # scale_x_continuous("Odds Ratio", trans = 'log', 
+    #                    breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 
+    #                    labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32)
+    # ) + 
+    # scale_x_discrete(limits=rev) +  
+    scale_color_manual(
+      labels = c("Black", "Latinx", "Asian", "NHW"),
+      values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
+    theme_bw() + 
+    labs(y = "OR (95% CI)") + 
+    theme(
+      text = element_text(size = 8),
+      axis.title.x = element_blank(),
+      axis.text.x = element_blank(),
+      axis.ticks.x = element_blank(),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      panel.grid.minor.y = element_blank(),
+      legend.position = "bottom", 
+      strip.background = element_blank(), 
+      strip.text = element_text(face = 'bold')
+      )
+
+ggsave("results/figures/figure1_new.png", plot = figure1.p, units = 'in', width = 4, height = 2)
+ggsave("results/figures/figure1_new.tiff", plot = figure1.p, units = 'in', width = 4, height = 2)
 
 ```
 
@@ -2525,7 +2582,7 @@ figure2 <- f2.df  %>%
       )
 
 ggsave("results/figures/figure2.png", plot = figure2, width = 6, height = 3.5, units = 'in')
-
+ggsave("results/figures/figure2.tiff", plot = figure2, width = 6, height = 3.5, units = 'in')
 ```
 
 #### Figure 3
@@ -2557,6 +2614,200 @@ figure3 <- ggplot(sex_df, aes(x = or, y = race, color = race)) +
   )
 
 ggsave("results/figures/figure3.png", plot = figure3, width = 6, height = 3.5, units = 'in')
+ggsave("results/figures/figure3.tiff", plot = figure3, width = 6, height = 3.5, units = 'in')
+
+
+```
+
+## R01 Figures
+
+```{r}
+#| label: adard_mci_apoe_plots
+#| code-summary: ADRD+MCI Main effect plots
+
+r01_adrd_mci_diff <- caide_df_pval %>% 
+  bind_rows(mcaide_df_pval) %>%
+  filter(outcome == "ADRD + MCI") %>%
+  filter(term %in% c('CAIDE', 'mCAIDE'))
+
+mcaide_caide.df <- caide_res.df %>%
+  bind_rows(mcaide_res_df) %>%
+  filter(outcome == "ADRD + MCI") %>%
+  filter(term %in% c('CAIDE', 'mCAIDE'))
+  
+
+theme.size = 8
+
+caide_mcaide_adrd_mci_bl_p <- ggplot(mcaide_caide.df, aes(y = or, x = race, color = race)) + 
+    facet_grid(cols = vars(term), rows = vars(outcome), scales = 'free') + 
+    coord_cartesian(ylim=c(0.5, 3.3)) + 
+    geom_hline(yintercept = 1, linetype = 2) + 
+    geom_linerange(aes(ymin = or_lci, ymax = or_hci), linewidth = 0.5) + 
+    geom_point(size = 0.75) + 
+    ggprism::add_pvalue(r01_adrd_mci_diff,
+                        bracket.nudge.y = 2.1,
+                        label = "{stars}", colour = 'black',
+                        tip.length = 0.01, bracket.size = 0.2) +
+    # scale_x_continuous("Odds Ratio", trans = 'log', 
+    #                    breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 
+    #                    labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32)
+    # ) + 
+    # scale_x_discrete(limits=rev) +  
+    scale_color_manual(
+      labels = c("Black", "Latinx", "Asian", "NLW"),
+      values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
+    theme_bw() + 
+    labs(y = "OR (95% CI)") + 
+    theme(
+      text = element_text(size = 8),
+      axis.title.x = element_blank(),
+      axis.text.x = element_blank(),
+      axis.ticks.x = element_blank(),
+      legend.position = "bottom", 
+      legend.title = element_blank(),
+      strip.background = element_blank(), 
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      panel.grid.minor.y = element_blank(),
+      strip.text = element_text(face = 'bold')
+      )
+
+ggsave("~/Downloads/caide_mcaide_adrd_mci_bl.png", plot = caide_mcaide_adrd_mci_bl_p, height = 2, width = 2.5, units = 'in')
+
+```
+
+```{r}
+library(plotgardener)
+
+f2.df <- bind_rows(
+  filter(caide_apoe_cat_df, outcome == "ADRD + MCI") %>%
+    mutate(model = "CAIDE"),
+  filter(mcaide_apoe_cat_df, outcome == "ADRD + MCI")  %>%
+    mutate(model = "mCAIDE")
+) %>%
+  mutate(
+    term = str_replace_all(term, "e2", "ε2"), 
+    term = str_replace_all(term, "e3", "ε3"),
+    term = str_replace_all(term, "e4", "ε4"), 
+    term = str_replace_all(term, " \\(reference\\)", ""), 
+    term = fct_relevel(term, "Favourable, ε2+", "Intermediate, ε2+", "Unfavourable, ε2+",
+                       "Favourable, ε3/ε3", "Intermediate, ε3/ε3", "Unfavourable, ε3/ε3",
+                       "Favourable, ε4+", "Intermediate, ε4+", "Unfavourable, ε4+"),
+    race = str_replace_all(race, "NHW", "NLW"), 
+  )
+
+figure2 <- f2.df  %>% 
+  ggplot(., aes(x = or, y = term, color = race, shape = reference)) + 
+    facet_grid(cols = vars(race), rows = vars(model), scales = "free_x") + 
+    geom_vline(xintercept = 1, linetype = 2) + 
+    geom_point() + 
+    geom_linerange(aes(xmin = or_lci, xmax = or_hci), linewidth = 0.75) + 
+    scale_x_continuous("OR (95% CI)", trans = 'log',
+                       breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32),
+                       labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 
+                       limits = c(0.15, 9), 
+                       oob=scales::rescale_none
+    ) +
+    scale_color_manual(
+      values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")
+      ) + 
+    scale_y_discrete(limits=rev) +  
+    scale_shape_manual(values = c(16, 15), guide = 'none') + 
+    theme_bw() + 
+    theme(
+      text = element_text(size = theme.size),
+      axis.title.y = element_blank(),
+      # axis.text.x = element_text(size = 10),
+      # legend.position = "bottom", 
+      legend.position = "none", 
+     legend.title = element_blank(),
+      legend.margin=margin(c(0,0,0,0)),
+      legend.spacing.x = unit(0, "mm"),
+      legend.spacing.y = unit(0, "mm"),
+      strip.background = element_blank(), 
+      strip.text = element_text(face = 'bold'), 
+      plot.margin = unit(c(0,0,0,0), "cm")
+      )
+
+png("results/figures/r01_figure2.png", width = 5.5, height = 2.5, units = 'in', res = 300)
+pageCreate(width = 5.5, height = 2.5, default.units = "inches")
+
+plotGG(
+  plot = figure2,
+  x = 0, y = 0,
+  width = 5.5, height = 2.5, just = c("left", "top")
+)
+
+pageGuideHide()
+dev.off()
+
+
+```
+
+```{r}
+library(plotgardener)
+
+f6.df <- bind_rows(
+  # filter(caide_apoe_cat_df, outcome == "ADRD + MCI") %>%
+  #   mutate(model = "CAIDE"),
+  filter(mcaide_apoe_cat_df, outcome == "ADRD + MCI")  %>%
+    mutate(model = "mCAIDE")
+) %>%
+  mutate(
+    term = str_replace_all(term, "e2", "ε2"), 
+    term = str_replace_all(term, "e3", "ε3"),
+    term = str_replace_all(term, "e4", "ε4"), 
+    term = str_replace_all(term, " \\(reference\\)", ""), 
+    term = fct_relevel(term, "Favourable, ε2+", "Intermediate, ε2+", "Unfavourable, ε2+",
+                       "Favourable, ε3/ε3", "Intermediate, ε3/ε3", "Unfavourable, ε3/ε3",
+                       "Favourable, ε4+", "Intermediate, ε4+", "Unfavourable, ε4+"),
+    race = str_replace_all(race, "NHW", "NLW"), 
+  )
+
+figure6 <- f6.df  %>% 
+  ggplot(., aes(x = or, y = term, color = race, shape = reference)) + 
+    facet_grid(cols = vars(race),  scales = "free_x") + 
+    geom_vline(xintercept = 1, linetype = 2) + 
+    geom_point() + 
+    geom_linerange(aes(xmin = or_lci, xmax = or_hci), linewidth = 0.75) + 
+    scale_x_continuous("OR (95% CI)", trans = 'log',
+                       breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32),
+                       labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 
+                       limits = c(0.15, 9), 
+                       oob=scales::rescale_none
+    ) +
+    scale_color_manual(
+      values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")
+      ) + 
+    scale_y_discrete(limits=rev) +  
+    scale_shape_manual(values = c(16, 15), guide = 'none') + 
+    theme_bw() + 
+    theme(
+      text = element_text(size = theme.size),
+      axis.title.y = element_blank(),
+      # axis.text.x = element_text(size = 10),
+      # legend.position = "bottom", 
+      legend.position = "none", 
+     legend.title = element_blank(),
+      legend.margin=margin(c(0,0,0,0)),
+      legend.spacing.x = unit(0, "mm"),
+      legend.spacing.y = unit(0, "mm"),
+      strip.background = element_blank(), 
+      strip.text = element_text(face = 'bold'), 
+      plot.margin = unit(c(0,0,0,0), "cm")
+      )
+
+png("results/figures/r01_figure6.png", width = 5.5, height = 1.25, units = 'in', res = 300)
+pageCreate(width = 5.5, height = 1.25, default.units = "inches")
+
+plotGG(
+  plot = figure6,
+  x = 0, y = 0,
+  width = 5.5, height = 1.25, just = c("left", "top")
+)
+
+pageGuideHide()
+dev.off()
 
 
 ```

@@ -4,7 +4,24 @@ library(janitor)
 ## Import datasets 
 nacc.raw <- read_csv('data/nacc.csv')
 adni.raw <- read_tsv('data/adni.csv')
+adprs.raw <- read_tsv('~/Downloads/results_newfam/out/score/out_pgs.txt.gz', guess_max = 60000) %>%
+  janitor::clean_names()
+pcs <- read_tsv('~/Downloads/results_newfam/out/score/out_popsimilarity.txt.gz', guess_max = 60000)  %>%
+  janitor::clean_names()
+test <- read_table("~/Downloads/adgc_META_pst_eff_a1_b0.5_phiauto_chrAll_noAPOE_scores.txt", guess_max = 60000)  %>%
+  janitor::clean_names()
 
+## Genetics
+prs <- left_join(adprs.raw, pcs, by = c('sampleset', 'iid')) %>%
+  filter(., str_detect(iid, "NACC")) %>%
+  mutate(
+    iid = str_replace(iid, "^\\d+_", ""),
+    iid = str_replace(iid, "^[A-Za-z0-9]+_", "")
+  ) %>%
+  select(-sampleset, -pgs) 
+
+filter(test, str_detect(iid, "NACC"))
+filter(prs, str_detect(iid, "NACC"))
 
 ## ADNI 
 adni.raw %>% count(adrd)
@@ -59,6 +76,7 @@ nacc <- nacc.raw %>%
 joint <- bind_rows(
   adni, nacc
 ) %>%
+  left_join(prs, by = c("ptid" = "iid")) %>%
   mutate(
     race = ifelse(race == "Non-Hispanic White", "NHW", race)
   )  %>%
@@ -91,7 +109,25 @@ joint <- bind_rows(
     mcaide_apoe = glue("{mcaide_cat}_{apoe}"), 
     mcaide_apoe = fct_relevel(mcaide_apoe, "mid_e3/e3", "low_e2+", "low_e3/e3", "low_e4+", 
                               "mid_e2+", "mid_e4+", "high_e2+", "high_e3/e3", "high_e4+")
-  ) 
+  ) %>%
+  group_by(most_similar_pop) %>%
+  mutate(
+    ## PRS 
+    z_prs = scale(z_norm2)[,1], 
+    prs_cat = case_when(
+      between(z_prs, -Inf, (mean(z_prs, na.rm = T) - sd(z_prs, na.rm = T))) ~ 'low',
+      between(z_prs, (mean(z_prs, na.rm = T) - sd(z_prs, na.rm = T)), (mean(z_prs, na.rm = T) + sd(z_prs, na.rm = T))) ~ 'mid', 
+      between(z_prs, (mean(z_prs, na.rm = T) + sd(z_prs, na.rm = T)), Inf) ~ 'high',
+      TRUE ~ NA_character_
+    ), 
+    prs_cat = fct_relevel(prs_cat, 'low', "mid",  'high'),
+    mcaide_prs = glue("{mcaide_cat}_{prs_cat}"), 
+    mcaide_prs = ifelse(str_detect(mcaide_prs, "NA"), NA_character_, mcaide_prs),
+    mcaide_prs = fct_relevel(mcaide_prs, "mid_mid", "low_low", "low_mid", "low_high", 
+                              "mid_low", "mid_high", "high_low", "high_mid", "high_high")
+    
+  ) %>%
+  ungroup()
 
 ## Export 
 write_tsv(joint, "data/joint_df.tsv.gz")
@@ -131,18 +167,54 @@ tab_rf <- joint %>%
               ) %>%
   add_n() 
 
-tab_rf
+raw_prs <- bind_rows(
+  adni, nacc
+) %>%
+  left_join(filter(test, str_detect(iid, "NACC")), by = c("ptid" = "iid")) %>%
+  select(ptid, origprot, age, race, scoresum)
+
+summary(raw_prs)
+
+norm_prs <- bind_rows(
+  adni, nacc
+) %>%
+  left_join(prs, by = c("ptid" = "iid")) %>%
+  select(ptid, origprot, age, race, z_norm2, most_similar_pop)
+
+summary(norm_prs)
+
+left_join(raw_prs, norm_prs) %>%
+  filter(!is.na(scoresum), is.na(z_norm2))
+
+filter(prs, str_detect(iid, "NACC002431"))
+filter(adprs.raw, str_detect(iid, "NACC")) %>%
+  separate(iid, c('v1', 'v2', 'v3')) %>%
+  mutate(first_char = str_sub(v2, 1, 4)) %>%
+  count(first_char)
+  
+filter(adprs.raw, str_detect(iid, "NACC")) %>%
+  mutate(
+    iid = str_replace(iid, "^\\d+_", ""),
+    iid = str_replace(iid, "^[A-Za-z0-9]+_", "")
+  ) %>%
+  mutate(first_char = str_sub(iid, 1, 2)) %>%
+  filter(first_char == "AD") %>%
+  count(first_char) %>% print(n = Inf)
+
+prs <- left_join(adprs.raw, pcs, by = c('sampleset', 'iid')) %>%
+  mutate(
+    iid = str_replace(iid, "0_", "")
+  ) %>%
+  select(-sampleset, -pgs) 
+
+  
+filter(nacc, str_detect(ptid, "09AD14012_NACC929764"))
+filter(adprs.raw, str_detect(iid, "08AD11427"))
 
 
-
-
-
-
-
-
-
-
-
+nacc %>%
+  mutate(first_char = str_sub(ptid, 1, 4)) 
+  
 
 
 
