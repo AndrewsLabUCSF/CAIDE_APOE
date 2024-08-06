@@ -27,6 +27,8 @@ library(gtsummary)
 library(gt)
 library(emmeans)
 library(gtools)
+library(pROC)
+library(stringr)
 
 `%nin%` = negate(`%in%`)
 theme_gtsummary_compact()
@@ -71,7 +73,6 @@ dat <- read_tsv(dat_path) %>%
 
 
 ## Cohort Description
-
 ```{r}
 #| label: table demo
 #| code-summary: Table demo
@@ -317,15 +318,21 @@ as_gt(tab_his_sex) %>%
 
 
 tble1 = dat %>% 
-  dplyr::select(race, apoe, caide_age, caide_sex, caide_educ, caide_bmi,
-                caide_sbp,i_caide_chol, caide, caide_missing, caide_cat,
+  # dplyr::select(race, apoe, caide_age, caide_sex, caide_educ, caide_bmi,
+  #               caide_sbp,i_caide_chol, caide, caide_missing, caide_cat,
+  #               caide_apoe,naccudsd) %>%
+  dplyr::select(race, apoe, age, gender, i_educ, i_bmi,
+                i_bpsys,i_hypchol, caide, caide_missing, caide_cat,
                 caide_apoe,naccudsd) %>%
   #filter(naccudsd == 1 | naccudsd == 3) %>% 
   mutate(naccudsd = case_when(
          naccudsd == 1 ~ "CU",
          naccudsd== 3 ~ "MCI",
          naccudsd == 4 ~ "ADRD"
-  )) %>% 
+  ),
+  # bmi_cat = case_when(bmi >=30 ~ ">=30",
+  #                     bmi <30 ~ "< 30")
+  ) %>% 
   tbl_strata(
     strata = naccudsd,
     ~.x %>%
@@ -335,11 +342,23 @@ tble1 = dat %>%
       ) %>% 
       modify_header(all_stat_cols() ~ "**{level}**")
       #.header = "**CU:{level}**, N = {n}"
-    ) %>% as_gt() 
-library(openxlsx)
-write.xlsx (x = as.data.frame(tble1), file = "/Users/anaboeriu/Downloads/t1.xlsx")
+    ) %>% as_gt() %>% 
+  text_case_match(
+    "apoe" ~ "APOE",
+    "age"~"Age",
+    "i_educ" ~ "Education",
+    "gender"~ "Gender",
+    "i_bmi"~"BMI",
+    "i_bpsys" ~"Hypertension",
+    "i_hypchol"~ "Hypercholesterolemia",
+    "caide"~ "CAIDE",
+    "caide_missing"~ "CAIDE Missing",
+    "caide_cat"~ "CAIDE",
+    "caide_apoe"~"CAIDE x APOE"
+  )
+ 
+tble1
 
-  gt::gtsave("/Users/anaboeriu/Downloads/tble1.")
 ```
 
 ```{r}
@@ -1203,6 +1222,7 @@ caide_apoe_cat_res <- bind_rows(
     df = map(res, tidy), 
   )
 
+
 caide_apoe_cat_df <- caide_apoe_cat_res %>%
   select(race, outcome, df) %>%
   unnest(cols = df) %>%
@@ -1229,7 +1249,8 @@ caide_apoe_cat_df <- caide_apoe_cat_res %>%
                       ),
     reference = ifelse(or == 1, TRUE, FALSE), 
     race = fct_relevel(race, "Black", "Hispanic", "Asian", "NHW"), 
-    race = fct_recode(race, "Latinx" = "Hispanic")
+    race = fct_recode(race, "Latinx" = "Hispanic"),
+    race = fct_recode(race, "NLW" = "NHW")
   ) 
 
 ```
@@ -1500,9 +1521,6 @@ ggplot(caide_sex_res.df, aes(x = or, y = race, color = race)) +
   )
 
 ```
-
-
-
 ## mCAIDE
 
 ```{r}
@@ -1807,7 +1825,7 @@ ggsave("results/figures/joint_mcaid_apoe_adrd_mci_bl.png", plot = joint_mcaid_ap
 
 ```
 
-
+## mCAIDE_Apoe
 ```{r}
 #| label: regression_models
 #| code-summary: Regression Models
@@ -1898,6 +1916,7 @@ mcaide_apoe_cat_df <- mcaide_apoe_cat_res %>%
     reference = ifelse(or == 1, TRUE, FALSE), 
     race = fct_relevel(race, "Black", "Hispanic", "Asian", "NHW"), 
     race = fct_recode(race, "Latinx" = "Hispanic"), 
+    race = fct_recode(race, "NLW" = "NHW")
   ) 
 
 group_split(mcaide_apoe_cat_df, outcome) %>% map(., print, n = Inf)
@@ -4090,6 +4109,7 @@ cc_res %>% select(race, outcome, df_mcaide_full) %>%
 ```
 ### table
 ```{r}
+#the auc for the complete case analysis
 allCC = cc_res %>%
   select(race, outcome,auc_red,
          auc_caide, auc_mcaide, deLong_stat,deLong_pval
@@ -4333,10 +4353,7 @@ auc_i_c = indiv_mod_res %>%
   ) 
 auc_i_c
 ```
-
-
-
-## multiplicative model
+## interaction
 ```{r}
 caide_mod_fit <- function(data){
   #glm(dx ~ apoe + z_caide + cohort, data = data, family = 'binomial')
@@ -4541,11 +4558,11 @@ all_AUC = all_res_AUC %>%
 
 all_AUC
 ```
+
 ## m2CAIDE
 ```{r}
-
 mod_fits <- function(data,i){
- glm(dx ~ mcaide_apoe + cohort, data = data, family = 'binomial')
+ glm(dx ~ m2caide_apoe + cohort, data = data, family = 'binomial')
 }
 
 all_res <- bind_rows(
@@ -4590,29 +4607,121 @@ all_res <- bind_rows(
 results_m2 = all_res %>% select(race, outcome, df2) %>% 
   unnest(cols = df2) %>%
   ungroup() %>%
-  filter(str_detect(term, 'mcaide')) %>%
+  filter(str_detect(term, 'm2caide')) %>%
+  bind_rows(add_me) %>%
   mutate(
     lci = estimate - (std.error * 1.96),
     hci = estimate + (std.error * 1.96), 
     or = exp(estimate),
     or_lci = exp(lci),
     or_hci = exp(hci),
-    term = str_replace(term, "apoe", ""), 
+    term = str_replace(term, "m2caide_apoe", ""), 
+     term = fct_relevel(term, 
+                       "high_e4+", "mid_e4+", "low_e4+", 
+                       "high_e3/e3", "mid_e3/e3",  "low_e3/e3", 
+                       "high_e2+", "mid_e2+", "low_e2+",
+    ), 
+    term = fct_recode(term, 
+                      "Unfavourable, e4+" = "high_e4+", "Intermediate, e4+" = "mid_e4+", "Favourable, e4+" = "low_e4+", 
+                      "Unfavourable, e3/e3" = "high_e3/e3", "Intermediate, e3/e3 (reference)" = "mid_e3/e3", "Favourable, e3/e3" = "low_e3/e3", 
+                      "Unfavourable, e2+" = "high_e2+", "Intermediate, e2+" = "mid_e2+", "Favourable, e2+" = "low_e2+" 
+    ),
+    reference = ifelse(or == 1, TRUE, FALSE), 
     race = fct_relevel(race, "Black", "Hispanic", "Asian", "NHW"), 
-    p.value = format(p.value, scientific = TRUE, digits = 3),
-    or = format(or, scientific = TRUE, digits = 3),
-    or_lci = format(or_lci, scientific = TRUE, digits = 3),
-    or_hci = format(or_hci, scientific = TRUE, digits = 3)
-  ) %>%
-  rowwise() %>% 
-  mutate_at(vars(-race, -outcome, -term,-p.value,
-                 -or,-or_lci,-or_hci), ~ round(.x, digits = 3))
+    race = fct_recode(race, "Latinx" = "Hispanic"), 
+    race = fct_recode(race, "NLW" = "NHW")
+    # p.value = format(p.value, scientific = TRUE, digits = 3),
+    # or = format(or, scientific = TRUE, digits = 3),
+    # or_lci = format(or_lci, scientific = TRUE, digits = 3),
+    # or_hci = format(or_hci, scientific = TRUE, digits = 3),
+  ) 
 
 
-results_m2 %>% gt() %>% 
-  fmt_scientific(columns = c(p.value, or_lci, or_hci))
+
+# results_m2 %>% gt() %>% 
+#   fmt_scientific(columns = c(p.value, or_lci, or_hci))
+```
+## plot beta
+```{r}
+#add CAIDE, mCAIDE
+betaPlot.df <- bind_rows(
+ filter(caide_apoe_cat_df ,
+        outcome == "ADRD + MCI") %>%
+    mutate(model = "CAIDE"),
+  filter(mcaide_apoe_cat_df ,
+         outcome == "ADRD + MCI")  %>%
+    mutate(model = "mCAIDE"),
+  filter(results_m2,
+          outcome == "ADRD + MCI")  %>%
+    mutate(model = "m2CAIDE")
+) %>%
+  mutate(
+    term = str_replace_all(term, "e2", "ε2"), 
+    term = str_replace_all(term, "e3", "ε3"),
+    term = str_replace_all(term, "e4", "ε4"), 
+    term = fct_relevel(term, "Favourable, ε2+", "Intermediate, ε2+", "Unfavourable, ε2+",
+                       "Favourable, ε3/ε3", "Intermediate, ε3/ε3 (reference)", "Unfavourable, ε3/ε3",
+                       "Favourable, ε4+", "Intermediate, ε4+", "Unfavourable, ε4+")
+  )
 
 
+
+betaPlot.df$model = as.factor(betaPlot.df$model)
+levels(betaPlot.df$model) = c("CAIDE","m<sub>2</sub>CAIDE","mCAIDE" )
+
+betaPlot.df %>% filter(race == "Hispanic", caide_cat=="low", apoe=="e2+")
+
+bPlot <- betaPlot.df  %>% 
+  ggplot(., aes(x = or, y = term, color = race, shape = reference)) + 
+  facet_grid(cols = vars(race), rows = vars(model), scales = "free_x")+
+  geom_vline(xintercept = 1, linetype = 2) + 
+  geom_point() + 
+  geom_linerange(aes(xmin = or_lci, xmax = or_hci), linewidth = 0.75) + 
+  scale_x_continuous("OR (95% CI)", transform = 'log',
+                     breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32),
+                     labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32),
+                     limits = c(0.15, 9),
+                     oob=scales::rescale_none
+  ) +
+  scale_color_manual(
+    values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")
+  ) + 
+  scale_y_discrete(limits=rev) +  
+  scale_shape_manual(values = c(16, 15), guide = 'none') + 
+  theme_bw() + 
+  theme(
+    text = element_text(size = theme.size),
+    axis.title.y = element_blank(),
+    # axis.text.x = element_text(size = 10),
+    legend.position = "bottom", 
+    legend.title = element_blank(),
+    strip.background = element_blank(), 
+    strip.text = element_text(face = 'bold')
+  )
+
+ggsave(here("results/figures/figure4.png"), plot = bPlot, width = 6, height = 3.5, units = 'in')
+
+ggsave("~/Downloads/fig4.png", plot = bPlot, width = 6, height = 3.5, units = 'in')
+
+```
+
+
+
+## tertiles ranges unf, favorable etc
+```{r}
+dat %>%
+  group_by(caide_cat) %>%
+  summarize(
+    min_value = min(caide),
+    max_value = max(caide),
+  )
+
+dat %>%
+  group_by(mcaide_cat) %>%
+  summarize(
+    min_value = min(mcaide),
+    max_value = max(mcaide),
+  )
 ```
 
 
