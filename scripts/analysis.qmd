@@ -977,7 +977,6 @@ caide_df_pval <- filter(caide_diff_long, p < 0.05) %>%
 ```
 
 #### export
-
 ```{r}
 #| label: export_caide
 #| code-summary: CAIDE Regression export
@@ -2448,8 +2447,6 @@ joint_caid_apoe_adrd_mci_bl_p <- ggplot(caide_res.df %>% filter(outcome == "ADRD
       panel.grid.minor.y = element_blank(),
       strip.text = element_text(face = 'bold')
       )
-
-
 
 ```
 
@@ -4353,7 +4350,7 @@ auc_i_c = indiv_mod_res %>%
   ) 
 auc_i_c
 ```
-## interaction
+## inter* CAIDE
 ```{r}
 caide_mod_fit <- function(data){
   #glm(dx ~ apoe + z_caide + cohort, data = data, family = 'binomial')
@@ -4425,8 +4422,54 @@ caide_intera_res.df <- caide_interaction_res %>%
   mutate_at(vars(-race, -outcome, -term,-p.value), ~ round(.x, digits = 3))
 
 caide_intera_res.df %>% gt()
-
 ```
+
+## intera mCAIDE
+```{r}
+mcaide_mod_fit <- function(data){
+  #glm(dx ~ apoe + z_caide + cohort, data = data, family = 'binomial')
+  glm(dx ~ apoe + z_mcaide + cohort +apoe*z_mcaide, data = data, family = 'binomial')
+
+}
+mcaide_interaction_res <- bind_rows(
+  dat %>%
+    group_by(race) %>%
+    nest() %>%
+    mutate(
+      outcome = "ADRD + MCI",
+      res = map(data, mcaide_mod_fit), 
+)) %>%
+  mutate(
+    fit = map(res, glance),
+    df = map(res, tidy), 
+    pred = map2(res, data, predict, type = 'response'),
+  ) %>%
+  select(-data)
+
+mcaide_intera_res.df <- mcaide_interaction_res %>%
+  select(race, outcome, df) %>%
+  unnest(cols = df) %>%
+  ungroup() %>%
+  filter(str_detect(term, 'apoe|caide')) %>%
+  mutate(
+    p.value = format(p.value, scientific = TRUE, digits = 3),
+    lci = estimate - (std.error * 1.96),
+    hci = estimate + (std.error * 1.96), 
+    or = exp(estimate),
+    or_lci = exp(lci),
+    or_hci = exp(hci),
+    term = str_replace(term, "apoe", ""), 
+    term = fct_relevel(term, 'e2+', 'e4+', 'z_mcaide'),    
+    race = fct_relevel(race, "Black", "Hispanic", "Asian", "NHW"), 
+    term = fct_recode(term, "ε2+" = "e2+", "ε4+" = "e4+", "mCAIDE" = "z_mcaide"),
+  ) %>% 
+  rowwise() %>% 
+  mutate_at(vars(-race, -outcome, -term,-p.value), ~ round(.x, digits = 3))
+
+mcaide_intera_res.df %>% gt()
+```
+
+
 
 ## All AUCs
 
@@ -4636,21 +4679,17 @@ results_m2 = all_res %>% select(race, outcome, df2) %>%
     # or_hci = format(or_hci, scientific = TRUE, digits = 3),
   ) 
 
-
-
-# results_m2 %>% gt() %>% 
-#   fmt_scientific(columns = c(p.value, or_lci, or_hci))
 ```
 ## plot beta
 ```{r}
 #add CAIDE, mCAIDE
 betaPlot.df <- bind_rows(
- filter(caide_apoe_cat_df ,
-        outcome == "ADRD + MCI") %>%
-    mutate(model = "CAIDE"),
-  filter(mcaide_apoe_cat_df ,
-         outcome == "ADRD + MCI")  %>%
-    mutate(model = "mCAIDE"),
+ # filter(caide_apoe_cat_df ,
+ #        outcome == "ADRD + MCI") %>%
+ #    mutate(model = "CAIDE"),
+ #  filter(mcaide_apoe_cat_df ,
+ #         outcome == "ADRD + MCI")  %>%
+ #    mutate(model = "mCAIDE"),
   filter(results_m2,
           outcome == "ADRD + MCI")  %>%
     mutate(model = "m2CAIDE")
@@ -4666,14 +4705,17 @@ betaPlot.df <- bind_rows(
 
 
 
-betaPlot.df$model = as.factor(betaPlot.df$model)
+betaPlot.df$model = "m^{2}CAIDE")
 levels(betaPlot.df$model) = c("CAIDE","m<sub>2</sub>CAIDE","mCAIDE" )
 
-betaPlot.df %>% filter(race == "Hispanic", caide_cat=="low", apoe=="e2+")
+a = betaPlot.df %>% filter(race != "LatinX" & term != "Favorable, ε2+")
 
+labels_p1 <- c('m2CAIDE+' = TeX("$m^2CAIDE$"))
 bPlot <- betaPlot.df  %>% 
   ggplot(., aes(x = or, y = term, color = race, shape = reference)) + 
-  facet_grid(cols = vars(race), rows = vars(model), scales = "free_x")+
+  facet_grid(cols = vars(race), rows = vars(model), 
+             scales = "free_x",
+             labeller = label_parsed)+
   geom_vline(xintercept = 1, linetype = 2) + 
   geom_point() + 
   geom_linerange(aes(xmin = or_lci, xmax = or_hci), linewidth = 0.75) + 
@@ -4699,6 +4741,8 @@ bPlot <- betaPlot.df  %>%
     strip.text = element_text(face = 'bold')
   )
 
+
+
 ggsave(here("results/figures/figure4.png"), plot = bPlot, width = 6, height = 3.5, units = 'in')
 
 ggsave("~/Downloads/fig4.png", plot = bPlot, width = 6, height = 3.5, units = 'in')
@@ -4721,6 +4765,13 @@ dat %>%
   summarize(
     min_value = min(mcaide),
     max_value = max(mcaide),
+  )
+
+dat %>%
+  group_by(m2caide_cat) %>%
+  summarize(
+    min_value = min(m2caide),
+    max_value = max(m2caide),
   )
 ```
 
