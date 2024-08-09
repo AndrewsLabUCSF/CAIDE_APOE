@@ -69,10 +69,8 @@ dat <- read_tsv(dat_path) %>%
   )
 ```
 
-
-
-
 ## Cohort Description
+
 ```{r}
 #| label: table demo
 #| code-summary: Table demo
@@ -330,6 +328,7 @@ tble1 = dat %>%
          naccudsd== 3 ~ "MCI",
          naccudsd == 4 ~ "ADRD"
   ),
+  naccudsd = factor(naccudsd, levels = c("CU", "MCI", "ADRD"))
   # bmi_cat = case_when(bmi >=30 ~ ">=30",
   #                     bmi <30 ~ "< 30")
   ) %>% 
@@ -355,9 +354,9 @@ tble1 = dat %>%
     "caide_missing"~ "CAIDE Missing",
     "caide_cat"~ "CAIDE",
     "caide_apoe"~"CAIDE x APOE"
-  )
+  ) 
  
-tble1
+tble1 
 
 ```
 
@@ -784,6 +783,7 @@ ggsave("results/figures/joint_apoe_race_all_bl.png", plot = apoe_geno_res_p, wid
 ```
 
 ### CAIDE
+
 ```{r}
 library(pROC)
 glm(dx ~ race + apoe + z_caide + cohort, data = dat, family = 'binomial') %>% 
@@ -888,6 +888,7 @@ caide_res.df <- caide_res %>%
 ```
 
 #### APOE
+
 ```{r}
 #| label: apoe_difference
 #| code-summary: APOE genotype differences
@@ -977,6 +978,7 @@ caide_df_pval <- filter(caide_diff_long, p < 0.05) %>%
 ```
 
 #### export
+
 ```{r}
 #| label: export_caide
 #| code-summary: CAIDE Regression export
@@ -1134,6 +1136,7 @@ ggsave("results/figures/joint_caid_apoe_adrd_mci_bl.png", plot = joint_caid_apoe
 ```
 
 #### more models
+
 ```{r}
 
 glm(dx ~ race + caide_apoe + cohort, data = dat, family = 'binomial') %>% 
@@ -1463,6 +1466,7 @@ caide_sex_res.df %>% filter(term == "CAIDE")
 ```
 
 ### export
+
 ```{r}
 #| label: export_caide
 #| code-summary: CAIDE Regression export
@@ -1520,6 +1524,7 @@ ggplot(caide_sex_res.df, aes(x = or, y = race, color = race)) +
   )
 
 ```
+
 ## mCAIDE
 
 ```{r}
@@ -1544,6 +1549,7 @@ lm(ad_age_lv ~ race + apoe + z_mcaide, data = dat) %>%
 ```
 
 #### regM
+
 ```{r}
 #| label: regression_models
 #| code-summary: Regression Models
@@ -1615,6 +1621,7 @@ mcaide_res_df
 ```
 
 #### apoe
+
 ```{r}
 #| label: apoe_difference
 #| code-summary: APOE genotype differences
@@ -1702,7 +1709,9 @@ mcaide_df_pval <- filter(mcaide_diff_long, p < 0.05) %>%
 
   )
 ```
+
 #### export
+
 ```{r}
 #| label: export_caide
 #| code-summary: CAIDE Regression export
@@ -1769,6 +1778,7 @@ mcaide_diff_long %>%
 ```
 
 #### plotApoe
+
 ```{r}
 #| label: apoe_plots
 #| code-summary: APOE genotype plots
@@ -1791,6 +1801,7 @@ ggsave("results/figures/nacc_apoe_race_all_bl.png", plot = apoe_geno_res_p, widt
 ```
 
 #### main effect
+
 ```{r}
 #| label: adard_mci_apoe_plots
 #| code-summary: ADRD+MCI Main effect plots
@@ -1825,6 +1836,7 @@ ggsave("results/figures/joint_mcaid_apoe_adrd_mci_bl.png", plot = joint_mcaid_ap
 ```
 
 ## mCAIDE_Apoe
+
 ```{r}
 #| label: regression_models
 #| code-summary: Regression Models
@@ -1933,7 +1945,6 @@ mcaide_apoe_cat_df.out <- mcaide_apoe_cat_df %>%
 write_csv(mcaide_apoe_cat_df.out, "results/mcaide_apoe_cat_res.csv")
 
 ```
-
 
 ```{r}
 #| label: apoe_plots
@@ -2126,6 +2137,7 @@ mcaide_sex_res_df %>% filter(term == "mCAIDE")
 ```
 
 ### caide export
+
 ```{r}
 #| label: export_caide
 #| code-summary: CAIDE Regression export
@@ -2400,7 +2412,8 @@ dev.off()
 
 ```
 
-### PRS 
+### PRS
+
 ### Manuscript Figures
 
 #### Figure 1
@@ -4002,7 +4015,9 @@ gt() %>%
 cols_label(names~"Variable", values~"Percent NA")
   
 ```
+
 ### complete case analysis
+
 ```{r}
 #do complete case analysis on the 4 specific variables. 
 cc_dat = dat %>% filter(complete.cases(bmi,hyperten, hypchol, educ))
@@ -4104,7 +4119,9 @@ cc_res %>% select(race, outcome, df_mcaide_full) %>%
     term = fct_recode(term, "ε2+" = "e2+", "ε4+" = "e4+", "mCAIDE" = "z_mcaide")
   ) %>% gt()
 ```
+
 ### table
+
 ```{r}
 #the auc for the complete case analysis
 allCC = cc_res %>%
@@ -4141,12 +4158,9 @@ allCC = cc_res %>%
 allCC
 ```
 
-
-
 ## indiv model for caide
-- run the components of ciade seperatley. Example
-y~ bp + chol + apoe4 + cohor etc report model results. 
-mcaide = sum(mcaide_age, mcaide_educ, mcaide_sex, mcaide_bmi, mcaide_sbp, mcaide_chol, na.rm = F), 
+
+-   run the components of ciade seperatley. Example y\~ bp + chol + apoe4 + cohor etc report model results. mcaide = sum(mcaide_age, mcaide_educ, mcaide_sex, mcaide_bmi, mcaide_sbp, mcaide_chol, na.rm = F),
 
 ```{r}
 individ_mod_fit <- function(data){
@@ -4242,7 +4256,9 @@ indiv_mod_res_table <- indiv_mod_res %>%
 
 indiv_mod_res_table %>% gt()
 ```
+
 ## delong indiv model
+
 ```{r}
 individ_mods <- function(data,i){
   m1 = glm(dx ~ apoe + cohort + age + educ + gender +bmi + i_bpsys + i_hypchol , data = data, family = 'binomial')
@@ -4350,7 +4366,9 @@ auc_i_c = indiv_mod_res %>%
   ) 
 auc_i_c
 ```
-## inter* CAIDE
+
+## inter\* CAIDE
+
 ```{r}
 caide_mod_fit <- function(data){
   #glm(dx ~ apoe + z_caide + cohort, data = data, family = 'binomial')
@@ -4425,6 +4443,7 @@ caide_intera_res.df %>% gt()
 ```
 
 ## intera mCAIDE
+
 ```{r}
 mcaide_mod_fit <- function(data){
   #glm(dx ~ apoe + z_caide + cohort, data = data, family = 'binomial')
@@ -4469,16 +4488,12 @@ mcaide_intera_res.df <- mcaide_interaction_res %>%
 mcaide_intera_res.df %>% gt()
 ```
 
-
-
 ## All AUCs
 
-Obtain AUC for the following models:
- m1) dx ~ cohort + z_mcaide+ apoe
- m2) dx ~ cohort + z_caide+ apoe
- 
+Obtain AUC for the following models: m1) dx \~ cohort + z_mcaide+ apoe m2) dx \~ cohort + z_caide+ apoe
+
 use Delong method
- 
+
 ```{r}
 library(pROC)
 mod_fits <- function(data,i){
@@ -4566,6 +4581,7 @@ all_res_AUC <- bind_rows(
 ```
 
 ### tables
+
 ```{r}
 all_AUC = all_res_AUC %>% 
   select(race, outcome,auc_red, 
@@ -4603,6 +4619,7 @@ all_AUC
 ```
 
 ## m2CAIDE
+
 ```{r}
 mod_fits <- function(data,i){
  glm(dx ~ m2caide_apoe + cohort, data = data, family = 'binomial')
@@ -4665,9 +4682,15 @@ results_m2 = all_res %>% select(race, outcome, df2) %>%
                        "high_e2+", "mid_e2+", "low_e2+",
     ), 
     term = fct_recode(term, 
-                      "Unfavourable, e4+" = "high_e4+", "Intermediate, e4+" = "mid_e4+", "Favourable, e4+" = "low_e4+", 
-                      "Unfavourable, e3/e3" = "high_e3/e3", "Intermediate, e3/e3 (reference)" = "mid_e3/e3", "Favourable, e3/e3" = "low_e3/e3", 
-                      "Unfavourable, e2+" = "high_e2+", "Intermediate, e2+" = "mid_e2+", "Favourable, e2+" = "low_e2+" 
+                      "Unfavourable, e4+" = "high_e4+", 
+                      "Intermediate, e4+" = "mid_e4+", 
+                      "Favourable, e4+" = "low_e4+", 
+                      "Unfavourable, e3/e3" = "high_e3/e3", 
+                      "Intermediate, e3/e3 (reference)" = "mid_e3/e3", 
+                      "Favourable, e3/e3" = "low_e3/e3", 
+                      "Unfavourable, e2+" = "high_e2+", 
+                      "Intermediate, e2+" = "mid_e2+", 
+                      "Favourable, e2+" = "low_e2+" 
     ),
     reference = ifelse(or == 1, TRUE, FALSE), 
     race = fct_relevel(race, "Black", "Hispanic", "Asian", "NHW"), 
@@ -4680,7 +4703,9 @@ results_m2 = all_res %>% select(race, outcome, df2) %>%
   ) 
 
 ```
-## plot beta
+
+## Figure 1 (supplemental beta plot)
+
 ```{r}
 #add CAIDE, mCAIDE
 betaPlot.df <- bind_rows(
@@ -4703,14 +4728,6 @@ betaPlot.df <- bind_rows(
                        "Favourable, ε4+", "Intermediate, ε4+", "Unfavourable, ε4+")
   )
 
-
-
-betaPlot.df$model = "m^{2}CAIDE")
-levels(betaPlot.df$model) = c("CAIDE","m<sub>2</sub>CAIDE","mCAIDE" )
-
-a = betaPlot.df %>% filter(race != "LatinX" & term != "Favorable, ε2+")
-
-labels_p1 <- c('m2CAIDE+' = TeX("$m^2CAIDE$"))
 bPlot <- betaPlot.df  %>% 
   ggplot(., aes(x = or, y = term, color = race, shape = reference)) + 
   facet_grid(cols = vars(race), rows = vars(model), 
@@ -4743,15 +4760,12 @@ bPlot <- betaPlot.df  %>%
 
 
 
-ggsave(here("results/figures/figure4.png"), plot = bPlot, width = 6, height = 3.5, units = 'in')
-
-ggsave("~/Downloads/fig4.png", plot = bPlot, width = 6, height = 3.5, units = 'in')
+ggsave(here("results/figures/suplemental_fig1.png"), plot = bPlot, width = 6, height = 3.5, units = 'in')
 
 ```
 
-
-
 ## tertiles ranges unf, favorable etc
+
 ```{r}
 dat %>%
   group_by(caide_cat) %>%
@@ -4775,9 +4789,8 @@ dat %>%
   )
 ```
 
-
-
 ### diffBetas
+
 ```{r}
  a = all_res %>% select(race, outcome,df,df2) %>% 
   unnest(cols = c(df, df2), names_sep = "_") %>%
@@ -4821,5 +4834,3 @@ caide_res.df %>% select(race, outcome, term, b = estimate, se = std.error, p = p
 
 
 ```
-
-
