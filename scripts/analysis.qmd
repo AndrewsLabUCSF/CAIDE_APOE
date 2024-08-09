@@ -4760,7 +4760,7 @@ bPlot <- betaPlot.df  %>%
 
 
 
-ggsave(here("results/figures/suplemental_fig1.png"), plot = bPlot, width = 6, height = 3.5, units = 'in')
+ggsave(here("results/figures/supplements_fig1.png"), plot = bPlot, width = 6, height = 3.5, units = 'in')
 
 ```
 
