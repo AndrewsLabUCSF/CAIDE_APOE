@@ -88,7 +88,6 @@ tab_demo <- dat %>%
                            race ~ "Race") 
               ) %>% add_n() 
 
-tab_demo
 
 # as_gt(tab_rf) %>%
 #   gt::gtsave(., "results/table_rf.docx")
@@ -1078,7 +1077,7 @@ ggsave("results/figures/joint_apoe_race_all_bl.png", plot = apoe_geno_res_p, wid
 #| label: apoe_plots
 #| code-summary: APOE genotype plots
 
-joint_caid_apoe_all_bl_p <- ggplot(caide_res, aes(x = or, y = race, color = race)) + 
+joint_caid_apoe_all_bl_p <- ggplot(caide_res.df, aes(x = or, y = race, color = race)) + 
     facet_grid(cols = vars(term), rows = vars(outcome), scales = 'free', labeller = label_wrap_gen(width = 7)) + 
     geom_vline(xintercept = 1, linetype = 2) + 
     geom_point() + 
@@ -1113,10 +1112,10 @@ joint_caid_apoe_adrd_mci_bl_p <- ggplot(caide_res.df %>% filter(outcome == "ADRD
     geom_vline(xintercept = 1, linetype = 2) + 
     geom_point() + 
     geom_linerange(aes(xmin = or_lci, xmax = or_hci), linewidth = 0.75) + 
-    # scale_x_continuous("Odds Ratio", trans = 'log', 
-    #                    breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 
-    #                    labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32)
-    # ) + 
+    scale_x_continuous("Odds Ratio", trans = 'log',
+                       breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32),
+                       labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32)
+    ) +
     scale_y_discrete(limits=rev) +  
     scale_color_manual(
       labels = c("Black", "Latinx", "Asian", "NHW"),
@@ -1299,8 +1298,6 @@ joint_caide_apoe_cat_all_bl <- ggplot(caide_apoe_cat_df, aes(x = or, y = term, c
     strip.text = element_text(face = 'bold'), 
     legend.title = element_blank()
     )
-
-joint_caide_apoe_cat_all_bl 
 
 ggsave("results/figures/joint_caide_apoe_cat_all_bl.png", plot = joint_caide_apoe_cat_all_bl, width = 9, height = 4, units = 'in')
 
@@ -1553,10 +1550,10 @@ lm(ad_age_lv ~ race + apoe + z_mcaide, data = dat) %>%
 ```{r}
 #| label: regression_models
 #| code-summary: Regression Models
-
+#cc_dat
 mcaide_mod_fit <- function(data){
   # glm(dx ~ apoe_geno + SEX + aoo, data = data, family = 'binomial')
-  glm(dx ~ apoe + z_mcaide, data = cc_dat, family = 'binomial')
+  glm(dx ~ apoe + z_mcaide, data = data, family = 'binomial')
 }
 mcaide_res <- bind_rows(
   dat %>%
@@ -2460,7 +2457,7 @@ joint_caid_apoe_adrd_mci_bl_p <- ggplot(caide_res.df %>% filter(outcome == "ADRD
       panel.grid.minor.y = element_blank(),
       strip.text = element_text(face = 'bold')
       )
-
+joint_caid_apoe_adrd_mci_bl_p
 ```
 
 ```{r}
@@ -2575,7 +2572,7 @@ figure1.p <- ggplot(fig1.df, aes(y = or, x = race, color = race)) +
     # ) + 
     # scale_x_discrete(limits=rev) +  
     scale_color_manual(
-      labels = c("Black", "Latinx", "Asian", "NHW"),
+      labels = c("Black", "Latinx", "Asian", "NLW"),
       values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
     theme_bw() + 
     labs(y = "OR (95% CI)") + 
@@ -2592,18 +2589,18 @@ figure1.p <- ggplot(fig1.df, aes(y = or, x = race, color = race)) +
       strip.text = element_text(face = 'bold')
       )
 
-ggsave("results/figures/figure1_new.png", plot = figure1.p, units = 'in', width = 4, height = 2)
-ggsave("results/figures/figure1_new.tiff", plot = figure1.p, units = 'in', width = 4, height = 2)
+ggsave(here(file.path("results/figures/figure1_new.png")), plot = figure1.p, units = 'in', width = 4, height = 2)
+ggsave(here(file.path("results/figures/figure1_new.tiff")), plot = figure1.p, units = 'in', width = 4, height = 2)
 
 ```
 
-#### Figure 2
+#### Figure 3
 
 ```{r}
 #| label: caide_apoe_adrd_mci_bl_presentation
 #| code-summary: CAIDE * APOE ADRD + MCI plots
 
-f2.df <- bind_rows(
+f3.df <- bind_rows(
   filter(caide_apoe_cat_df, outcome == "ADRD + MCI") %>%
     mutate(model = "CAIDE"),
   filter(mcaide_apoe_cat_df, outcome == "ADRD + MCI")  %>%
@@ -2620,7 +2617,7 @@ f2.df <- bind_rows(
 
 theme.size = 8
 
-figure2 <- f2.df  %>% 
+figure3 <- f3.df  %>% 
   ggplot(., aes(x = or, y = term, color = race, shape = reference)) + 
     facet_grid(cols = vars(race), rows = vars(model), scales = "free_x") + 
     geom_vline(xintercept = 1, linetype = 2) + 
@@ -2648,11 +2645,11 @@ figure2 <- f2.df  %>%
       strip.text = element_text(face = 'bold')
       )
 
-ggsave("results/figures/figure2.png", plot = figure2, width = 6, height = 3.5, units = 'in')
-ggsave("results/figures/figure2.tiff", plot = figure2, width = 6, height = 3.5, units = 'in')
+ggsave(here("results/figures/figure3.png"), plot = figure3, width = 6, height = 3.5, units = 'in')
+ggsave(here("results/figures/figure3.tiff"), plot = figure3, width = 6, height = 3.5, units = 'in')
 ```
 
-#### Figure 3
+#### Figure 2
 
 ```{r}
 sex_df <- bind_rows(
@@ -2661,7 +2658,7 @@ sex_df <- bind_rows(
 ) %>%
   filter(str_detect(term, 'CAIDE'))
 
-figure3 <- ggplot(sex_df, aes(x = or, y = race, color = race)) + 
+figure2 <- ggplot(sex_df, aes(x = or, y = race, color = race)) + 
   facet_grid(cols = vars(term), rows = vars(outcome)) + 
   geom_vline(xintercept = 1, linetype = 2) + 
   geom_point() + 
@@ -2670,7 +2667,9 @@ figure3 <- ggplot(sex_df, aes(x = or, y = race, color = race)) +
                      breaks = c(0.75, 1, 1.5, 2), 
                      labels = c(0.75, 1, 1.5, 2)
   ) + 
-  scale_color_manual(values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
+  scale_color_manual(values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3"),
+                     ) + 
+  scale_y_discrete(labels = c("Black", "Latinx", "Asian", "NLW"))+
   theme_bw() + 
   theme(
     text = element_text(size = theme.size),
@@ -2680,10 +2679,8 @@ figure3 <- ggplot(sex_df, aes(x = or, y = race, color = race)) +
     strip.text = element_text(face = 'bold')
   )
 
-ggsave("results/figures/figure3.png", plot = figure3, width = 6, height = 3.5, units = 'in')
-ggsave("results/figures/figure3.tiff", plot = figure3, width = 6, height = 3.5, units = 'in')
-
-
+ggsave(here("results/figures/figure2.png"), plot = figure2, width = 6, height = 3.5, units = 'in')
+ggsave(here("results/figures/figure2.tiff"), plot = figure2, width = 6, height = 3.5, units = 'in')
 ```
 
 ## R01 Figures
@@ -4728,7 +4725,7 @@ betaPlot.df <- bind_rows(
                        "Favourable, ε4+", "Intermediate, ε4+", "Unfavourable, ε4+")
   )
 
-bPlot <- betaPlot.df  %>% 
+bPlot <- a  %>% 
   ggplot(., aes(x = or, y = term, color = race, shape = reference)) + 
   facet_grid(cols = vars(race), rows = vars(model), 
              scales = "free_x",
