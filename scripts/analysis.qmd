@@ -748,7 +748,7 @@ apoe_geno_res_p <- apoe_geno_res %>%
     #   or = 1,
     #   term =  "e3/e3",
     # ) %>%
-  mutate(race = fct_relevel(race, 'Black', 'Hispanic', 'Asian',  'NHW'), 
+  mutate(race = fct_relevel(race, 'Black', 'Latinx', 'Asian',  'NLW'), 
         term = fct_recode(term, "ε2+" = "e2+",  "ε3/ε3 \n(reference)" = "e3/e3",
                           "ε2/ε4" = "e2/e4", "ε3/ε4" = "e3/e4", "ε4/ε4" = "e4/e4"),
         term = fct_relevel(term, "ε2+", "ε3/ε3 \n(reference)", "ε2/ε4", "ε3/ε4", "ε4/ε4"),
@@ -776,8 +776,7 @@ apoe_geno_res_p <- apoe_geno_res %>%
   ggprism::add_pvalue(df_pval #%>% filter(outcome == "AD")
                       , bracket.nudge.y = 3, label = "{stars}", colour = 'black', tip.length = 0.01, bracket.size = 0.2) 
 
-apoe_geno_res_p
-ggsave("results/figures/joint_apoe_race_all_bl.png", plot = apoe_geno_res_p, width = 9, height = 5, units = 'in')
+ggsave(here("results/figures/joint_apoe_race_all_bl.png"), plot = apoe_geno_res_p, width = 9, height = 5, units = 'in')
 
 ```
 
@@ -1031,7 +1030,7 @@ theme.size = 8
 
 effect_plot <- function(x){
   x %>%
-    mutate(race = fct_relevel(race, 'Black', 'Hispanic', 'Asian',  'NHW'), 
+    mutate(race = fct_relevel(race, 'Black', 'Latinx', 'Asian',  'NLW'), 
         term = fct_recode(term, "ε2+" = "e2+", "ε4+" = "e4+", "CAIDE" = "z_caide", "mCAIDE" = "z_mcaide"),
         ) %>%
   ggplot(., aes(x = race, y = or, color = race)) + 
@@ -1069,7 +1068,7 @@ caide_res_p
 caide_e4_res_p
 caide_e2_res_p
 
-ggsave("results/figures/joint_apoe_race_all_bl.png", plot = apoe_geno_res_p, width = 9, height = 5, units = 'in')
+# ggsave(here("results/figures/joint_apoe_race_all_bl.png"), plot = apoe_geno_res_p, width = 9, height = 5, units = 'in')
 
 ```
 
@@ -1082,9 +1081,10 @@ joint_caid_apoe_all_bl_p <- ggplot(caide_res.df, aes(x = or, y = race, color = r
     geom_vline(xintercept = 1, linetype = 2) + 
     geom_point() + 
     geom_linerange(aes(xmin = or_lci, xmax = or_hci), linewidth = 0.75) + 
-    scale_y_discrete(limits=rev) +  
+    #scale_y_discrete(limits=rev) + 
+    scale_y_discrete(limits=rev, labels = c("NLW", "Asian", "Latinx", "Black")) + 
     scale_color_manual(
-      labels = c("Black", "Latinx", "Asian", "NHW"),
+      labels = c("Black", "Latinx", "Asian", "NLW"),
       values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
     theme_bw() + 
     labs(x = "Odds Ratio") + 
@@ -1096,8 +1096,8 @@ joint_caid_apoe_all_bl_p <- ggplot(caide_res.df, aes(x = or, y = race, color = r
       strip.text = element_text(face = 'bold'), 
       legend.title=element_blank()
       )
-
-ggsave("results/figures/joint_caid_apoe_all_bl.png", plot = joint_caid_apoe_all_bl_p, width = 9, height = 4, units = 'in')
+joint_caid_apoe_all_bl_p
+ggsave(here("results/figures/joint_caid_apoe_all_bl.png"), plot = joint_caid_apoe_all_bl_p, width = 9, height = 4, units = 'in')
 
 ```
 
@@ -1116,9 +1116,10 @@ joint_caid_apoe_adrd_mci_bl_p <- ggplot(caide_res.df %>% filter(outcome == "ADRD
                        breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32),
                        labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32)
     ) +
-    scale_y_discrete(limits=rev) +  
+    #scale_y_discrete(limits=rev) +  
+    scale_y_discrete(limits = rev, labels = c("NLW", "Asian", "Latinx", "Black"))+
     scale_color_manual(
-      labels = c("Black", "Latinx", "Asian", "NHW"),
+      labels = c("Black", "Latinx", "Asian", "NLW"),
       values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
     theme_bw() + 
     labs(x = "Odds Ratio") + 
@@ -1130,7 +1131,8 @@ joint_caid_apoe_adrd_mci_bl_p <- ggplot(caide_res.df %>% filter(outcome == "ADRD
       strip.text = element_text(face = 'bold')
       )
 
-ggsave("results/figures/joint_caid_apoe_adrd_mci_bl.png", plot = joint_caid_apoe_adrd_mci_bl_p, width = 9, height = 3.5, units = 'in')
+joint_caid_apoe_adrd_mci_bl_p
+ggsave(here("results/figures/joint_caid_apoe_adrd_mci_bl.png"), plot = joint_caid_apoe_adrd_mci_bl_p, width = 9, height = 3.5, units = 'in')
 
 ```
 
@@ -1299,7 +1301,7 @@ joint_caide_apoe_cat_all_bl <- ggplot(caide_apoe_cat_df, aes(x = or, y = term, c
     legend.title = element_blank()
     )
 
-ggsave("results/figures/joint_caide_apoe_cat_all_bl.png", plot = joint_caide_apoe_cat_all_bl, width = 9, height = 4, units = 'in')
+ggsave(here("results/figures/joint_caide_apoe_cat_all_bl.png"), plot = joint_caide_apoe_cat_all_bl, width = 9, height = 4, units = 'in')
 
 ```
 
@@ -1337,7 +1339,7 @@ joint_caide_apoe_adrd_mci_bl_p <- caide_apoe_cat_df %>%
       )
 
 
-ggsave("results/figures/joint_caide_apoe_adrd_mci_bl.png", plot = joint_caide_apoe_adrd_mci_bl_p, width = 9, height = 3.5, units = 'in')
+ggsave(here("results/figures/joint_caide_apoe_adrd_mci_bl.png"), plot = joint_caide_apoe_adrd_mci_bl_p, width = 9, height = 3.5, units = 'in')
 
 ```
 
@@ -1793,7 +1795,7 @@ mcaide_res_p <- filter(mcaide_res_df, term == "z_mcaide") %>% effect_plot(.) +
 mcaide_res_p
 caide_e4_res_p
 
-ggsave("results/figures/nacc_apoe_race_all_bl.png", plot = apoe_geno_res_p, width = 9, height = 5, units = 'in')
+# ggsave("results/figures/nacc_apoe_race_all_bl.png", plot = apoe_geno_res_p, width = 9, height = 5, units = 'in')
 
 ```
 
@@ -1814,9 +1816,10 @@ joint_mcaid_apoe_adrd_mci_bl_p <- ggplot(mcaide_res_df %>% filter(outcome == "AD
     #                    breaks = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 
     #                    labels = c(0.25, 0.5, 1, 2, 4, 8, 16, 32)
     # ) + 
-    scale_y_discrete(limits=rev) +  
+    #scale_y_discrete(limits=rev) +
+    scale_y_discrete(limits=rev, labels = c("NLW", "Asian", "Latinx", "Black"))+
     scale_color_manual(
-      labels = c("Black", "Latinx", "Asian", "NHW"),
+      labels = c("Black", "Latinx", "Asian", "NLW"),
       values = c( "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")) + 
     theme_bw() + 
     labs(x = "Odds Ratio") + 
@@ -1827,8 +1830,8 @@ joint_mcaid_apoe_adrd_mci_bl_p <- ggplot(mcaide_res_df %>% filter(outcome == "AD
       strip.background = element_blank(), 
       strip.text = element_text(face = 'bold')
       )
-
-ggsave("results/figures/joint_mcaid_apoe_adrd_mci_bl.png", plot = joint_mcaid_apoe_adrd_mci_bl_p, width = 9, height = 3.5, units = 'in')
+joint_mcaid_apoe_adrd_mci_bl_p
+ggsave(here("results/figures/joint_mcaid_apoe_adrd_mci_bl.png"), plot = joint_mcaid_apoe_adrd_mci_bl_p, width = 9, height = 3.5, units = 'in')
 
 ```
 
@@ -1969,7 +1972,7 @@ ggplot(mcaide_apoe_cat_df, aes(x = or, y = term, color = race)) +
     )
 
 
-ggsave("results/figures/joint_apoe_mcaide_race_all_bl.png", width = 9, height = 5, units = 'in')
+# ggsave("results/figures/joint_apoe_mcaide_race_all_bl.png", width = 9, height = 5, units = 'in')
 
 ```
 
