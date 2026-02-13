@@ -56,9 +56,14 @@ dat <- read_tsv(dat_path) %>%
       apoe_geno %in% c(24, 34, 44) ~ 1
     ), 
     apoe_geno = as.character(apoe_geno),
-    apoe_geno = fct_recode(apoe_geno,
-      'e2+' = '22', 'e2+' = '23', "e3/e3" = "33", "e2/e4" = "24", "e3/e4" = "34", "e4/e4" = "44"
-    ),
+    apoe_geno = fct_recode(
+      apoe_geno,
+      'e2+' = '22', 
+      'e2+' = '23', 
+      "e3/e3" = "33",
+      "e2/e4" = "24", 
+      "e3/e4" = "34",
+      "e4/e4" = "44"),
     apoe_geno = fct_relevel(apoe_geno, "e3/e3"),
     apoe = fct_relevel(apoe, "e3/e3"), 
     race = fct_relevel(race, "NHW"), 
